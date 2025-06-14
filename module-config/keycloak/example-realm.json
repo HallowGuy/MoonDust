@@ -1,0 +1,12 @@
+{
+  "realm": "example",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "example-client",
+      "publicClient": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"]
+    }
+  ]
+}
