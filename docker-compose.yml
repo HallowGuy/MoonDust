@@ -14,7 +14,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
 
-  frontend-angular:
+  frontend:
     # Angular development server
     build: ./frontend/angular
     command: npm start
@@ -22,7 +22,7 @@ services:
       - ./frontend/angular:/app
     working_dir: /app
     ports:
-      - "${FRONTEND_ANGULAR_PORT}:4200"
+      - "${FRONTEND_PORT}:4200"
 
   backend:
     # Placeholder backend container
@@ -55,10 +55,12 @@ services:
     image: nginx:latest
     volumes:
       - ./module-config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./module-config/nginx/wait-for-services.sh:/wait-for-services.sh:ro
+    command: ["sh", "/wait-for-services.sh"]
     ports:
       - "${NGINX_PORT}:80"
     depends_on:
-      - frontend-angular
+      - frontend
       - backend
       - keycloak
 
