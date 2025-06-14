@@ -1,5 +1,11 @@
-# Simple backend image based on Alpine Linux
-FROM alpine
+# Minimal backend container using Node
+FROM node:18-alpine
 
-# The backend is not implemented yet; print a placeholder message
-CMD ["sh", "-c", "echo Backend placeholder"]
+WORKDIR /app
+
+COPY package.json ./
+RUN npm install
+
+COPY . .
+
+CMD ["npm", "start"]
