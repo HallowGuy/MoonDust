@@ -1,47 +1,74 @@
+# Docker Compose file orchestrating the application stack
 version: '3.8'
 
 services:
+  # PostgreSQL database used by the application and Keycloak
+  postgres:
+    # Official PostgreSQL image providing the application database
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
   frontend-next:
+    # Next.js development server
     build: ./frontend/nextjs
     command: npm run dev
     volumes:
       - ./frontend/nextjs:/app
     working_dir: /app
     ports:
-      - "3000:3000"
+      - "${FRONTEND_NEXT_PORT}:3000"
 
   frontend-angular:
+    # Angular development server
     build: ./frontend/angular
     command: npm start
     volumes:
       - ./frontend/angular:/app
     working_dir: /app
     ports:
-      - "4200:4200"
+      - "${FRONTEND_ANGULAR_PORT}:4200"
 
   backend:
+    # Placeholder backend container
     build: ./backend
     ports:
-      - "8080:8080"
+      - "${BACKEND_PORT}:8080"
     volumes:
       - ./backend:/app
     working_dir: /app
 
   keycloak:
+    # Authentication server using Keycloak
     image: quay.io/keycloak/keycloak:latest
     environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=admin
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: ${POSTGRES_DB}
+      KC_DB_SCHEMA: ${POSTGRES_SCHEMA_KEYCLOAK}
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
     command: start-dev
     ports:
-      - "8081:8080"
+      - "${KEYCLOAK_PORT}:8080"
+    depends_on:
+      - postgres
 
   nginx:
+    # Reverse proxy forwarding requests to frontend and backend
     image: nginx:latest
     volumes:
       - ./module-config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
-      - "80:80"
+      - "${NGINX_PORT}:80"
     depends_on:
       - frontend-next
       - backend
