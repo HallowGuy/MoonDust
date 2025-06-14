@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  frontend-next:
+    build: ./frontend/nextjs
+    command: npm run dev
+    volumes:
+      - ./frontend/nextjs:/app
+    working_dir: /app
+    ports:
+      - "3000:3000"
+
+  frontend-angular:
+    build: ./frontend/angular
+    command: npm start
+    volumes:
+      - ./frontend/angular:/app
+    working_dir: /app
+    ports:
+      - "4200:4200"
+
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev
+    ports:
+      - "8081:8080"
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./module-config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend-next
+      - backend
+
+networks:
+  default:
+    driver: bridge

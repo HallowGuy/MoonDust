@@ -1,0 +1,14 @@
+{
+  "name": "angular-app",
+  "private": true,
+  "scripts": {
+    "start": "ng serve",
+    "build": "ng build"
+  },
+  "dependencies": {
+    "@angular/core": "latest"
+  },
+  "devDependencies": {
+    "tailwindcss": "latest"
+  }
+}
