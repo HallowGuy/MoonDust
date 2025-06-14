@@ -10,8 +10,6 @@ wait_for() {
   done
 }
 
-wait_for frontend 4200
-wait_for backend 8080
 wait_for keycloak 8080
 
 exec nginx -g 'daemon off;'
