@@ -1,20 +1,8 @@
 #!/bin/sh
 
-# Wait for a host:port to be reachable
-wait_for() {
-  host="$1"
-  port="$2"
-  echo "Waiting for $host:$port..."
+# Simple startup script for NGINX.
+# The previous version waited for the Keycloak service to be
+# available before launching. To make the module independent
+# from Keycloak, the waiting logic has been removed.
 
-  while ! nc -z "$host" "$port" >/dev/null 2>&1; do
-    sleep 2
-  done
-
-  echo "$host:$port is available."
-}
-
-# Wait for Keycloak
-wait_for keycloak 8080
-
-# Start NGINX
 exec nginx -g 'daemon off;'
