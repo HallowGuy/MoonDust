@@ -1,5 +1,4 @@
-# Docker Compose file orchestrating the application stack
-version: '3.8'
+
 
 services:
   # PostgreSQL database used by the application and Keycloak
