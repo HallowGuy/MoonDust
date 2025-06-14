@@ -14,24 +14,6 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
 
-  frontend:
-    # Angular development server
-    build: ./frontend/angular
-    command: npm start
-    volumes:
-      - ./frontend/angular:/app
-    working_dir: /app
-    ports:
-      - "${FRONTEND_PORT}:4200"
-
-  backend:
-    # Placeholder backend container
-    build: ./backend
-    ports:
-      - "${BACKEND_PORT}:8080"
-    volumes:
-      - ./backend:/app
-    working_dir: /app
 
   keycloak:
     # Authentication server using Keycloak
@@ -60,8 +42,6 @@ services:
     ports:
       - "${NGINX_PORT}:80"
     depends_on:
-      - frontend
-      - backend
       - keycloak
 
 
