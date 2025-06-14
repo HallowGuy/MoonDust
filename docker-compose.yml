@@ -52,7 +52,6 @@ services:
       - postgres
 
   nginx:
-    # Reverse proxy forwarding requests to frontend and backend with Keycloak authentication
     image: nginx:latest
     volumes:
       - ./module-config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -62,6 +61,7 @@ services:
       - frontend-angular
       - backend
       - keycloak
+
 
 networks:
   default:
