@@ -47,7 +47,7 @@ services:
       - "${NGINX_PORT}:80"
     volumes:
       - ./module-config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./html:/usr/share/nginx/html:ro
+      - ./frontend/html/static-html:/usr/share/nginx/html:ro
     depends_on:
       - keycloak
     networks:
