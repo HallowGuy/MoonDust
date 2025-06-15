@@ -1,1 +1,57 @@
-**/node_modules/
+# ==========================================
+# MoonDust - .gitignore
+# ==========================================
+
+# --- Environment & Secrets ---
+.env
+.env.*  # e.g., .env.production, .env.local
+
+# --- Docker ---
+*.log
+docker-compose.override.yml
+docker-compose.*.yml
+docker-compose.override.*.yml
+
+# Docker named volumes (optional if mounted on host)
+postgres_data/
+*/postgres_data/
+
+# Docker build artifacts
+**/__pycache__/
+**/.pytest_cache/
+*.pid
+*.seed
+*.seed.*
+
+# --- NGINX ---
+nginx/logs/
+nginx/tmp/
+module-config/nginx/*.bak
+
+# --- Keycloak ---
+keycloak/standalone/
+keycloak/themes/
+keycloak/data/
+module-config/keycloak/exported-*.json
+
+# --- Node / Frontend (optional) ---
+node_modules/
+dist/
+build/
+.cache/
+.next/
+out/
+
+# --- Editor & System ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*~
+
+# --- OS-specific ---
+ehthumbs.db
+Icon?

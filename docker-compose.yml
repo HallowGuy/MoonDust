@@ -40,7 +40,9 @@ services:
       - moondust
 
   nginx:
-    image: nginx:stable
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
     container_name: nginx
     restart: unless-stopped
     ports:
@@ -52,7 +54,6 @@ services:
       - keycloak
     networks:
       - moondust
-
 
 volumes:
   postgres_data:

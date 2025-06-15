@@ -1,8 +1,12 @@
 #!/bin/sh
 
-# Simple startup script for NGINX.
-# The previous version waited for the Keycloak service to be
-# available before launching. To make the module independent
-# from Keycloak, the waiting logic has been removed.
+# Wait for Keycloak to be available on host `keycloak` and port `8080`.
+echo "Waiting for Keycloak to become available at keycloak:8080..."
 
+until nc -z keycloak 8080; do
+  echo "Keycloak is unavailable - sleeping"
+  sleep 2
+done
+
+echo "Keycloak is up - starting NGINX"
 exec nginx -g 'daemon off;'
