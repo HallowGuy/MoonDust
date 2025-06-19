@@ -1,3 +1,0 @@
-# Keycloak
-
-Development Keycloak instance.
