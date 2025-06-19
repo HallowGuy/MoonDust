@@ -17,8 +17,11 @@ Structure du projet avec plusieurs services conteneurisés.
 - `nginx` : proxy Nginx.
 - `keycloak` : gestion des identités.
 - `metabase` : service de dashboarding.
+- `postgres` : base de données PostgreSQL.
 
 Chaque dossier contient un `Dockerfile` minimal.
+
+Le service `postgres` initialise automatiquement les schémas `sys`, `app` et `keycloak` au démarrage.
 
 ## Lancement
 
