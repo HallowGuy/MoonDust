@@ -1,0 +1,20 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+.tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  color: #333;
+}
+
+.tile.mini   { width: 50px;  height: 50px;  }
+.tile.petit  { width: 100px; height: 100px; }
+.tile.moyen  { width: 150px; height: 150px; }
+.tile.grand  { width: 200px; height: 200px; }
+.tile.max    { width: 300px; height: 300px; }
