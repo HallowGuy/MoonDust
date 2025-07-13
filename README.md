@@ -9,6 +9,8 @@ Un assemblage de technologie, de composants et d'outils d'une façon cohérente 
 - **backend/** : hébergera la logique serveur de l'application. Là encore, un `Dockerfile` explique chaque étape de la construction de l'image.
 - **database/** : contient l'environnement lié à la base PostgreSQL. Le `Dockerfile` détaille les variables d'environnement utilisées pour initialiser la base.
 - **keycloak/** : fournit Keycloak pour l'authentification et la gestion des utilisateurs. Un `Dockerfile` importe automatiquement le realm de démonstration `demo`.
+- **elastic/** : fournit un conteneur Elasticsearch prêt à l'emploi.
+- **kibana/** : offre l'interface Kibana pour explorer les données.
 
 ### Schémas de base de données
 
@@ -31,3 +33,4 @@ docker compose up --build
 ```
 
 La page sera alors disponible sur `http://localhost:8080` et présente un système de tuiles avec cinq tailles (`mini`, `petit`, `moyen`, `grand`, `max`).
+Elasticsearch sera accessible sur `http://localhost:9200` et Kibana sur `http://localhost:5601`.
