@@ -1,10 +1,5 @@
-# MoonDust Nginx Setup
+# MoonDust Définition
 
-Ce projet fournit une configuration Docker minimale de **Nginx** qui affiche une page d'accueil statique.
+Ce projet a pour objectif d'être une Méta-Application, une sorte de Plateforme qui sera ensuite paramétrée pour avoir une identité pour un métier spécifique.
+Un assemblage de technolgoie, de composant et d'outil d'une façon cohérente pour pouvoir faire des actions
 
-## Utilisation
-
-1. Placez vos paramètres dans le fichier `.env`.
-2. Lancez le conteneur avec `docker-compose up --build`.
-
-La page sera disponible sur le port défini dans `HOST_PORT`.
