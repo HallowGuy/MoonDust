@@ -18,7 +18,7 @@ ENV POSTGRES_USER=appuser \
 
 # Optionnel : ajout d'un script d'initialisation placé dans le dossier docker-entrypoint-initdb.d
 # Tout fichier .sql ou .sh présent dans ce répertoire sera exécuté au démarrage
-# COPY init-db.sh /docker-entrypoint-initdb.d/
+COPY initdb/*.sql /docker-entrypoint-initdb.d/
 
 # Aucune commande CMD supplémentaire n'est nécessaire : l'image postgres
 # lance automatiquement le serveur PostgreSQL
