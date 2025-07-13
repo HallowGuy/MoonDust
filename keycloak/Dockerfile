@@ -8,6 +8,13 @@ FROM quay.io/keycloak/keycloak:24.0
 ENV KEYCLOAK_ADMIN=admin \
     KEYCLOAK_ADMIN_PASSWORD=admin
 
+# Configuration de la base de données PostgreSQL
+ENV KC_DB=postgres \
+    KC_DB_URL=jdbc:postgresql://database:5432/appdb \
+    KC_DB_USERNAME=appuser \
+    KC_DB_PASSWORD=apppassword \
+    KC_DB_SCHEMA=keycloak
+
 WORKDIR /opt/keycloak
 
 # Copie du fichier de configuration du realm

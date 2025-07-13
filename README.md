@@ -12,11 +12,12 @@ Un assemblage de technologie, de composants et d'outils d'une façon cohérente 
 
 ### Schémas de base de données
 
-Lors de l'initialisation de PostgreSQL, trois schémas sont créés automatiquement :
+Lors de l'initialisation de PostgreSQL, plusieurs schémas sont créés automatiquement :
 
 - `metaappfront` : tables dédiées au frontend.
 - `metaappback` : tables dédiées au backend.
 - `metaappsys` : tables communes et globales.
+- `keycloak` : tables internes de Keycloak pour l'authentification.
 
 Chacun de ces dossiers pourra être complété par la suite (code, scripts, configurations). Pour l'instant ils servent uniquement de squelette afin de préparer la suite du développement.
 
