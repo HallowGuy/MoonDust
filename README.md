@@ -32,5 +32,9 @@ Depuis la racine du dépôt, exécutez :
 docker compose up --build
 ```
 
+Les services définis dans `docker-compose.yml` disposent désormais d'un mécanisme
+de contrôle d'état (*healthcheck*) et redémarrent automatiquement (`restart: unless-stopped`).
+Cela évite les blocages éventuels lors du lancement.
+
 La page sera alors disponible sur `http://localhost:8080` et présente un système de tuiles avec cinq tailles (`mini`, `petit`, `moyen`, `grand`, `max`).
 Elasticsearch sera accessible sur `http://localhost:9200` et Kibana sur `http://localhost:5601`.
