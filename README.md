@@ -8,6 +8,7 @@ Un assemblage de technologie, de composants et d'outils d'une façon cohérente 
 - **frontend/** : contiendra le code de la partie interface utilisateur. On y trouve un `Dockerfile` très commenté pour faciliter la prise en main.
 - **backend/** : hébergera la logique serveur de l'application. Là encore, un `Dockerfile` explique chaque étape de la construction de l'image.
 - **database/** : contient l'environnement lié à la base PostgreSQL. Le `Dockerfile` détaille les variables d'environnement utilisées pour initialiser la base.
+- **keycloak/** : fournit Keycloak pour l'authentification et la gestion des utilisateurs. Un `Dockerfile` importe automatiquement le realm de démonstration `demo`.
 
 ### Schémas de base de données
 
