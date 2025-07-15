@@ -2,15 +2,53 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>MoonDust Home</title>
+  <title>MoonDust</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Exemple de tuiles</h1>
-  <div class="tile mini">Mini</div>
-  <div class="tile petit">Petit</div>
-  <div class="tile moyen">Moyen</div>
-  <div class="tile grand">Grand</div>
-  <div class="tile max">Max</div>
+  <header>
+    <h1>MoonDust</h1>
+  </header>
+  <div class="container">
+    <nav class="sidebar">
+      <ul>
+        <li><a href="#" data-content="home">Accueil</a></li>
+        <li><a href="#" data-content="tiles">Tuiles</a></li>
+        <li><a href="#" data-content="about">À propos</a></li>
+      </ul>
+    </nav>
+    <main id="content"></main>
+  </div>
+  <footer>
+    Première version de démonstration
+  </footer>
+
+  <script>
+    const content = document.getElementById('content');
+
+    const pages = {
+      home: '<h2>Bienvenue sur MoonDust</h2><p>Sélectionnez une option dans le menu.</p>',
+      tiles: `<h2>Exemple de tuiles</h2>
+              <div class="tile mini">Mini</div>
+              <div class="tile petit">Petit</div>
+              <div class="tile moyen">Moyen</div>
+              <div class="tile grand">Grand</div>
+              <div class="tile max">Max</div>`,
+      about: '<h2>À propos</h2><p>Première version one page avec zone dynamique.</p>'
+    };
+
+    function load(page) {
+      content.innerHTML = pages[page] || '<p>Page inconnue.</p>';
+    }
+
+    document.querySelectorAll('.sidebar a').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        load(a.dataset.content);
+      });
+    });
+
+    load('home');
+  </script>
 </body>
 </html>
