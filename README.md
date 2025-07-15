@@ -25,7 +25,7 @@ Chacun de ces dossiers pourra être complété par la suite (code, scripts, conf
 
 ## Lancer un exemple
 
-Un `docker-compose.yml` minimal est fourni pour prévisualiser la page d'accueil servie par Nginx.
+Un `docker-compose.yml` minimal permet maintenant de lancer le frontend, la base PostgreSQL et le backend Express servant l'API contacts.
 Depuis la racine du dépôt, exécutez :
 
 ```bash
@@ -38,3 +38,17 @@ Cela évite les blocages éventuels lors du lancement.
 
 La page sera alors disponible sur `http://localhost:8080` et présente un système de tuiles avec cinq tailles (`mini`, `petit`, `moyen`, `grand`, `max`).
 Elasticsearch sera accessible sur `http://localhost:9200` et Kibana sur `http://localhost:5601`.
+
+## API Backend
+
+Un premier exemple d'API permet maintenant de gerer des contacts dans la base PostgreSQL. La table `metaappback.contact` stocke un nom, un numero de telephone, un email et un type numerique (0 = inconnu, 1 = entreprise, 2 = humain).
+
+Les routes disponibles sur le backend sont :
+
+- `GET /contacts` : liste tous les contacts
+- `GET /contacts/:id` : retourne un contact
+- `POST /contacts` : cree un contact
+- `PUT /contacts/:id` : met a jour un contact
+- `DELETE /contacts/:id` : supprime un contact
+
+Le serveur Node.js se lance avec `npm start` dans le dossier `backend`.
