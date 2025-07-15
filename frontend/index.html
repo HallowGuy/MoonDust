@@ -14,6 +14,7 @@
       <ul>
         <li><a href="#" data-content="home">Accueil</a></li>
         <li><a href="#" data-content="tiles">Tuiles</a></li>
+        <li><a href="#" data-content="contacts">Contacts</a></li>
         <li><a href="#" data-content="about">À propos</a></li>
       </ul>
     </nav>
@@ -37,7 +38,23 @@
       about: '<h2>À propos</h2><p>Première version one page avec zone dynamique.</p>'
     };
 
-    function load(page) {
+    async function load(page) {
+      if (page === 'contacts') {
+        content.innerHTML = '<p>Chargement...</p>';
+        try {
+          const response = await fetch('http://localhost:3000/contacts');
+          const contacts = await response.json();
+          let html = '<h2>Contacts</h2><ul class="contacts">';
+          contacts.forEach(c => {
+            html += `<li>${c.name} - ${c.phone || ''} - ${c.email || ''}</li>`;
+          });
+          html += '</ul>';
+          content.innerHTML = html;
+        } catch (err) {
+          content.innerHTML = '<p>Erreur lors du chargement des contacts.</p>';
+        }
+        return;
+      }
       content.innerHTML = pages[page] || '<p>Page inconnue.</p>';
     }
 
