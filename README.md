@@ -1,7 +1,7 @@
 # MoonDust Définition
 
 Ce projet a pour objectif d'être une Méta-Application, une sorte de Plateforme qui sera ensuite paramétrée pour avoir une identité pour un métier spécifique.
-Un assemblage de technologie, de composants et d'outils d'une façon cohérente pour pouvoir faire des actions.
+Un assemblage de technologie, de composants et d'outils d'une façon cohérente pour pouvoir faire des actions. Hello Hadi
 
 ## Structure du dépôt
 
