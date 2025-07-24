@@ -5,7 +5,7 @@ Un assemblage de technologie, de composants et d'outils d'une façon cohérente 
 
 ## Structure du dépôt
 
-- **frontend/** : contiendra le code de la partie interface utilisateur. On y trouve un `Dockerfile` très commenté pour faciliter la prise en main.
+- **nginx/** : regroupe la configuration et les fichiers statiques servis par Nginx. On y trouve un `Dockerfile` très commenté pour faciliter la prise en main de ce composant indépendant.
 - **backend/** : hébergera la logique serveur de l'application. Là encore, un `Dockerfile` explique chaque étape de la construction de l'image.
 - **database/** : contient l'environnement lié à la base PostgreSQL. Le `Dockerfile` détaille les variables d'environnement utilisées pour initialiser la base.
 - **keycloak/** : fournit Keycloak pour l'authentification et la gestion des utilisateurs. Un `Dockerfile` importe automatiquement le realm de démonstration `demo`.
@@ -25,7 +25,7 @@ Chacun de ces dossiers pourra être complété par la suite (code, scripts, conf
 
 ## Lancer un exemple
 
-Un `docker-compose.yml` minimal permet maintenant de lancer le frontend, la base PostgreSQL et le backend Express servant l'API contacts.
+Un `docker-compose.yml` minimal permet maintenant de lancer Nginx, la base PostgreSQL et le backend Express servant l'API contacts.
 Depuis la racine du dépôt, exécutez :
 
 ```bash

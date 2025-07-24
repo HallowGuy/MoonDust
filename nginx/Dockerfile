@@ -1,4 +1,4 @@
-# Dockerfile pour servir le frontend via Nginx
+# Dockerfile pour servir l'interface utilisateur via Nginx
 FROM nginx:alpine
 
 # Copie de la configuration personnalisée
