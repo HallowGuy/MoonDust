@@ -1,0 +1,13 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Minimal Express backend",
+  "main": "index.js",
+  "scripts": {
+    "start:prod": "node index.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
