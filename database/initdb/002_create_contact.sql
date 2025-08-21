@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS metaappback.contact (
+CREATE TABLE IF NOT EXISTS testingDB.contact (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     phone VARCHAR(50),
