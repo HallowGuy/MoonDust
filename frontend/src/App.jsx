@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Button } from '@mui/material';
 import CreateEntity from './pages/CreateEntity.jsx';
 import EntityList from './pages/EntityList.jsx';
+import Status from './pages/Status.jsx';
 
 export default function App() {
   return (
@@ -14,12 +15,14 @@ export default function App() {
           </Typography>
           <Button color="inherit" component={Link} to="/create">Create</Button>
           <Button color="inherit" component={Link} to="/list">List</Button>
+          <Button color="inherit" component={Link} to="/status">Status</Button>
         </Toolbar>
       </AppBar>
       <Routes>
         <Route path="/" element={<CreateEntity />} />
         <Route path="/create" element={<CreateEntity />} />
         <Route path="/list" element={<EntityList />} />
+        <Route path="/status" element={<Status />} />
       </Routes>
     </Router>
   );

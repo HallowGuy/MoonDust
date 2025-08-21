@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const pinoHttp = require('pino-http');
 const logger = require('./logger');
 const pool = require('./db');
+const statusRouter = require('./src/routes/status');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -23,6 +24,8 @@ app.use(pinoHttp({ logger }));
 app.get('/healthcheck', (req, res) => {
   res.json({ status: 'ok' });
 });
+
+app.use('/status', statusRouter);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Hello from backend' });
