@@ -1,23 +1,15 @@
-# Dockerfile pour le dossier Backend
-# Ce fichier permet de construire l'image Docker de la partie serveur de l'application
-# Les commentaires détaillent chaque instruction pour faciliter la compréhension
-
-# Nous partons d'une image officielle de Node, adaptée aux applications serveur en JavaScript/TypeScript
+# Backend Dockerfile (simplifié)
 FROM node:20
 
-# Définition du répertoire de travail à l'intérieur du conteneur
+# Dossier de travail
 WORKDIR /app
 
-# Copie des fichiers de gestion des dépendances
+# Copie des dépendances et installation
 COPY package*.json ./
+RUN npm ci
 
-# Installation des dépendances du backend
-RUN npm ci || npm install
-
-# Copie du reste du code source
+# Copie du code source
 COPY . .
 
-# La commande par défaut peut être personnalisée lors du lancement du conteneur
+# Lancement de l’application en production
 CMD ["npm", "run", "start:prod"]
-
-# Fin du Dockerfile backend
