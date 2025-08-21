@@ -1,32 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { Container, List, ListItem, Card, CardContent, Typography } from '@mui/material';
+import { Container, Button } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
+import { Link } from 'react-router-dom';
 
+// Display entities using MUI's DataGrid component
 export default function EntityList() {
-  const [entities, setEntities] = useState([]);
+  const [rows, setRows] = useState([]);
 
   useEffect(() => {
     fetch('/api/entity')
       .then((res) => res.json())
-      .then(setEntities)
+      .then(setRows)
       .catch(() => {});
   }, []);
 
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 90 },
+    { field: 'name', headerName: 'Nom', flex: 1 },
+    {
+      field: 'created_at',
+      headerName: 'Créé le',
+      flex: 1,
+      valueFormatter: (params) => new Date(params.value).toLocaleString(),
+    },
+  ];
+
   return (
     <Container sx={{ mt: 4 }}>
-      <List>
-        {entities.map((e) => (
-          <ListItem key={e.id}>
-            <Card sx={{ width: '100%' }}>
-              <CardContent>
-                <Typography variant="h6">{e.name}</Typography>
-                <Typography color="text.secondary">
-                  {new Date(e.created_at).toLocaleString()}
-                </Typography>
-              </CardContent>
-            </Card>
-          </ListItem>
-        ))}
-      </List>
+      <Button variant="contained" component={Link} to="/create" sx={{ mb: 2 }}>
+        Créer une entité
+      </Button>
+      <div style={{ height: 400, width: '100%' }}>
+        <DataGrid rows={rows} columns={columns} pageSizeOptions={[5, 10]} />
+      </div>
     </Container>
   );
 }
