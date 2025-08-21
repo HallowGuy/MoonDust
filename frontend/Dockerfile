@@ -1,4 +1,13 @@
-FROM nginx:alpine
+# Frontend Dockerfile
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
 
-# Copie directe du HTML dans le dossier de Nginx
-COPY index.html /usr/share/nginx/html/index.html
+FROM nginx:alpine AS runtime
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+

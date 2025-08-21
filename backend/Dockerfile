@@ -1,15 +1,15 @@
-# Backend Dockerfile (simplifié)
-FROM node:20
-
-# Dossier de travail
+# Backend Dockerfile
+FROM node:20-alpine AS deps
 WORKDIR /app
-
-# Copie des dépendances et installation
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --omit=dev
 
-# Copie du code source
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Lancement de l’application en production
+USER node
+EXPOSE 3000
 CMD ["npm", "run", "start:prod"]
+
