@@ -1,71 +1,29 @@
 <!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>MoonDust</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <header>
-    <h1>MoonDust</h1>
-  </header>
-  <div class="container">
-    <nav class="sidebar">
-      <ul>
-        <li><a href="#" data-content="home">Accueil</a></li>
-        <li><a href="#" data-content="tiles">Tuiles</a></li>
-        <li><a href="#" data-content="contacts">Contacts</a></li>
-        <li><a href="#" data-content="about">À propos</a></li>
-      </ul>
-    </nav>
-    <main id="content"></main>
-  </div>
-  <footer>
-    Première version de démonstration
-  </footer>
-
-  <script>
-    const content = document.getElementById('content');
-
-    const pages = {
-      home: '<h2>Bienvenue sur MoonDust</h2><p>Sélectionnez une option dans le menu.</p>',
-      tiles: `<h2>Exemple de tuiles</h2>
-              <div class="tile mini">HADI</div>
-              <div class="tile petit">Petit</div>
-              <div class="tile moyen">COUCOU TEST</div>
-              <div class="tile grand">Grand</div>
-              <div class="tile max">Max</div>`,
-      about: '<h2>À propos</h2><p>Première version one page avec zone dynamique.</p>'
-    };
-
-    async function load(page) {
-      if (page === 'contacts') {
-        content.innerHTML = '<p>Chargement...</p>';
-        try {
-          const response = await fetch('http://localhost:3000/contacts');
-          const contacts = await response.json();
-          let html = '<h2>Contacts</h2><ul class="contacts">';
-          contacts.forEach(c => {
-            html += `<li>${c.name} - ${c.phone || ''} - ${c.email || ''}</li>`;
-          });
-          html += '</ul>';
-          content.innerHTML = html;
-        } catch (err) {
-          content.innerHTML = '<p>Erreur lors du chargement des contacts.</p>';
-        }
-        return;
-      }
-      content.innerHTML = pages[page] || '<p>Page inconnue.</p>';
-    }
-
-    document.querySelectorAll('.sidebar a').forEach(a => {
-      a.addEventListener('click', e => {
-        e.preventDefault();
-        load(a.dataset.content);
-      });
-    });
-
-    load('home');
-  </script>
-</body>
+<!--
+* CoreUI Free React.js Admin Template
+* @version v5.5.0
+* @link https://coreui.io/product/free-react-admin-template/
+* Copyright (c) 2025 creativeLabs Łukasz Holeczek
+* Licensed under MIT (https://github.com/coreui/coreui-free-react-admin-template/blob/main/LICENSE)
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="CoreUI for React - Open Source Bootstrap Admin Template">
+    <meta name="author" content="Łukasz Holeczek">
+    <meta name="keyword" content="Bootstrap,Admin,Template,Open,Source,CSS,SCSS,HTML,RWD,Dashboard,React">
+    <title>MoonDust - Backoffice</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="shortcut icon" href="/favicon.ico">
+  </head>
+  <body>
+    <noscript>
+      You need to enable JavaScript to run this app
+    </noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/index.js"></script>
+    <!-- built files will be auto injected -->
+  </body>
 </html>
