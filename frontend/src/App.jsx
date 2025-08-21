@@ -1,29 +1,18 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Button } from '@mui/material';
-import CreateEntity from './pages/CreateEntity.jsx';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home.jsx';
 import EntityList from './pages/EntityList.jsx';
-import Status from './pages/Status.jsx';
+import EntityCreate from './pages/EntityCreate.jsx';
 
+// Application routing configuration
 export default function App() {
   return (
-    <Router>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            MoonDust
-          </Typography>
-          <Button color="inherit" component={Link} to="/create">Create</Button>
-          <Button color="inherit" component={Link} to="/list">List</Button>
-          <Button color="inherit" component={Link} to="/status">Status</Button>
-        </Toolbar>
-      </AppBar>
+    <BrowserRouter>
       <Routes>
-        <Route path="/" element={<CreateEntity />} />
-        <Route path="/create" element={<CreateEntity />} />
+        <Route path="/" element={<Home />} />
         <Route path="/list" element={<EntityList />} />
-        <Route path="/status" element={<Status />} />
+        <Route path="/create" element={<EntityCreate />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
