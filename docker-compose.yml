@@ -33,6 +33,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: >
+      sh -c "if [ \"$NODE_ENV\" = 'development' ]; then npm run dev;
+             else npm start; fi"
 
   frontend:
     build: ./frontend
@@ -46,4 +52,3 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-

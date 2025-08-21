@@ -1,16 +1,28 @@
-# Backend Dockerfile
+# ---- Dépendances ----
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
-# Install all dependencies (including dev for development use)
+# Installer toutes les dépendances (dev incluses pour nodemon en mode dev)
 RUN npm install
 
+# ---- Runner ----
 FROM node:20-alpine AS runner
 WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-USER node
-EXPOSE 3000
-CMD ["npm", "run", "start:prod"]
 
+# Node env injecté par docker-compose (development ou production)
+ENV NODE_ENV=$NODE_ENV
+
+# Copier node_modules depuis deps
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copier le reste du code
+COPY . .
+
+# Sécurité : utiliser l’utilisateur node
+RUN chown -R node:node /app
+USER node
+
+EXPOSE 3000
+
+# Commande par défaut (écrasée si besoin par docker-compose)
+CMD ["npm", "start"]
