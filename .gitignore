@@ -1,0 +1,43 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+.pnpm-debug.log
+
+# Logs
+logs
+*.log
+*.out
+*.pid
+*.gz
+
+# Build / dist
+frontend/build/
+frontend/dist/
+backend/dist/
+
+# Coverage
+coverage/
+*.lcov
+
+# IDE / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env files
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Docker
+docker-data/
+*.pid

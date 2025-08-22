@@ -1,0 +1,88 @@
+// 🎨 Ta palette
+$brand-primary:  #1342a8; // bleu
+$brand-secondary:#64748b;
+$brand-success:  #1fcd5f;
+$brand-danger:   #dc2626;
+$brand-warning:  #f59e0b;
+$brand-info:     #06b6d4;
+$brand-light:    #f8fafc;
+$brand-dark:     #0f172a;
+
+// ⚙️ Injecte les variables AU MOMENT de l'import CoreUI
+@use "@coreui/coreui/scss/coreui" as * with (
+  $enable-deprecation-messages: false,
+
+  // Bootstrap / CoreUI theme colors
+  $primary:   $brand-primary,
+  $secondary: $brand-secondary,
+  $success:   $brand-success,
+  $danger:    $brand-danger,
+  $warning:   $brand-warning,
+  $info:      $brand-info,
+  $light:     $brand-light,
+  $dark:      $brand-dark
+);
+@use "@coreui/chartjs/scss/coreui-chartjs";
+@use "vendors/simplebar";
+
+body {
+  background-color: var(--cui-tertiary-bg);
+}
+
+.wrapper {
+  width: 100%;
+  padding-inline: var(--cui-sidebar-occupy-start, 0) var(--cui-sidebar-occupy-end, 0);
+  will-change: auto;
+  @include transition(padding .15s);
+}
+
+.header > .container-fluid,
+.sidebar-header {
+  min-height: calc(4rem + 1px); // stylelint-disable-line function-disallowed-list
+}
+
+.sidebar-brand-full {
+  margin-left: 3px;
+}
+
+.sidebar-header {
+  .nav-underline-border {
+    --cui-nav-underline-border-link-padding-x: 1rem;
+    --cui-nav-underline-border-gap: 0;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    min-height: calc(4rem + 1px); // stylelint-disable-line function-disallowed-list
+  }
+}
+
+.sidebar-toggler {
+  margin-inline-start: auto;
+}
+
+.sidebar-narrow,
+.sidebar-narrow-unfoldable:not(:hover) {
+  .sidebar-toggler {
+    margin-inline-end: auto;
+  }
+}
+
+.header > .container-fluid + .container-fluid {
+  min-height: 3rem;
+}
+
+.footer {
+  min-height: calc(3rem + 1px); // stylelint-disable-line function-disallowed-list
+}
+
+@include color-mode(dark) {
+  body {
+    background-color: var(--cui-dark-bg-subtle);
+  }
+
+  .footer {
+    --cui-footer-bg: var(--cui-body-bg);
+  }
+}
