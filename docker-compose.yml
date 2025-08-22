@@ -1,48 +1,19 @@
+version: "3.9"
 services:
-  backend:
-    build: ./backend
-    container_name: backend_app
-    environment:
-      - PGHOST=db
-      - PGUSER=postgres
-      - PGPASSWORD=postgres
-      - PGDATABASE=moondust
-      - PGPORT=5432
-    ports:
-      - "5001:3001"
-    depends_on:
-      - db
-
-  frontend:
-    build: ./frontend
-    container_name: frontend_app
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-
-  db:
+  postgres:
     image: postgres:15
-    container_name: postgres_db
+    container_name: app-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: moondust
+      POSTGRES_DB: appdb
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppass
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-    depends_on:
-      - db
-
-volumes:
-  postgres_data:
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
