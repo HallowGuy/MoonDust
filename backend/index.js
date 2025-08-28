@@ -133,13 +133,33 @@ app.post('/api/users', async (req, res) => {
 
     try {
       await transporter.sendMail({
-        from: process.env.MAIL_FROM || process.env.SMTP_USER,
-        to: newUser.email,
-        subject: `Bienvenue ${newUser.username} !`,
-        text: `Bonjour ${newUser.display_name || newUser.username},\n\nVotre compte a bien été créé 🚀`,
-        html: `<p>Bonjour <b>${newUser.display_name || newUser.username}</b>,</p>
-               <p>Votre compte a bien été créé 🚀</p>`
-      })
+  from: process.env.MAIL_FROM || process.env.SMTP_USER,
+  to: newUser.email,
+  subject: `Bienvenue ${newUser.username} !`,
+  text: `Bonjour ${newUser.display_name || newUser.username},
+
+Votre compte a bien été créé 🚀
+Cliquez sur le lien ci-dessous pour vous connecter :
+${process.env.APP_URL || 'http://localhost:5173'}/login
+  `,
+  html: `
+    <p>Bonjour <b>${newUser.display_name || newUser.username}</b>,</p>
+    <p>Votre compte a bien été créé 🚀</p>
+    <p>
+      <a href="${process.env.APP_URL || 'http://localhost:5173'}/login"
+         style="display:inline-block;
+                padding:10px 20px;
+                background-color:#4f46e5;
+                color:#fff;
+                border-radius:6px;
+                text-decoration:none;
+                font-weight:bold;">
+        Se connecter
+      </a>
+    </p>
+  `
+})
+
       console.log(`📧 Mail envoyé à ${newUser.email}`)
     } catch (mailErr) {
       console.error('⚠️ Erreur envoi mail:', mailErr)

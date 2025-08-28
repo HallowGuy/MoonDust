@@ -7,7 +7,7 @@ import {
   CToaster, CToast, CToastBody
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash, cilPlus } from '@coreui/icons'
+import { cilPencil, cilTrash, cilPlus, cilCheckCircle, cilXCircle } from '@coreui/icons'
 import Select from 'react-select'
 
 const API = import.meta.env.VITE_API_URL
@@ -226,7 +226,8 @@ const Users = () => {
                   <CTableDataCell>{u.username}</CTableDataCell>
                   <CTableDataCell>{u.email}</CTableDataCell>
                   <CTableDataCell>{u.display_name}</CTableDataCell>
-                  <CTableDataCell style={{ width: '100px', textAlign: 'center' }}>{u.is_active ? '✅' : '❌'}</CTableDataCell>
+                  <CTableDataCell style={{ width: '100px', textAlign: 'center' }}>{u.is_active ? (<CIcon icon={cilCheckCircle} className="text-success" />
+  ) : (<CIcon icon={cilXCircle} className="text-danger" />)}</CTableDataCell>
                   <CTableDataCell style={{ width: '100px', textAlign: 'center' }}>
                     <CButton size="sm" color="secondary" className="me-2" variant="ghost"
                       onClick={() => openOffcanvas(u)}>
