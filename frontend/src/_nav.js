@@ -35,6 +35,18 @@ const _nav = [
     to: '/list/users',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
+  {
+    component: CNavItem,
+    name: 'Liste rôles',
+    to: '/list/roles',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  },
+    {
+    component: CNavItem,
+    name: 'Documents',
+    to: '/import/documents',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  },
   
   {
     component: CNavTitle,

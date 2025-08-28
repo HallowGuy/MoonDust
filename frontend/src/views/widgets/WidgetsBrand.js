@@ -7,19 +7,21 @@ import { CChart } from '@coreui/react-chartjs'
 
 const WidgetsBrand = (props) => {
   const [userCount, setUserCount] = useState(0)
-console.log("📦 WidgetsBrand chargé")
+const API_BASE = import.meta.env.VITE_API_URL || process.env.REACT_APP_API_URL
 
 useEffect(() => {
   console.log("🔄 WidgetsBrand monté")
-  fetch('/api/users/count')
-    .then(res => res.json())
+  fetch(`${API_BASE}/users/count`)
+    .then(res => {
+      if (!res.ok) throw new Error('Erreur API count')
+      return res.json()
+    })
     .then(data => {
       console.log('✅ Réponse API COUNT =', data)
       setUserCount(Number(data.count))
     })
     .catch(err => console.error('❌ Erreur API count:', err))
 }, [])
-
 
 
 
