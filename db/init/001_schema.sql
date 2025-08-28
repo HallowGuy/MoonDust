@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS document_tags (
 -- Table: audit_log
 CREATE TABLE IF NOT EXISTS audit_log (
   id BIGSERIAL PRIMARY KEY,
-  actor_user_id BIGINT REFERENCES users(id),
+  actor_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
   entity_type VARCHAR(64) NOT NULL,
   entity_id BIGINT NOT NULL,
   action VARCHAR(64) NOT NULL,
@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS audit_log (
 );
 CREATE INDEX IF NOT EXISTS idx_audit_log_entity ON audit_log(entity_type, entity_id);
 CREATE INDEX IF NOT EXISTS idx_audit_log_occurred_at ON audit_log(occurred_at);
+
 
 -- Triggers for updated_at
 CREATE TRIGGER trg_users_updated_at
@@ -112,3 +113,4 @@ CREATE TRIGGER trg_documents_updated_at
 BEFORE UPDATE ON documents
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
+
