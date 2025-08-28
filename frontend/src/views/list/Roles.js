@@ -7,15 +7,16 @@ import {
 } from '@coreui/react'
 
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash, cilUserPlus } from '@coreui/icons'
+import { cilPencil, cilTrash, cilPlus } from '@coreui/icons'
 
-const API = '/api/users'
+const API = `${import.meta.env.VITE_API_URL}/roles`
+console.log("👉 API utilisée (roles):", API)
 
-const Users = () => {
-  const [users, setUsers] = useState([])
+const Roles = () => {
+  const [roles, setRoles] = useState([])
   const [search, setSearch] = useState('')
 
-  // --- TOASTS (bottom-right, z-index 9999, autohide 3s)
+  // --- TOASTS
   const [toasts, setToasts] = useState([])
   const addToast = (message, color = 'danger') => {
     const id = Date.now()
@@ -25,82 +26,82 @@ const Users = () => {
   const showSuccess = (msg) => addToast(msg, 'success')
   const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id))
 
-  // --- Création (offcanvas)
+  // --- Création
   const [showCreate, setShowCreate] = useState(false)
-  const [createName, setCreateName] = useState('')
-  const [createEmail, setCreateEmail] = useState('')
+  const [createCode, setCreateCode] = useState('')
+  const [createLabel, setCreateLabel] = useState('')
 
-  // --- Édition (offcanvas)
+  // --- Édition
   const [showEdit, setShowEdit] = useState(false)
-  const [editUser, setEditUser] = useState(null)
-  const [editName, setEditName] = useState('')
-  const [editEmail, setEditEmail] = useState('')
+  const [editRole, setEditRole] = useState(null)
+  const [editCode, setEditCode] = useState('')
+  const [editLabel, setEditLabel] = useState('')
 
-  const fetchUsers = async () => {
+  const fetchRoles = async () => {
     try {
       const res = await fetch(API)
-      if (!res.ok) throw new Error('Impossible de charger les utilisateurs')
+      if (!res.ok) throw new Error('Impossible de charger les rôles')
       const data = await res.json()
-      setUsers(data)
+      setRoles(data)
     } catch (e) {
       showError(e.message || 'Erreur réseau lors du chargement')
     }
   }
 
-  useEffect(() => { fetchUsers() }, [])
+  useEffect(() => { fetchRoles() }, [])
 
   // ---------- CREATE ----------
   const openCreate = () => {
-    setCreateName('')
-    setCreateEmail('')
+    setCreateCode('')
+    setCreateLabel('')
     setShowCreate(true)
   }
 
   const handleCreate = async () => {
-    if (!createName || !createEmail) return showError('Nom et email requis')
+    if (!createCode || !createLabel) return showError('Code et label requis')
 
     try {
       const res = await fetch(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: createName, email: createEmail }),
+        body: JSON.stringify({ code: createCode, label: createLabel }),
       })
       const payload = await safeJson(res)
       if (!res.ok) throw new Error(payload?.error || 'Création impossible')
 
-      setUsers((prev) => [...prev, payload])
+      setRoles((prev) => [...prev, payload])
       setShowCreate(false)
-      showSuccess('Utilisateur créé avec succès')
+      showSuccess('Rôle créé avec succès')
     } catch (e) {
       showError(e.message || 'Erreur lors de la création')
     }
   }
 
   // ---------- EDIT ----------
-  const openEdit = (u) => {
-    setEditUser(u)
-    setEditName(u.name || '')
-    setEditEmail(u.email || '')
+  const openEdit = (r) => {
+    setEditRole(r)
+    setEditCode(r.code || '')
+    setEditLabel(r.label || '')
     setShowEdit(true)
   }
 
   const handleSaveEdit = async () => {
-    if (!editUser) return
-    if (!editName || !editEmail) return showError('Nom et email requis')
+    if (!editRole) return
+    if (!editCode || !editLabel) return showError('Code et label requis')
 
     try {
-      const res = await fetch(`${API}/${editUser.id}`, {
+      const res = await fetch(`${API}/${editRole.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editName, email: editEmail }),
+        body: JSON.stringify({ code: editCode, label: editLabel }),
       })
       const payload = await safeJson(res)
       if (!res.ok) throw new Error(payload?.error || 'Mise à jour impossible')
 
-      setUsers((prev) => prev.map((u) => (u.id === payload.id ? payload : u)))
+      setRoles((prev) => prev.map((r) => (r.id === payload.id ? payload : r)))
       setShowEdit(false)
-      setEditUser(null)
-      showSuccess('Utilisateur mis à jour')
+      setEditRole(null)
+      showSuccess('Rôle mis à jour')
     } catch (e) {
       showError(e.message || 'Erreur lors de la mise à jour')
     }
@@ -108,34 +109,34 @@ const Users = () => {
 
   // ---------- DELETE ----------
   const handleDelete = async (id) => {
-    if (!window.confirm('Supprimer cet utilisateur ?')) return
+    if (!window.confirm('Supprimer ce rôle ?')) return
     try {
       const res = await fetch(`${API}/${id}`, { method: 'DELETE' })
       if (!(res.ok || res.status === 204)) {
         const payload = await safeJson(res)
         throw new Error(payload?.error || 'Suppression impossible')
       }
-      setUsers((prev) => prev.filter((u) => u.id !== id))
-      showSuccess('Utilisateur supprimé')
+      setRoles((prev) => prev.filter((r) => r.id !== id))
+      showSuccess('Rôle supprimé')
     } catch (e) {
       showError(e.message || 'Erreur lors de la suppression')
     }
   }
 
-  const filtered = users.filter(
-    (u) =>
-      u.name?.toLowerCase().includes(search.toLowerCase()) ||
-      u.email?.toLowerCase().includes(search.toLowerCase())
+  const filtered = roles.filter(
+    (r) =>
+      r.code?.toLowerCase().includes(search.toLowerCase()) ||
+      r.label?.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
     <>
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
-          <span>Utilisateurs</span>
+          <span>Rôles</span>
           <CButton color="primary" onClick={openCreate}>
-            <CIcon icon={cilUserPlus} className="me-2" />
-            Nouvel utilisateur
+            <CIcon icon={cilPlus} className="me-2" />
+            Nouveau rôle
           </CButton>
         </CCardHeader>
 
@@ -143,7 +144,7 @@ const Users = () => {
           <CFormInput
             className="mb-3"
             type="text"
-            placeholder="Rechercher par nom ou email…"
+            placeholder="Rechercher par code ou label…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -152,8 +153,8 @@ const Users = () => {
             <CTableHead>
               <CTableRow className="align-middle">
                 <CTableHeaderCell style={{ textAlign: 'center' }}>ID</CTableHeaderCell>
-                <CTableHeaderCell>Nom</CTableHeaderCell>
-                <CTableHeaderCell>Email</CTableHeaderCell>
+                <CTableHeaderCell>Code</CTableHeaderCell>
+                <CTableHeaderCell>Label</CTableHeaderCell>
                 <CTableHeaderCell style={{ width: '100px', textAlign: 'center' }}>
                   Actions
                 </CTableHeaderCell>
@@ -161,18 +162,18 @@ const Users = () => {
             </CTableHead>
             <CTableBody>
               {filtered.length ? (
-                filtered.map((u) => (
-                  <CTableRow key={u.id}>
+                filtered.map((r) => (
+                  <CTableRow key={r.id}>
                     <CTableDataCell style={{ width: '50px', textAlign: 'center' }} className="align-middle">
-                      {u.id}
+                      {r.id}
                     </CTableDataCell>
-                    <CTableDataCell className="align-middle">{u.name}</CTableDataCell>
-                    <CTableDataCell className="align-middle">{u.email}</CTableDataCell>
+                    <CTableDataCell className="align-middle">{r.code}</CTableDataCell>
+                    <CTableDataCell className="align-middle">{r.label}</CTableDataCell>
                     <CTableDataCell className="text-center align-middle">
-                      <CButton size="sm" color="secondary" variant="ghost" onClick={() => openEdit(u)}>
+                      <CButton size="sm" color="secondary" variant="ghost" onClick={() => openEdit(r)}>
                         <CIcon icon={cilPencil} size="lg" />
                       </CButton>
-                      <CButton size="sm" color="danger" variant="ghost" onClick={() => handleDelete(u.id)}>
+                      <CButton size="sm" color="danger" variant="ghost" onClick={() => handleDelete(r.id)}>
                         <CIcon icon={cilTrash} size="lg" />
                       </CButton>
                     </CTableDataCell>
@@ -181,7 +182,7 @@ const Users = () => {
               ) : (
                 <CTableRow>
                   <CTableDataCell colSpan={4} className="text-center">
-                    Aucun utilisateur
+                    Aucun rôle
                   </CTableDataCell>
                 </CTableRow>
               )}
@@ -191,20 +192,19 @@ const Users = () => {
           {/* Sidebar création */}
           <COffcanvas placement="end" visible={showCreate} onHide={() => setShowCreate(false)}>
             <COffcanvasHeader>
-              <h5 className="mb-0">Nouvel utilisateur</h5>
+              <h5 className="mb-0">Nouveau rôle</h5>
             </COffcanvasHeader>
             <COffcanvasBody>
               <div className="d-flex flex-column gap-3">
                 <CFormInput
-                  label="Nom"
-                  value={createName}
-                  onChange={(e) => setCreateName(e.target.value)}
+                  label="Code"
+                  value={createCode}
+                  onChange={(e) => setCreateCode(e.target.value)}
                 />
                 <CFormInput
-                  label="Email"
-                  type="email"
-                  value={createEmail}
-                  onChange={(e) => setCreateEmail(e.target.value)}
+                  label="Label"
+                  value={createLabel}
+                  onChange={(e) => setCreateLabel(e.target.value)}
                 />
                 <div className="d-flex gap-2 justify-content-end">
                   <CButton color="secondary" variant="ghost" onClick={() => setShowCreate(false)}>
@@ -221,20 +221,19 @@ const Users = () => {
           {/* Sidebar édition */}
           <COffcanvas placement="end" visible={showEdit} onHide={() => setShowEdit(false)}>
             <COffcanvasHeader>
-              <h5 className="mb-0">Éditer : {editUser?.name}</h5>
+              <h5 className="mb-0">Éditer : {editRole?.code}</h5>
             </COffcanvasHeader>
             <COffcanvasBody>
               <div className="d-flex flex-column gap-4">
                 <CFormInput
-                  label="Nom"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
+                  label="Code"
+                  value={editCode}
+                  onChange={(e) => setEditCode(e.target.value)}
                 />
                 <CFormInput
-                  label="Email"
-                  type="email"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
+                  label="Label"
+                  value={editLabel}
+                  onChange={(e) => setEditLabel(e.target.value)}
                 />
                 <div className="d-flex gap-2 justify-content-end">
                   <CButton color="secondary" variant="ghost" onClick={() => setShowEdit(false)}>
@@ -250,7 +249,7 @@ const Users = () => {
         </CCardBody>
       </CCard>
 
-      {/* TOASTER en bas à droite */}
+      {/* TOASTER */}
       <CToaster placement="bottom-end" className="p-3" style={{ zIndex: 9999 }}>
         {toasts.map((t) => (
           <CToast
@@ -277,4 +276,4 @@ async function safeJson(res) {
   }
 }
 
-export default Users
+export default Roles

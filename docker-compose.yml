@@ -12,6 +12,8 @@ services:
       - PGPORT=${PGPORT}
     ports:
       - "${BACKEND_PORT_HOST}:${BACKEND_PORT_CONTAINER}"
+    volumes:
+      - ./backend/uploads:/usr/src/app/uploads
     depends_on:
       - db
 
