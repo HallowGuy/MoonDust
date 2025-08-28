@@ -5,6 +5,9 @@ const fs = require('fs')
 const path = require('path')
 const mime = require('mime-types')
 require('dotenv').config()
+const nodemailer = require('nodemailer')
+const multer = require('multer')
+const { logAction } = require('./utils/logger')
 
 const app = express()
 const PORT = process.env.PORT || 5001
@@ -18,7 +21,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type']
 }))
-
 app.use(express.json())
 
 // 👉 servir les fichiers uploadés
@@ -31,21 +33,38 @@ app.get('/uploads/:file', (req, res) => {
 
   const type = mime.lookup(filePath) || 'application/octet-stream'
   res.setHeader('Content-Type', type)
-
-  // ✅ forcer l'affichage inline au lieu de téléchargement
   res.setHeader('Content-Disposition', `inline; filename="${req.params.file}"`)
 
   fs.createReadStream(filePath).pipe(res)
 })
 
+// ---------- EMAIL (Nodemailer) ----------
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT || 587),
+  secure: process.env.SMTP_SECURE === 'true',   // true pour 465
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+})
+
+transporter.verify()
+  .then(() => console.log('📬 SMTP prêt'))
+  .catch(err => console.error('⚠️ SMTP non dispo :', err.message))
+
 // ---------- MULTER CONFIG ----------
-const multer = require('multer')
+const storageLogo = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, 'uploads/logo')),
+  filename: (req, file, cb) => cb(null, 'theme-logo.svg'), // ✅ écrase toujours
+})
+const uploadLogo = multer({ storage: storageLogo })
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, 'uploads')),
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname)
-    cb(null, Date.now() + ext) // ex: 1693223123123.pdf
+    cb(null, Date.now() + ext)
   }
 })
 const upload = multer({ storage })
@@ -73,6 +92,22 @@ app.get('/api/users/count', async (req, res) => {
   }
 })
 
+// Compter les utilisateurs actifs du mois courant
+app.get('/api/users/active', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT COUNT(*) 
+      FROM demo_first.users 
+      WHERE is_active = true
+    `)
+    res.json({ userActive: Number(result.rows[0].count) })
+  } catch (err) {
+    console.error('❌ Erreur SQL (active users month):', err)
+    res.status(500).send('Erreur serveur')
+  }
+})
+
+
 app.post('/api/users', async (req, res) => {
   try {
     const { username, email, display_name } = req.body
@@ -85,12 +120,38 @@ app.post('/api/users', async (req, res) => {
        VALUES ($1, $2, $3) RETURNING *`,
       [username, email, display_name || null]
     )
-    res.status(201).json(rows[0])
+    const newUser = rows[0]
+
+    await logAction(
+  newUser.id,               // l’utilisateur qui agit (ici c’est le nouvel utilisateur lui-même, mais tu peux mettre l’admin connecté si tu as un système d’auth)
+  'user',                   // type d’entité
+  newUser.id,               // ID de l’entité concernée
+  'create',                 // action
+  { username: newUser.username, email: newUser.email } // meta JSON
+)
+
+
+    try {
+      await transporter.sendMail({
+        from: process.env.MAIL_FROM || process.env.SMTP_USER,
+        to: newUser.email,
+        subject: `Bienvenue ${newUser.username} !`,
+        text: `Bonjour ${newUser.display_name || newUser.username},\n\nVotre compte a bien été créé 🚀`,
+        html: `<p>Bonjour <b>${newUser.display_name || newUser.username}</b>,</p>
+               <p>Votre compte a bien été créé 🚀</p>`
+      })
+      console.log(`📧 Mail envoyé à ${newUser.email}`)
+    } catch (mailErr) {
+      console.error('⚠️ Erreur envoi mail:', mailErr)
+    }
+
+    res.status(201).json(newUser)
   } catch (e) {
     console.error('❌ Erreur SQL :', e)
     res.status(500).json({ error: 'Erreur serveur' })
   }
 })
+
 
 app.put('/api/users/:id', async (req, res) => {
   try {
@@ -110,26 +171,85 @@ app.put('/api/users/:id', async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ error: 'User introuvable' })
     }
-    res.json(rows[0])
+
+    const updatedUser = rows[0]
+
+    // 📝 Audit log
+    await logAction(
+      id,                     // acteur → si tu as un admin connecté remplace par son ID
+      'user',                 // type d’entité
+      updatedUser.id,         // ID du user modifié
+      'update',               // action
+      {                       // meta JSON
+        username: updatedUser.username,
+        email: updatedUser.email,
+        display_name: updatedUser.display_name,
+        is_active: updatedUser.is_active
+      }
+    )
+
+    res.json(updatedUser)
   } catch (e) {
     console.error('❌ Erreur SQL :', e)
     res.status(500).json({ error: 'Erreur serveur' })
   }
 })
 
+
 app.delete('/api/users/:id', async (req, res) => {
+  const client = await pool.connect()
   try {
+    await client.query('BEGIN')
+
     const { id } = req.params
-    const { rowCount } = await pool.query('DELETE FROM demo_first.users WHERE id=$1', [id])
+
+    // 1. supprimer les rôles liés
+    await client.query('DELETE FROM demo_first.user_roles WHERE user_id = $1', [id])
+
+    // 2. supprimer l’utilisateur
+    const { rowCount } = await client.query('DELETE FROM demo_first.users WHERE id=$1', [id])
     if (rowCount === 0) {
+      await client.query('ROLLBACK')
       return res.status(404).json({ error: 'User introuvable' })
     }
+
+    // 3. audit log
+    await logAction(null, 'user', id, 'delete', { message: `Suppression de l’utilisateur #${id}` })
+
+    await client.query('COMMIT')
     res.status(204).send()
   } catch (e) {
-    console.error('❌ Erreur SQL :', e)
+    await client.query('ROLLBACK')
+    console.error('❌ Erreur delete user:', e)
     res.status(500).json({ error: 'Erreur serveur' })
+  } finally {
+    client.release()
   }
 })
+
+
+
+
+// ----------------------------------------------------
+// ---------------------- AUDIT -----------------------
+// ----------------------------------------------------
+app.get('/api/audit', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT a.id, a.actor_user_id, a.entity_type, a.entity_id, a.action, a.meta, a.occurred_at,
+             u.username AS actor_username
+      FROM demo_first.audit_log a
+      LEFT JOIN demo_first.users u ON a.actor_user_id = u.id
+      ORDER BY a.occurred_at DESC
+      LIMIT 100
+    `)
+    res.json(result.rows)
+  } catch (err) {
+    console.error('❌ Erreur SQL audit:', err)
+    res.status(500).json({ error: 'Erreur serveur audit' })
+  }
+})
+
 
 // ----------------------------------------------------
 // ------------------------- ROLES --------------------
@@ -144,56 +264,7 @@ app.get('/api/roles', async (req, res) => {
   }
 })
 
-app.post('/api/roles', async (req, res) => {
-  try {
-    const { code, label } = req.body
-    if (!code || !label) return res.status(400).json({ error: 'code et label requis' })
 
-    const { rows } = await pool.query(
-      `INSERT INTO demo_first.roles (code, label) VALUES ($1, $2) RETURNING *`,
-      [code, label]
-    )
-    res.status(201).json(rows[0])
-  } catch (e) {
-    console.error('❌ Erreur SQL :', e)
-    res.status(500).json({ error: 'Erreur serveur' })
-  }
-})
-
-app.put('/api/roles/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    const { code, label } = req.body
-    if (!code || !label) return res.status(400).json({ error: 'code et label requis' })
-
-    const { rows } = await pool.query(
-      `UPDATE demo_first.roles SET code=$1, label=$2, updated_at=NOW() WHERE id=$3 RETURNING *`,
-      [code, label, id]
-    )
-
-    if (rows.length === 0) return res.status(404).json({ error: 'Rôle introuvable' })
-    res.json(rows[0])
-  } catch (e) {
-    console.error('❌ Erreur SQL :', e)
-    res.status(500).json({ error: 'Erreur serveur' })
-  }
-})
-
-app.delete('/api/roles/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    const { rowCount } = await pool.query('DELETE FROM demo_first.roles WHERE id=$1', [id])
-    if (rowCount === 0) return res.status(404).json({ error: 'Rôle introuvable' })
-    res.status(204).send()
-  } catch (e) {
-    console.error('❌ Erreur SQL :', e)
-    res.status(500).json({ error: 'Erreur serveur' })
-  }
-})
-
-// ----------------------------------------------------
-// ---------------------- USER_ROLES -----------------
-// ----------------------------------------------------
 app.get('/api/users/:id/roles', async (req, res) => {
   try {
     const { id } = req.params
@@ -214,20 +285,39 @@ app.get('/api/users/:id/roles', async (req, res) => {
 app.post('/api/users/:id/roles', async (req, res) => {
   try {
     const { id } = req.params
-    const { role_id } = req.body
-    if (!role_id) return res.status(400).json({ error: 'role_id requis' })
+    const { roles } = req.body
 
-    await pool.query(
-      `INSERT INTO demo_first.user_roles (user_id, role_id) VALUES ($1, $2)
-       ON CONFLICT DO NOTHING`,
-      [id, role_id]
+    if (!roles || !Array.isArray(roles)) {
+      return res.status(400).json({ error: 'roles (array) requis' })
+    }
+
+    // 🗑️ Supprimer les anciens rôles
+    await pool.query('DELETE FROM demo_first.user_roles WHERE user_id = $1', [id])
+
+    // ➕ Réinsérer les nouveaux
+    for (const role_id of roles) {
+      await pool.query(
+        `INSERT INTO demo_first.user_roles (user_id, role_id) VALUES ($1, $2)`,
+        [id, role_id]
+      )
+    }
+
+    // 📝 Log dans l’audit
+    await logAction(
+      id,            // ici tu peux aussi mettre l’ID de l’admin connecté si tu as un système d’auth
+      'user_roles',  // type d’entité
+      id,            // ID de l’utilisateur impacté
+      'update',      // action
+      { roles }      // meta JSON → la liste finale des rôles attribués
     )
+
     res.status(201).json({ success: true })
   } catch (e) {
-    console.error('❌ Erreur SQL :', e)
-    res.status(500).json({ error: 'Erreur serveur' })
+    console.error('❌ Erreur SQL association rôles:', e)
+    res.status(500).json({ error: 'Erreur lors de l’association des rôles' })
   }
 })
+
 
 app.delete('/api/users/:id/roles/:role_id', async (req, res) => {
   try {
@@ -237,13 +327,26 @@ app.delete('/api/users/:id/roles/:role_id', async (req, res) => {
       [id, role_id]
     )
     if (rowCount === 0) return res.status(404).json({ error: 'Lien non trouvé' })
+
+    // 📝 Audit log
+    await logAction(
+      id,               // utilisateur concerné (ou admin connecté si tu gères une auth)
+      'user_roles',     // entité
+      id,               // ID de l’utilisateur impacté
+      'delete',         // action
+      { role_id }       // meta JSON → quel rôle a été supprimé
+    )
+
     res.status(204).send()
   } catch (e) {
-    console.error('❌ Erreur SQL :', e)
+    console.error('❌ Erreur suppression rôle utilisateur:', e)
     res.status(500).json({ error: 'Erreur serveur' })
   }
 })
 
+// ----------------------------------------------------
+// --------------------- DOCUMENTS -------------------
+// ----------------------------------------------------
 // ----------------------------------------------------
 // --------------------- DOCUMENTS -------------------
 // ----------------------------------------------------
@@ -360,11 +463,68 @@ app.put('/api/documents/:id', async (req, res) => {
 })
 
 
+
+// ----------------------------------------------------
+// ---------------------- THEME ----------------------
+// ----------------------------------------------------
+const themesPath = path.join(__dirname, 'themes.json')
+let themes = JSON.parse(fs.readFileSync(themesPath, 'utf8'))
+let currentTheme = 'default'
+
+// ---------- LOGO THEME (⚠️ avant /api/theme/:name) ----------
+app.get('/api/theme/logo', (req, res) => {
+  const logoPath = path.join(__dirname, 'uploads/logo/theme-logo.svg')
+  if (!fs.existsSync(logoPath)) {
+    return res.status(404).json({ error: 'Aucun logo défini' })
+  }
+  res.sendFile(logoPath)
+})
+
+app.post('/api/theme/logo', uploadLogo.single('file'), (req, res) => {
+  try {
+    res.json({ ok: true, message: 'Logo mis à jour' })
+  } catch (err) {
+    console.error('❌ Erreur upload logo:', err)
+    res.status(500).json({ error: 'Échec upload logo' })
+  }
+})
+
+// ---------- THEMES ----------
+app.get('/api/theme/list', (req, res) => {
+  res.json(Object.keys(themes))
+})
+
+app.get('/api/theme/current', (req, res) => {
+  res.json(themes[currentTheme])
+})
+
+app.put('/api/theme/current', (req, res) => {
+  const { name } = req.body
+  if (!themes[name]) {
+    return res.status(400).json({ error: 'Thème inconnu' })
+  }
+  currentTheme = name
+  res.json({ ok: true, theme: themes[currentTheme] })
+})
+
+app.get('/api/theme/:name', (req, res) => {
+  const { name } = req.params
+  if (!themes[name]) {
+    return res.status(404).json({ error: 'Thème non trouvé' })
+  }
+  res.json(themes[name])
+})
+
+app.put('/api/theme/colors', (req, res) => {
+  const newColors = req.body
+  themes[currentTheme] = newColors
+  fs.writeFileSync(themesPath, JSON.stringify(themes, null, 2), 'utf8')
+  res.json({ ok: true, theme: newColors })
+})
+
 // ----------------------------------------------------
 // ---------------------- SERVER ---------------------
 // ----------------------------------------------------
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ API démarrée sur http://localhost:${PORT}`)
 })
-
-
