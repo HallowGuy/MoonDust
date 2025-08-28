@@ -14,6 +14,9 @@ import {
   cilSpeedometer,
   cilStar,
   cilUser,
+  cilImagePlus
+
+  
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -23,7 +26,6 @@ const _nav = [
     name: 'Dashboard',
     to: '/dashboard',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-    
   },
   {
     component: CNavTitle,
@@ -41,13 +43,35 @@ const _nav = [
     to: '/list/roles',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
-    {
+  {
     component: CNavItem,
     name: 'Documents',
     to: '/import/documents',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
-  
+   {
+    component: CNavItem,
+    name: 'Audit',
+    to: '/custom/AuditLogs',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  },
+ {
+    component: CNavTitle,
+    name: 'Personnalisation',
+  },
+  {
+    component: CNavItem,
+    name: 'Couleurs',
+    to: '/custom/themecolors',
+    icon: <CIcon icon={cilDrop} customClassName="nav-icon" />,
+  },
+   {
+    component: CNavItem,
+    name: 'Logo',
+    to: '/custom/themelogo',
+    icon: <CIcon icon={cilImagePlus} customClassName="nav-icon" />,
+  },
+
   {
     component: CNavTitle,
     name: 'Components',
@@ -456,6 +480,8 @@ const _nav = [
       text: 'NEW',
     },
   },
+
+ 
   {
     component: CNavTitle,
     name: 'Extras',
@@ -492,7 +518,8 @@ const _nav = [
     name: 'Docs',
     href: 'https://coreui.io/react/docs/templates/installation/',
     icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
-  },{
+  },
+  {
     component: CNavItem,
     name: 'Colors',
     to: '/theme/colors',

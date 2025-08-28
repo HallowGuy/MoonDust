@@ -2,28 +2,28 @@ import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { CWidgetStatsD, CRow, CCol } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cibFacebook, cibLinkedin, cibTwitter, cilCalendar } from '@coreui/icons'
+import { cibFacebook, cibLinkedin, cibTwitter, cilUser } from '@coreui/icons'
 import { CChart } from '@coreui/react-chartjs'
 
 const WidgetsBrand = (props) => {
   const [userCount, setUserCount] = useState(0)
-const API_BASE = import.meta.env.VITE_API_URL || process.env.REACT_APP_API_URL
+  const [userActive, setUserActive] = useState(0)
 
-useEffect(() => {
-  console.log("🔄 WidgetsBrand monté")
-  fetch(`${API_BASE}/users/count`)
-    .then(res => {
-      if (!res.ok) throw new Error('Erreur API count')
-      return res.json()
-    })
-    .then(data => {
-      console.log('✅ Réponse API COUNT =', data)
-      setUserCount(Number(data.count))
-    })
-    .catch(err => console.error('❌ Erreur API count:', err))
-}, [])
+  const API_BASE = import.meta.env.VITE_API_URL || process.env.REACT_APP_API_URL
 
+  useEffect(() => {
+    // nombre total d'utilisateurs
+    fetch(`${API_BASE}/users/count`)
+      .then(res => res.json())
+      .then(data => setUserCount(Number(data.count)))
+      .catch(err => console.error('❌ Erreur API count:', err))
 
+    // nombre d'actifs du mois
+    fetch(`${API_BASE}/users/active`)
+      .then(res => res.json())
+      .then(data => setUserActive(Number(data.userActive))) // ✅ FIX ICI
+      .catch(err => console.error('❌ Erreur API actifs mois:', err))
+  }, [API_BASE])
 
   const chartOptions = {
     elements: {
@@ -44,6 +44,9 @@ useEffect(() => {
     <CRow className={props.className} xs={{ gutter: 4 }}>
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsD
+          icon={<CIcon icon={cibFacebook} height={52} className="my-4 text-white" />}
+          values={[{ title: 'friends', value: '89K' }, { title: 'feeds', value: '459' }]}
+          style={{ '--cui-card-cap-bg': '#3b5998' }}
           {...(props.withCharts && {
             chart: (
               <CChart
@@ -65,17 +68,14 @@ useEffect(() => {
               />
             ),
           })}
-          icon={<CIcon icon={cibFacebook} height={52} className="my-4 text-white" />}
-          values={[
-            { title: 'friends', value: '89K' },
-            { title: 'feeds', value: '459' },
-          ]}
-          style={{ '--cui-card-cap-bg': '#3b5998' }}
         />
       </CCol>
 
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsD
+          icon={<CIcon icon={cibTwitter} height={52} className="my-4 text-white" />}
+          values={[{ title: 'followers', value: '973k' }, { title: 'tweets', value: '1.792' }]}
+          style={{ '--cui-card-cap-bg': '#00aced' }}
           {...(props.withCharts && {
             chart: (
               <CChart
@@ -97,17 +97,14 @@ useEffect(() => {
               />
             ),
           })}
-          icon={<CIcon icon={cibTwitter} height={52} className="my-4 text-white" />}
-          values={[
-            { title: 'followers', value: '973k' },
-            { title: 'tweets', value: '1.792' },
-          ]}
-          style={{ '--cui-card-cap-bg': '#00aced' }}
         />
       </CCol>
 
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsD
+          icon={<CIcon icon={cibLinkedin} height={52} className="my-4 text-white" />}
+          values={[{ title: 'contacts', value: '652' }, { title: 'feeds', value: '1.293' }]}
+          style={{ '--cui-card-cap-bg': '#4875b4' }}
           {...(props.withCharts && {
             chart: (
               <CChart
@@ -129,18 +126,17 @@ useEffect(() => {
               />
             ),
           })}
-          icon={<CIcon icon={cibLinkedin} height={52} className="my-4 text-white" />}
-          values={[
-            { title: 'contacts', value: '652' },
-            { title: 'feeds', value: '1.293' },
-          ]}
-          style={{ '--cui-card-cap-bg': '#4875b4' }}
         />
       </CCol>
 
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsD
           color="warning"
+          icon={<CIcon icon={cilUser} height={52} className="my-4 text-white" />}
+          values={[
+            { title: 'Utilisateurs', value: userCount },
+            { title: 'Actifs', value: userActive },
+          ]}
           {...(props.withCharts && {
             chart: (
               <CChart
@@ -162,11 +158,6 @@ useEffect(() => {
               />
             ),
           })}
-          icon={<CIcon icon={cilCalendar} height={52} className="my-4 text-white" />}
-          values={[
-    { title: 'Utilisateurs', value: userCount },
-    { title: 'Actifs ce mois', value: 42 },
-  ]}
         />
       </CCol>
     </CRow>

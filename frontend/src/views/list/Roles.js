@@ -190,22 +190,31 @@ const Roles = () => {
           </CTable>
 
           {/* Sidebar création */}
-          <COffcanvas placement="end" visible={showCreate} onHide={() => setShowCreate(false)}>
+          <COffcanvas placement="end" visible={showCreate} onHide={() => setShowCreate(false)} style={{ width: "33%" }}>
             <COffcanvasHeader>
               <h5 className="mb-0">Nouveau rôle</h5>
             </COffcanvasHeader>
             <COffcanvasBody>
               <div className="d-flex flex-column gap-3">
-                <CFormInput
-                  label="Code"
-                  value={createCode}
-                  onChange={(e) => setCreateCode(e.target.value)}
-                />
-                <CFormInput
-                  label="Label"
-                  value={createLabel}
-                  onChange={(e) => setCreateLabel(e.target.value)}
-                />
+                  <div className="row">
+                    <div className="col-md-6">
+                      <CFormInput
+                        label="Code"
+                        value={createCode}
+                        onChange={(e) => setCreateCode(e.target.value)}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <CFormInput
+                        label="Label"
+                        value={createLabel}
+                        onChange={(e) => setCreateLabel(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+               
+                
                 <div className="d-flex gap-2 justify-content-end">
                   <CButton color="secondary" variant="ghost" onClick={() => setShowCreate(false)}>
                     Annuler
@@ -219,22 +228,29 @@ const Roles = () => {
           </COffcanvas>
 
           {/* Sidebar édition */}
-          <COffcanvas placement="end" visible={showEdit} onHide={() => setShowEdit(false)}>
+          <COffcanvas placement="end" visible={showEdit} onHide={() => setShowEdit(false)} style={{ width: "33%" }}>
             <COffcanvasHeader>
               <h5 className="mb-0">Éditer : {editRole?.code}</h5>
             </COffcanvasHeader>
             <COffcanvasBody>
               <div className="d-flex flex-column gap-4">
-                <CFormInput
-                  label="Code"
-                  value={editCode}
-                  onChange={(e) => setEditCode(e.target.value)}
-                />
-                <CFormInput
-                  label="Label"
-                  value={editLabel}
-                  onChange={(e) => setEditLabel(e.target.value)}
-                />
+                <div className="row">
+                <div className="col-md-6">
+                  <CFormInput
+                    label="Code"
+                    value={editCode}
+                    onChange={(e) => setEditCode(e.target.value)}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <CFormInput
+                    label="Label"
+                    value={editLabel}
+                    onChange={(e) => setEditLabel(e.target.value)}
+                  />
+                </div>
+              </div>
+
                 <div className="d-flex gap-2 justify-content-end">
                   <CButton color="secondary" variant="ghost" onClick={() => setShowEdit(false)}>
                     Annuler

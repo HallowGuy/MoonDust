@@ -3,10 +3,12 @@ import {
   CCard, CCardHeader, CCardBody,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
   CButton, COffcanvas, COffcanvasHeader, COffcanvasBody,
-  CFormInput, CFormSwitch, CFormSelect
+  CFormInput, CFormSwitch, CFormSelect,
+  CToaster, CToast, CToastBody
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus } from '@coreui/icons'
+import Select from 'react-select'
 
 const API = import.meta.env.VITE_API_URL
 
@@ -23,24 +25,36 @@ const Users = () => {
   const [isActive, setIsActive] = useState(true)
   const [userRoles, setUserRoles] = useState([])
 
+  // ---------- TOASTS ----------
+  const [toasts, setToasts] = useState([])
+  const addToast = (message, color = 'danger') => {
+    const id = Date.now()
+    setToasts((prev) => [...prev, { id, message, color }])
+  }
+  const showError = (msg) => addToast(msg, 'danger')
+  const showSuccess = (msg) => addToast(msg, 'success')
+  const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id))
+
   // ---------- FETCH DATA ----------
   const fetchUsers = async () => {
     try {
       const res = await fetch(`${API}/users`)
+      if (!res.ok) throw new Error('Impossible de charger les utilisateurs')
       const data = await res.json()
       setUsers(data)
     } catch (e) {
-      console.error('❌ Impossible de charger les utilisateurs', e)
+      showError(e.message || 'Erreur lors du chargement des utilisateurs')
     }
   }
 
   const fetchRoles = async () => {
     try {
       const res = await fetch(`${API}/roles`)
+      if (!res.ok) throw new Error('Impossible de charger les rôles')
       const data = await res.json()
       setRoles(data)
     } catch (e) {
-      console.error('❌ Impossible de charger les rôles', e)
+      showError(e.message || 'Erreur lors du chargement des rôles')
     }
   }
 
@@ -50,7 +64,7 @@ const Users = () => {
       if (!res.ok) return []
       return await res.json()
     } catch (e) {
-      console.error('❌ Impossible de charger les rôles utilisateur', e)
+      showError('Impossible de charger les rôles utilisateur')
       return []
     }
   }
@@ -95,7 +109,9 @@ const Users = () => {
           body: JSON.stringify(payload),
         })
         userSaved = await res.json()
+        if (!res.ok) throw new Error(userSaved?.error || 'Mise à jour impossible')
         setUsers((prev) => prev.map((u) => (u.id === userSaved.id ? userSaved : u)))
+        showSuccess('Utilisateur mis à jour')
       } else {
         const res = await fetch(`${API}/users`, {
           method: 'POST',
@@ -103,21 +119,24 @@ const Users = () => {
           body: JSON.stringify(payload),
         })
         userSaved = await res.json()
+        if (!res.ok) throw new Error(userSaved?.error || 'Création impossible')
         setUsers((prev) => [...prev, userSaved])
+        showSuccess('Utilisateur créé')
       }
 
       // Sauvegarder les rôles associés
       if (userSaved?.id) {
-        await fetch(`${API}/users/${userSaved.id}/roles`, {
+        const resRoles = await fetch(`${API}/users/${userSaved.id}/roles`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ roles: userRoles }),
         })
+        if (!resRoles.ok) showError('Erreur lors de l’association des rôles')
       }
 
       setVisible(false)
     } catch (e) {
-      console.error('❌ Erreur sauvegarde', e)
+      showError(e.message || 'Erreur lors de la sauvegarde')
     }
   }
 
@@ -125,20 +144,67 @@ const Users = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Supprimer cet utilisateur ?')) return
     try {
-      await fetch(`${API}/users/${id}`, { method: 'DELETE' })
+      const res = await fetch(`${API}/users/${id}`, { method: 'DELETE' })
+      if (!(res.ok || res.status === 204)) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(payload?.error || 'Suppression impossible')
+      }
       setUsers((prev) => prev.filter((u) => u.id !== id))
+      showSuccess('Utilisateur supprimé')
     } catch (e) {
-      console.error('❌ Erreur suppression', e)
+      showError(e.message || 'Erreur lors de la suppression')
     }
   }
+  // Styles dynamiques pour react-select (clair/sombre)
+  const customStyles = {
+  control: (base) => ({
+    ...base,
+    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--cui-body-bg'),
+    color: getComputedStyle(document.documentElement).getPropertyValue('--cui-body-color'),
+    borderColor: '#444',
+  }),
+  menu: (base) => ({
+    ...base,
+    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--cui-body-bg'),
+    color: getComputedStyle(document.documentElement).getPropertyValue('--cui-body-color'),
+  }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isSelected
+      ? '#1a43a1' // violet sélectionné (comme Editor)
+      : state.isFocused
+      ? '#1a43a1' // violet plus clair au hover
+      : getComputedStyle(document.documentElement).getPropertyValue('--cui-body-bg'),
+    color: state.isSelected || state.isFocused ? '#fff' : getComputedStyle(document.documentElement).getPropertyValue('--cui-body-color'),
+    cursor: 'pointer',
+  }),
+  multiValue: (base) => ({
+    ...base,
+    backgroundColor: '#1a43a1', // violet pour les tags
+  }),
+  multiValueLabel: (base) => ({
+    ...base,
+    color: '#fff',
+  }),
+  multiValueRemove: (base) => ({
+    ...base,
+    color: '#fff',
+    ':hover': {
+      backgroundColor: '#1a43a1',
+      color: 'white',
+    },
+  }),
+}
+
 
   return (
     <>
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
-          <span>Utilisateurs</span>
+                    <h2 className="mb-0">Utilisateurs</h2>
+
           <CButton color="primary" onClick={() => openOffcanvas()}>
-            <CIcon icon={cilPlus} className="me-2" /> Nouvel tilisateur
+            <CIcon icon={cilPlus} className="me-2" /> Nouvel utilisateur
           </CButton>
         </CCardHeader>
         <CCardBody>
@@ -178,33 +244,64 @@ const Users = () => {
       </CCard>
 
       {/* OFFCANVAS FORM */}
-      <COffcanvas placement="end" visible={visible} onHide={() => setVisible(false)}>
+      <COffcanvas placement="end" visible={visible} onHide={() => setVisible(false)}  style={{ width: "33%" }}>
         <COffcanvasHeader>
           <h5>{editUser ? 'Éditer utilisateur' : 'Nouvel utilisateur'}</h5>
         </COffcanvasHeader>
         <COffcanvasBody>
           <div className="d-flex flex-column gap-3">
-            <CFormInput label="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-            <CFormInput label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <CFormInput label="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-            <CFormSwitch label="Actif" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
+            <div className="row">
+  <div className="col-md-6">
+    <CFormInput
+      label="Username"
+      value={username}
+      onChange={(e) => setUsername(e.target.value)}
+    />
+  </div>
+  <div className="col-md-6">
+    <CFormInput
+      label="Email"
+      type="email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+    />
+  </div>
+</div>
 
-            {/* Multi-select pour les rôles */}
-            <CFormSelect
-              label="Rôles"
-              multiple
-              value={userRoles}
-              onChange={(e) => {
-                const selected = Array.from(e.target.selectedOptions, (opt) => Number(opt.value))
-                setUserRoles(selected)
-              }}
-            >
-              {roles.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.label}
-                </option>
-              ))}
-            </CFormSelect>
+<div className="row mt-3">
+  <div className="col-md-6">
+    <CFormInput
+      label="Display Name"
+      value={displayName}
+      onChange={(e) => setDisplayName(e.target.value)}
+    />
+  </div>
+  <div className="col-md-6 d-flex align-items-center">
+    <CFormSwitch
+      label="Actif"
+      checked={isActive}
+      onChange={(e) => setIsActive(e.target.checked)}
+    />
+  </div>
+</div>
+
+<div className="row mt-3">
+   <div className="col-12">
+    <label className="form-label">Rôles</label>
+   <Select
+  isMulti
+  options={roles.map(r => ({ value: r.id, label: r.label }))}
+  value={roles.filter(r => userRoles.includes(r.id)).map(r => ({ value: r.id, label: r.label }))}
+  onChange={(selected) => {
+    setUserRoles(selected.map(s => s.value))
+  }}
+  classNamePrefix="react-select"
+  styles={customStyles}   // ✅ applique les styles dynamiques
+/>
+
+  </div>
+</div>
+
 
             <div className="d-flex gap-2 justify-content-end mt-3">
               <CButton color="secondary" variant="ghost" onClick={() => setVisible(false)}>Annuler</CButton>
@@ -213,6 +310,22 @@ const Users = () => {
           </div>
         </COffcanvasBody>
       </COffcanvas>
+
+      {/* TOASTER */}
+      <CToaster placement="bottom-end" className="p-3" style={{ zIndex: 9999 }}>
+        {toasts.map((t) => (
+          <CToast
+            key={t.id}
+            visible
+            autohide
+            delay={3000}
+            color={t.color}
+            onClose={() => removeToast(t.id)}
+          >
+            <CToastBody className="text-white">{t.message}</CToastBody>
+          </CToast>
+        ))}
+      </CToaster>
     </>
   )
 }
