@@ -138,7 +138,7 @@ const ThemeColors = () => {
           {/* Editeur des couleurs */}
           <div className="row">
             {Object.entries(colors).map(([key, value]) => (
-              <div key={key} className="col-md-3 mb-4">
+              <div key={key} className="col-md-4 mb-4">
                 <label className="form-label text-capitalize">{key}</label>
                 <input
                   type="color"

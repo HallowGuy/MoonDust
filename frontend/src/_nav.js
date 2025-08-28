@@ -56,6 +56,18 @@ const _nav = [
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
  {
+  component: CNavItem,
+  name: 'Workflow',
+  to: '/wkf/test',
+  icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+},
+{
+  component: CNavItem,
+  name: 'Suivi demande',
+  to: '/wkf/avancementworkflow',
+  icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+},
+ {
     component: CNavTitle,
     name: 'Personnalisation',
   },

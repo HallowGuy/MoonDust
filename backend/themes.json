@@ -5,9 +5,7 @@
     "success": "#28c461",
     "danger": "#d32f2f",
     "warning": "#e99b17",
-    "info": "#10afca",
-    "light": "#f8fafc",
-    "dark": "#0f172a"
+    "info": "#10afca"
   },
   "office": {
     "primary": "#2b579a",
@@ -15,8 +13,6 @@
     "success": "#107c10",
     "danger": "#a80000",
     "warning": "#ffb900",
-    "info": "#0078d4",
-    "light": "#ffffff",
-    "dark": "#201f1e"
+    "info": "#0078d4"
   }
 }

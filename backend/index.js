@@ -509,6 +509,64 @@ app.post('/api/theme/logo', uploadLogo.single('file'), (req, res) => {
   }
 })
 
+
+// ----------------------------------------------------
+// ---------------------- CONGES ----------------------
+// ----------------------------------------------------
+console.log("➡️ Route /api/conges enregistrée")
+
+app.get('/api/conges', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM demo_first.leave_requests ORDER BY created_at DESC;'
+    )
+    res.json(result.rows)
+  } catch (e) {
+    console.error('❌ Erreur SQL leave_requests:', e)
+    res.status(500).json({ error: 'Erreur serveur' })
+  }
+})
+
+
+// --- POST une nouvelle demande
+app.post('/api/conges', async (req, res) => {
+  try {
+    const { user_id, name, email, start_date, end_date, reason } = req.body
+    const { rows } = await pool.query(
+      `INSERT INTO demo_first.leave_requests (user_id, name, email, start_date, end_date, reason) 
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [user_id, name, email, start_date, end_date, reason]
+    )
+    res.status(201).json(rows[0])
+  } catch (e) {
+    console.error('❌ Erreur SQL leave_requests insert:', e)
+    res.status(500).json({ error: 'Erreur serveur' })
+  }
+})
+
+
+// --- PUT pour mettre à jour le statut (approuver/refuser)
+app.put('/api/conges/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+    const { rows } = await pool.query(
+      `UPDATE demo_first.leave_requests 
+       SET status=$1, updated_at=NOW() 
+       WHERE id=$2 RETURNING *`,
+      [status, id]
+    )
+    if (rows.length === 0) return res.status(404).json({ error: 'Demande introuvable' })
+    res.json(rows[0])
+  } catch (e) {
+    console.error('❌ Erreur SQL leave_requests update:', e)
+    res.status(500).json({ error: 'Erreur serveur' })
+  }
+})
+
+
+
+
 // ---------- THEMES ----------
 app.get('/api/theme/list', (req, res) => {
   res.json(Object.keys(themes))
@@ -541,6 +599,8 @@ app.put('/api/theme/colors', (req, res) => {
   fs.writeFileSync(themesPath, JSON.stringify(themes, null, 2), 'utf8')
   res.json({ ok: true, theme: newColors })
 })
+
+
 
 // ----------------------------------------------------
 // ---------------------- SERVER ---------------------
