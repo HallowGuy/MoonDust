@@ -60,7 +60,6 @@ const AuditLogs = () => {
           <CTable striped hover responsive>
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell>ID</CTableHeaderCell>
                 <CTableHeaderCell>Utilisateur</CTableHeaderCell>
                 <CTableHeaderCell>Entité</CTableHeaderCell>
                 <CTableHeaderCell>Action</CTableHeaderCell>
@@ -71,7 +70,6 @@ const AuditLogs = () => {
             <CTableBody>
               {paginatedLogs.map((log) => (
                 <CTableRow key={log.id}>
-                  <CTableDataCell>{log.id}</CTableDataCell>
                   <CTableDataCell>
                     {log.actor_user_id === null ? (
                       <CBadge color="secondary">Utilisateur supprimé</CBadge>
