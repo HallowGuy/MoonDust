@@ -69,6 +69,26 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 })
 
+app.get('/api/users', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM users')
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Erreur SQL :', error)
+    res.status(500).json({ error: 'Erreur serveur' })
+  }
+})
+
+app.get('/api/users/count', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT COUNT(*) FROM users')
+    res.json({ count: result.rows[0].count })
+  } catch (err) {
+    console.error(err)
+    res.status(500).send('Erreur serveur')
+  }
+})
+
 // ✅ Docker-friendly listen
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ API démarrée sur http://0.0.0.0:${PORT}`)
