@@ -6,6 +6,12 @@ const Typography = React.lazy(() => import('./views/theme/typography/Typography'
 const Users = React.lazy(() => import('./views/list/Users'))
 const Roles = React.lazy(() => import('./views/list/Roles'))
 const Documents = React.lazy(() => import('./views/import/Documents'))
+const ThemeColors = React.lazy(() => import('./views/custom/ThemeColors'))
+const ThemeLogo = React.lazy(() => import('./views/custom/ThemeLogo'))
+const AuditLogs = React.lazy(() => import('./views/custom/AuditLogs'))
+
+
+
 
 
 
@@ -59,9 +65,13 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
- { path: '/list/users', name: 'Users', element: Users },
-  { path: '/import/documents', name: 'Documents', element: Documents },
-  { path: '/list/roles', name: 'Roles', element: Roles },
+ { path: '/list/users', name: 'Gestion des utilisateurs', element: Users },
+  { path: '/import/documents', name: 'Gestion des documents', element: Documents },
+  { path: '/list/roles', name: 'Gestion des rôles', element: Roles },
+    { path: '/custom/themecolors', name: 'Gestion des couleurs', element: ThemeColors },
+        { path: '/custom/themelogo', name: 'Gestion du logo', element: ThemeLogo },
+        { path: '/custom/auditlogs', name: 'Journal audit', element: AuditLogs },
+
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/theme/typography', name: 'Typography', element: Typography },
