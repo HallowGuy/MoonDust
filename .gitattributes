@@ -1,2 +1,14 @@
 # Enforce Unix newlines
 * text=auto eol=lf
+
+# Ensure SQL scripts use LF
+*.sql text eol=lf
+
+# Treat common binaries properly
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
