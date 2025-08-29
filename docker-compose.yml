@@ -31,7 +31,11 @@ services:
   # Frontend
   # ------------------------
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        # Optionally set at build-time; code defaults to '/api' if unset
+        VITE_API_URL: ${VITE_API_URL}
     container_name: ${FRONTEND_CONTAINER_NAME}
     ports:
       - "${FRONTEND_PORT_HOST}:${FRONTEND_PORT_CONTAINER}"
@@ -82,46 +86,6 @@ services:
       - db
     restart: unless-stopped
 
-  # ------------------------
-  # n8n
-  # ------------------------
-  n8n:
-    image: n8nio/n8n
-    container_name: n8n
-    profiles: ["n8n"]
-    ports:
-      - "5678:5678"
-    environment:
-      DB_TYPE: postgresdb
-      DB_POSTGRESDB_HOST: db
-      DB_POSTGRESDB_PORT: 5432
-      DB_POSTGRESDB_DATABASE: ${N8N_DB_NAME}    # ✅ n8n doit avoir sa propre DB
-      DB_POSTGRESDB_USER: ${POSTGRES_USER}
-      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
-      N8N_BASIC_AUTH_ACTIVE: "false"
-      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
-      N8N_RUNNERS_ENABLED: "true"
-
-      # 🚪 Authentification Admin auto
-      N8N_USER_MANAGEMENT_DISABLED: "false"
-      N8N_USER_MANAGEMENT_SKIP_SETUP: "true" 
-      N8N_ADMIN_EMAIL: ${N8N_ADMIN_EMAIL} 
-      N8N_ADMIN_PASSWORD: ${N8N_ADMIN_PASSWORD} 
-
-      # 🔐 Auth optionnelle si tu veux protéger l'accès web
-
-      # 🌍 Config serveur
-      N8N_HOST: localhost
-      N8N_PORT: 5678
-      N8N_PROTOCOL: http
-      N8N_CORS_ALLOW_ORIGIN: "http://localhost:3000"
-    volumes:
-      - n8n_data:/home/node/.n8n
-    depends_on:
-      - db
-    restart: unless-stopped
-
 volumes:
   postgres_data:
-  n8n_data:
   uploads_data:

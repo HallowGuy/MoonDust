@@ -5,7 +5,8 @@ import {
   CToaster, CToast, CToastBody, CBadge, CFormInput
 } from '@coreui/react'
 
-const API = import.meta.env.VITE_API_URL
+import { API_BASE } from 'src/api'
+const API = API_BASE
 
 const AuditLogs = () => {
   const [logs, setLogs] = useState([])

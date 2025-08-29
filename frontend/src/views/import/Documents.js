@@ -15,7 +15,8 @@ import "react-pdf/dist/Page/AnnotationLayer.css"
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url"
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker
 
-const API = import.meta.env.VITE_API_URL
+import { API_BASE } from 'src/api'
+const API = API_BASE
 
 const Documents = () => {
   const [docs, setDocs] = useState([])

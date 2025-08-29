@@ -9,8 +9,9 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilCheckCircle, cilXCircle } from '@coreui/icons'
 import Select from 'react-select'
+import { API_BASE } from 'src/api'
 
-const API = import.meta.env.VITE_API_URL
+const API = API_BASE
 
 const Users = () => {
   const [users, setUsers] = useState([])

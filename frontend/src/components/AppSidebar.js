@@ -37,9 +37,9 @@ const AppSidebar = () => {
     >
       <CSidebarHeader className="border-bottom">
         {/* ✅ Utilise Link de React Router */}
-        <CSidebarBrand as={Link} to="/">
+          <CSidebarBrand as={Link} to="/">
            <img
-    src={`${import.meta.env.VITE_API_URL}/theme/logo?ts=${Date.now()}`} 
+    src={`${(import.meta.env?.VITE_API_URL || '/api')}/theme/logo?ts=${Date.now()}`} 
     alt="Logo"
     height="70"
     className="sidebar-brand-full"
