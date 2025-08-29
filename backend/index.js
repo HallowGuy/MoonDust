@@ -23,6 +23,11 @@ app.use(cors({
 }))
 app.use(express.json())
 
+// Healthcheck
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' })
+})
+
 // 👉 servir les fichiers uploadés
 app.get('/uploads/:file', (req, res) => {
   const filePath = path.join(__dirname, 'uploads', req.params.file)

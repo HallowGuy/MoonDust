@@ -8,6 +8,7 @@ services:
     build: ./backend
     container_name: ${BACKEND_CONTAINER_NAME}
     environment:
+      - NODE_ENV=production
       - PGHOST=${PGHOST}
       - PGUSER=${PGUSER}
       - PGPASSWORD=${PGPASSWORD}
@@ -16,9 +17,15 @@ services:
     ports:
       - "${BACKEND_PORT_HOST}:${BACKEND_PORT_CONTAINER}"
     volumes:
-      - ./backend/uploads:/usr/src/app/uploads
+      - uploads_data:/usr/src/app/uploads
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD-SHELL", "node -e 'require(\"http\").request({host: \"localhost\", port: 5001, path: \"/health\"}, r=>process.exit(0)).on(\"error\", ()=>process.exit(1)).end()'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   # ------------------------
   # Frontend
@@ -30,6 +37,12 @@ services:
       - "${FRONTEND_PORT_HOST}:${FRONTEND_PORT_CONTAINER}"
     depends_on:
       - backend
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   # ------------------------
   # PostgreSQL
@@ -59,6 +72,7 @@ services:
   pgadmin:
     image: ${PGADMIN_IMAGE}
     container_name: ${PGADMIN_CONTAINER_NAME}
+    profiles: ["pgadmin"]
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -66,6 +80,7 @@ services:
       - "${PGADMIN_PORT_HOST}:${PGADMIN_PORT_CONTAINER}"
     depends_on:
       - db
+    restart: unless-stopped
 
   # ------------------------
   # n8n
@@ -73,6 +88,7 @@ services:
   n8n:
     image: n8nio/n8n
     container_name: n8n
+    profiles: ["n8n"]
     ports:
       - "5678:5678"
     environment:
@@ -103,7 +119,9 @@ services:
       - n8n_data:/home/node/.n8n
     depends_on:
       - db
+    restart: unless-stopped
 
 volumes:
   postgres_data:
   n8n_data:
+  uploads_data:
