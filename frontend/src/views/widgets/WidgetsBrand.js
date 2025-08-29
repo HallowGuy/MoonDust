@@ -9,7 +9,7 @@ const WidgetsBrand = (props) => {
   const [userCount, setUserCount] = useState(0)
   const [userActive, setUserActive] = useState(0)
 
-  const API_BASE = import.meta.env.VITE_API_URL || process.env.REACT_APP_API_URL
+  const API_BASE = (import.meta.env?.VITE_API_URL || '/api')
 
   useEffect(() => {
     // nombre total d'utilisateurs

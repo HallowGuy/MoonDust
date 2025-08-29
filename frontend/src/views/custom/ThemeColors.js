@@ -9,7 +9,8 @@ import {
   CButton
 } from '@coreui/react'
 
-const API = import.meta.env.VITE_API_URL
+import { API_BASE } from 'src/api'
+const API = API_BASE
 
 // Utilitaire : hex → rgb
 function hexToRgb(hex) {

@@ -8,8 +8,9 @@ import {
 
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus } from '@coreui/icons'
+import { API_BASE } from 'src/api'
 
-const API = `${import.meta.env.VITE_API_URL}/roles`
+const API = `${API_BASE}/roles`
 console.log("👉 API utilisée (roles):", API)
 
 const Roles = () => {

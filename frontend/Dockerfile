@@ -1,4 +1,8 @@
-FROM node:18 as build
+FROM node:22-alpine as build
+
+# Optionally bake API URL at build time
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
 
 WORKDIR /usr/src/app
 COPY package*.json ./
