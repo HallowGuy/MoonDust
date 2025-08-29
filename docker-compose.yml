@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # ------------------------
   # Backend
@@ -35,7 +33,7 @@ services:
       context: ./frontend
       args:
         # Optionally set at build-time; code defaults to '/api' if unset
-        VITE_API_URL: ${VITE_API_URL}
+        VITE_API_URL: ${VITE_API_URL:-}
     container_name: ${FRONTEND_CONTAINER_NAME}
     ports:
       - "${FRONTEND_PORT_HOST}:${FRONTEND_PORT_CONTAINER}"
@@ -76,7 +74,6 @@ services:
   pgadmin:
     image: ${PGADMIN_IMAGE}
     container_name: ${PGADMIN_CONTAINER_NAME}
-    profiles: ["pgadmin"]
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -85,6 +82,54 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+
+
+  # ------------------------
+  # Redis (for Activepieces)
+  # ------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ------------------------
+  # Activepieces (no-code automation)
+  # ------------------------
+  activepieces:
+    image: ghcr.io/activepieces/activepieces:latest
+    container_name: activepieces
+    pull_policy: always
+    environment:
+      # Postgres connection (explicit variables expected by Activepieces)
+      AP_POSTGRES_HOST: db
+      AP_POSTGRES_PORT: 5432
+      AP_POSTGRES_DATABASE: activepieces
+      AP_POSTGRES_USERNAME: ${POSTGRES_USER:-postgres}
+      AP_POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      AP_REDIS_URL: redis://redis:6379
+      # Must be 32 hex chars (16 bytes). Override in .env for production.
+      AP_ENCRYPTION_KEY: ${AP_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef}
+      AP_JWT_SECRET: ${AP_JWT_SECRET:-change_me}
+      AP_FRONTEND_URL: ${AP_FRONTEND_URL:-http://localhost:${AP_PORT_HOST:-8080}}
+      AP_WEBHOOK_URL: ${AP_WEBHOOK_URL:-http://localhost:${AP_PORT_HOST:-8080}}
+      AP_TELEMETRY_ENABLED: ${AP_TELEMETRY_ENABLED:-false}
+    ports:
+      - "${AP_PORT_HOST:-8080}:80"
+    depends_on:
+      - db
+      - redis
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
 
 volumes:
   postgres_data:
