@@ -28,13 +28,14 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 -- Table: leave request
 CREATE TABLE IF NOT EXISTS leave_requests (
     id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES demo_first.users(id) ON DELETE CASCADE,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    reason TEXT,
-    status VARCHAR(20) DEFAULT 'EN ATTENTE', -- EN ATTENTE | APPROUVÉ | REFUSÉ
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  reason TEXT,
+  status VARCHAR(20) DEFAULT 'EN ATTENTE',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Table: roles
