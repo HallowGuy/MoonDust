@@ -5,3 +5,5 @@ export const API_USERS = `${API_BASE}/users`
 export const API_ROLES = `${API_BASE}/roles`
 export const API_CONGES = `${API_BASE}/conges`
 export const API_DOCS = `${API_BASE}/documents`
+export const API_THEME = `${API_BASE}/theme`
+

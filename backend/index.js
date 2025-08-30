@@ -56,7 +56,6 @@ const transporter = nodemailer.createTransport({
 })
 
 transporter.verify()
-  .then(() => console.log('📬 SMTP prêt'))
   .catch(err => console.error('⚠️ SMTP non dispo :', err.message))
 
 // ---------- MULTER CONFIG ----------
@@ -723,8 +722,12 @@ app.get('/api/theme/list', (req, res) => {
 })
 
 app.get('/api/theme/current', (req, res) => {
-  res.json(themes[currentTheme])
+  res.json({
+    name: currentTheme,
+    colors: themes[currentTheme]
+  })
 })
+
 
 app.put('/api/theme/current', (req, res) => {
   const { name } = req.body
@@ -750,6 +753,9 @@ app.put('/api/theme/colors', (req, res) => {
   res.json({ ok: true, theme: newColors })
 })
 
+app.get('/api/theme/colors', (req, res) => {
+  res.json(themes[currentTheme])
+})
 
 
 // ----------------------------------------------------
