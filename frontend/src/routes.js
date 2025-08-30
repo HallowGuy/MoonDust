@@ -3,12 +3,12 @@ import React from 'react'
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
-const Users = React.lazy(() => import('./views/list/Users'))
-const Roles = React.lazy(() => import('./views/list/Roles'))
+const Users = React.lazy(() => import('./views/settings/list/Users'))
+const Roles = React.lazy(() => import('./views/settings/list/Roles'))
 const Documents = React.lazy(() => import('./views/import/Documents'))
-const ThemeColors = React.lazy(() => import('./views/custom/ThemeColors'))
-const ThemeLogo = React.lazy(() => import('./views/custom/ThemeLogo'))
-const AuditLogs = React.lazy(() => import('./views/custom/AuditLogs'))
+const ThemeColors = React.lazy(() => import('./views/settings/custom/ThemeColors'))
+const ThemeLogo = React.lazy(() => import('./views/settings/custom/ThemeLogo'))
+const AuditLogs = React.lazy(() => import('./views/settings/custom/AuditLogs'))
 const Test = React.lazy(() => import('./views/wkf/Test'))
 const AvancementWorkflow = React.lazy(() => import('./views/wkf/AvancementWorkflow'))
 const Workflow = React.lazy(() => import('./views/wkf/Workflow'))
@@ -68,12 +68,12 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
- { path: '/list/users', name: 'Gestion des utilisateurs', element: Users },
+ { path: '/settings/list/users', name: 'Gestion des utilisateurs', element: Users },
   { path: '/import/documents', name: 'Gestion des documents', element: Documents },
-  { path: '/list/roles', name: 'Gestion des rôles', element: Roles },
-    { path: '/custom/themecolors', name: 'Gestion des couleurs', element: ThemeColors },
-{ path: '/custom/themelogo', name: 'Gestion du logo', element: ThemeLogo },
-{ path: '/custom/auditlogs', name: 'Journal audit', element: AuditLogs },
+  { path: '/settings/list/roles', name: 'Gestion des rôles', element: Roles },
+    { path: '/settings/custom/themecolors', name: 'Gestion des couleurs', element: ThemeColors },
+{ path: '/settings/custom/themelogo', name: 'Gestion du logo', element: ThemeLogo },
+{ path: '/settings/custom/auditlogs', name: 'Journal audit', element: AuditLogs },
 { path: '/wkf/test', name: 'Test Workflow', element: Test },
 { path: '/wkf/avancementworkflow', name: 'Avancement Workflow', element: AvancementWorkflow },
 { path: '/wkf/workflow', name: 'Liste Workflow', element: Workflow },
