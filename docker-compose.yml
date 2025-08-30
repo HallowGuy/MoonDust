@@ -37,6 +37,9 @@ services:
     container_name: ${FRONTEND_CONTAINER_NAME}
     ports:
       - "${FRONTEND_PORT_HOST}:${FRONTEND_PORT_CONTAINER}"
+    volumes:
+     - ./frontend:/app   # <-- monte ton code local dans le container
+     - /app/node_modules # <-- évite d’écraser node_modules du container
     depends_on:
       - backend
     healthcheck:

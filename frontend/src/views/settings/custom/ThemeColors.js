@@ -61,14 +61,18 @@ const ThemeColors = () => {
 
   // Charger le thème courant au démarrage
   useEffect(() => {
-    fetch(`${API}/theme/current`)
-      .then(res => res.json())
-      .then(data => {
-        setColors(data)
-        applyTheme(data)
-      })
-      .catch(() => showError('Erreur chargement thème courant'))
-  }, [])
+  fetch(`${API}/theme/current`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.name) setCurrentTheme(data.name)   // ✅ garder le nom du thème
+      if (data.colors) {
+        setColors(data.colors)
+        applyTheme(data.colors)
+      }
+    })
+    .catch(() => showError('Erreur chargement thème courant'))
+}, [])
+
 
   // Changer une couleur en direct
   const handleChange = (key, value) => {

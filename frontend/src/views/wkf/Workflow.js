@@ -10,7 +10,7 @@ const workflows = [
     id: 1, 
     title: "Demande de congés", 
     description: "Soumettre une nouvelle demande de congés", 
-    link: "/#/wkf/test",
+    link: "/wkf/test",
     icon: cilBriefcase,
     color: "primary"
   },
@@ -18,7 +18,7 @@ const workflows = [
     id: 2, 
     title: "Avancement des demandes", 
     description: "Suivre l'état d'avancement des demandes de congés", 
-    link: "/#/wkf/avancementworkflow",
+    link: "/wkf/avancementworkflow",
     icon: cilTask,
     color: "info"
   },

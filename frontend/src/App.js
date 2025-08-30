@@ -15,8 +15,7 @@ const Register = React.lazy(() => import('./views/pages/register/Register'))
 const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 
-import { API_BASE } from 'src/api'
-const API = API_BASE
+import { API_THEME } from 'src/api'
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -25,7 +24,7 @@ const App = () => {
  useEffect(() => {
   const loadColors = async () => {
     try {
-      const res = await fetch(`${API}/theme/colors`)
+const res = await fetch(`${API_THEME}/current`)
       const colors = await res.json()
 
       const root = document.documentElement
