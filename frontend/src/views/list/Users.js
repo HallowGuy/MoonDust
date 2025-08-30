@@ -3,15 +3,13 @@ import {
   CCard, CCardHeader, CCardBody,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
   CButton, COffcanvas, COffcanvasHeader, COffcanvasBody,
-  CFormInput, CFormSwitch, CFormSelect,
+  CFormInput, CFormSwitch,
   CToaster, CToast, CToastBody
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilCheckCircle, cilXCircle } from '@coreui/icons'
 import Select from 'react-select'
-import { API_BASE } from 'src/api'
-
-const API = API_BASE
+import { API_USERS, API_ROLES } from 'src/api'
 
 const Users = () => {
   const [users, setUsers] = useState([])
@@ -39,7 +37,7 @@ const Users = () => {
   // ---------- FETCH DATA ----------
   const fetchUsers = async () => {
     try {
-      const res = await fetch(`${API}/users`)
+      const res = await fetch(API_USERS)
       if (!res.ok) throw new Error('Impossible de charger les utilisateurs')
       const data = await res.json()
       setUsers(data)
@@ -50,7 +48,7 @@ const Users = () => {
 
   const fetchRoles = async () => {
     try {
-      const res = await fetch(`${API}/roles`)
+      const res = await fetch(API_ROLES)
       if (!res.ok) throw new Error('Impossible de charger les rôles')
       const data = await res.json()
       setRoles(data)
@@ -61,7 +59,7 @@ const Users = () => {
 
   const fetchUserRoles = async (id) => {
     try {
-      const res = await fetch(`${API}/users/${id}/roles`)
+      const res = await fetch(`${API_USERS}/${id}/roles`)
       if (!res.ok) return []
       return await res.json()
     } catch (e) {
@@ -104,7 +102,7 @@ const Users = () => {
     try {
       let userSaved
       if (editUser) {
-        const res = await fetch(`${API}/users/${editUser.id}`, {
+        const res = await fetch(`${API_USERS}/${editUser.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -114,7 +112,7 @@ const Users = () => {
         setUsers((prev) => prev.map((u) => (u.id === userSaved.id ? userSaved : u)))
         showSuccess('Utilisateur mis à jour')
       } else {
-        const res = await fetch(`${API}/users`, {
+        const res = await fetch(API_USERS, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -127,7 +125,7 @@ const Users = () => {
 
       // Sauvegarder les rôles associés
       if (userSaved?.id) {
-        const resRoles = await fetch(`${API}/users/${userSaved.id}/roles`, {
+        const resRoles = await fetch(`${API_USERS}/${userSaved.id}/roles`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ roles: userRoles }),
@@ -145,7 +143,7 @@ const Users = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Supprimer cet utilisateur ?')) return
     try {
-      const res = await fetch(`${API}/users/${id}`, { method: 'DELETE' })
+      const res = await fetch(`${API_USERS}/${id}`, { method: 'DELETE' })
       if (!(res.ok || res.status === 204)) {
         const payload = await res.json().catch(() => null)
         throw new Error(payload?.error || 'Suppression impossible')
@@ -156,54 +154,53 @@ const Users = () => {
       showError(e.message || 'Erreur lors de la suppression')
     }
   }
-  // Styles dynamiques pour react-select (clair/sombre)
-  const customStyles = {
-  control: (base) => ({
-    ...base,
-    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--cui-body-bg'),
-    color: getComputedStyle(document.documentElement).getPropertyValue('--cui-body-color'),
-    borderColor: '#444',
-  }),
-  menu: (base) => ({
-    ...base,
-    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--cui-body-bg'),
-    color: getComputedStyle(document.documentElement).getPropertyValue('--cui-body-color'),
-  }),
-  option: (base, state) => ({
-    ...base,
-    backgroundColor: state.isSelected
-      ? '#1a43a1' // violet sélectionné (comme Editor)
-      : state.isFocused
-      ? '#1a43a1' // violet plus clair au hover
-      : getComputedStyle(document.documentElement).getPropertyValue('--cui-body-bg'),
-    color: state.isSelected || state.isFocused ? '#fff' : getComputedStyle(document.documentElement).getPropertyValue('--cui-body-color'),
-    cursor: 'pointer',
-  }),
-  multiValue: (base) => ({
-    ...base,
-    backgroundColor: '#1a43a1', // violet pour les tags
-  }),
-  multiValueLabel: (base) => ({
-    ...base,
-    color: '#fff',
-  }),
-  multiValueRemove: (base) => ({
-    ...base,
-    color: '#fff',
-    ':hover': {
-      backgroundColor: '#1a43a1',
-      color: 'white',
-    },
-  }),
-}
 
+  // Styles dynamiques pour react-select
+  const customStyles = {
+    control: (base) => ({
+      ...base,
+      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--cui-body-bg'),
+      color: getComputedStyle(document.documentElement).getPropertyValue('--cui-body-color'),
+      borderColor: '#444',
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--cui-body-bg'),
+      color: getComputedStyle(document.documentElement).getPropertyValue('--cui-body-color'),
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? '#1a43a1'
+        : state.isFocused
+        ? '#1a43a1'
+        : getComputedStyle(document.documentElement).getPropertyValue('--cui-body-bg'),
+      color: state.isSelected || state.isFocused ? '#fff' : getComputedStyle(document.documentElement).getPropertyValue('--cui-body-color'),
+      cursor: 'pointer',
+    }),
+    multiValue: (base) => ({
+      ...base,
+      backgroundColor: '#1a43a1',
+    }),
+    multiValueLabel: (base) => ({
+      ...base,
+      color: '#fff',
+    }),
+    multiValueRemove: (base) => ({
+      ...base,
+      color: '#fff',
+      ':hover': {
+        backgroundColor: '#1a43a1',
+        color: 'white',
+      },
+    }),
+  }
 
   return (
     <>
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
-                    <h2 className="mb-0">Utilisateurs</h2>
-
+          <h2 className="mb-0">Utilisateurs</h2>
           <CButton color="primary" onClick={() => openOffcanvas()}>
             <CIcon icon={cilPlus} className="me-2" /> Nouvel utilisateur
           </CButton>
@@ -227,8 +224,13 @@ const Users = () => {
                   <CTableDataCell>{u.username}</CTableDataCell>
                   <CTableDataCell>{u.email}</CTableDataCell>
                   <CTableDataCell>{u.display_name}</CTableDataCell>
-                  <CTableDataCell style={{ width: '100px', textAlign: 'center' }}>{u.is_active ? (<CIcon icon={cilCheckCircle} className="text-success" />
-  ) : (<CIcon icon={cilXCircle} className="text-danger" />)}</CTableDataCell>
+                  <CTableDataCell style={{ width: '100px', textAlign: 'center' }}>
+                    {u.is_active ? (
+                      <CIcon icon={cilCheckCircle} className="text-success" />
+                    ) : (
+                      <CIcon icon={cilXCircle} className="text-danger" />
+                    )}
+                  </CTableDataCell>
                   <CTableDataCell style={{ width: '100px', textAlign: 'center' }}>
                     <CButton size="sm" color="secondary" className="me-2" variant="ghost"
                       onClick={() => openOffcanvas(u)}>
@@ -246,64 +248,62 @@ const Users = () => {
       </CCard>
 
       {/* OFFCANVAS FORM */}
-      <COffcanvas placement="end" visible={visible} onHide={() => setVisible(false)}  style={{ width: "33%" }}>
+      <COffcanvas placement="end" visible={visible} onHide={() => setVisible(false)} style={{ width: "33%" }}>
         <COffcanvasHeader>
           <h5>{editUser ? 'Éditer utilisateur' : 'Nouvel utilisateur'}</h5>
         </COffcanvasHeader>
         <COffcanvasBody>
           <div className="d-flex flex-column gap-3">
             <div className="row">
-  <div className="col-md-6">
-    <CFormInput
-      label="Username"
-      value={username}
-      onChange={(e) => setUsername(e.target.value)}
-    />
-  </div>
-  <div className="col-md-6">
-    <CFormInput
-      label="Email"
-      type="email"
-      value={email}
-      onChange={(e) => setEmail(e.target.value)}
-    />
-  </div>
-</div>
+              <div className="col-md-6">
+                <CFormInput
+                  label="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+              <div className="col-md-6">
+                <CFormInput
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+            </div>
 
-<div className="row mt-3">
-  <div className="col-md-6">
-    <CFormInput
-      label="Display Name"
-      value={displayName}
-      onChange={(e) => setDisplayName(e.target.value)}
-    />
-  </div>
-  <div className="col-md-6 d-flex align-items-center">
-    <CFormSwitch
-      label="Actif"
-      checked={isActive}
-      onChange={(e) => setIsActive(e.target.checked)}
-    />
-  </div>
-</div>
+            <div className="row mt-3">
+              <div className="col-md-6">
+                <CFormInput
+                  label="Display Name"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                />
+              </div>
+              <div className="col-md-6 d-flex align-items-center">
+                <CFormSwitch
+                  label="Actif"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                />
+              </div>
+            </div>
 
-<div className="row mt-3">
-   <div className="col-12">
-    <label className="form-label">Rôles</label>
-   <Select
-  isMulti
-  options={roles.map(r => ({ value: r.id, label: r.label }))}
-  value={roles.filter(r => userRoles.includes(r.id)).map(r => ({ value: r.id, label: r.label }))}
-  onChange={(selected) => {
-    setUserRoles(selected.map(s => s.value))
-  }}
-  classNamePrefix="react-select"
-  styles={customStyles}   // ✅ applique les styles dynamiques
-/>
-
-  </div>
-</div>
-
+            <div className="row mt-3">
+              <div className="col-12">
+                <label className="form-label">Rôles</label>
+                <Select
+                  isMulti
+                  options={roles.map(r => ({ value: r.id, label: r.label }))}
+                  value={roles.filter(r => userRoles.includes(r.id)).map(r => ({ value: r.id, label: r.label }))}
+                  onChange={(selected) => {
+                    setUserRoles(selected.map(s => s.value))
+                  }}
+                  classNamePrefix="react-select"
+                  styles={customStyles}
+                />
+              </div>
+            </div>
 
             <div className="d-flex gap-2 justify-content-end mt-3">
               <CButton color="secondary" variant="ghost" onClick={() => setVisible(false)}>Annuler</CButton>

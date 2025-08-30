@@ -15,8 +15,9 @@ const PORT = process.env.PORT || 5001
 // ---------- MIDDLEWARES ----------
 app.use(cors({
   origin: [
-    'http://localhost:3000', // React CRA
-    'http://localhost:5173'  // Vite
+    'http://localhost:3000',  // CRA
+    'http://localhost:5173',  // Vite par défaut
+    'http://localhost:3002'   // ✅ ton nouveau port frontend
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type']
@@ -276,20 +277,117 @@ app.get('/api/audit', async (req, res) => {
 })
 
 
+
 // ----------------------------------------------------
 // ------------------------- ROLES --------------------
 // ----------------------------------------------------
+
+// 📌 Lister tous les rôles
 app.get('/api/roles', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM demo_first.roles ORDER BY id')
     res.json(result.rows)
   } catch (e) {
-    console.error('❌ Erreur SQL :', e)
+    console.error('❌ Erreur SQL get roles:', e)
     res.status(500).json({ error: 'Erreur serveur' })
   }
 })
 
+// 📌 Créer un rôle
+app.post('/api/roles', async (req, res) => {
+  try {
+    const { code, label } = req.body
+    if (!code || !label) {
+      return res.status(400).json({ error: 'code et label requis' })
+    }
 
+    const { rows } = await pool.query(
+      `INSERT INTO demo_first.roles (code, label) VALUES ($1, $2) RETURNING *`,
+      [code, label]
+    )
+    const newRole = rows[0]
+
+    // 🔍 Audit log
+    await logAction(
+      null,          // pas d’acteur identifié (à remplacer par l’ID admin si tu ajoutes l’auth)
+      'role',        // type d’entité
+      newRole.id,    // ID du rôle créé
+      'create',      // action
+      { code, label } // meta JSON
+    )
+
+    res.status(201).json(newRole)
+  } catch (e) {
+    console.error('❌ Erreur SQL insert role:', e)
+    res.status(500).json({ error: 'Erreur serveur' })
+  }
+})
+
+// 📌 Modifier un rôle
+app.put('/api/roles/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { code, label } = req.body
+    if (!code || !label) {
+      return res.status(400).json({ error: 'code et label requis' })
+    }
+
+    const { rows } = await pool.query(
+      `UPDATE demo_first.roles 
+       SET code=$1, label=$2 
+       WHERE id=$3 RETURNING *`,
+      [code, label, id]
+    )
+
+    if (rows.length === 0) return res.status(404).json({ error: 'Rôle introuvable' })
+
+    const updatedRole = rows[0]
+
+    // 🔍 Audit log
+    await logAction(
+      null,
+      'role',
+      updatedRole.id,
+      'update',
+      { code: updatedRole.code, label: updatedRole.label }
+    )
+
+    res.json(updatedRole)
+  } catch (e) {
+    console.error('❌ Erreur SQL update role:', e)
+    res.status(500).json({ error: 'Erreur serveur' })
+  }
+})
+
+// 📌 Supprimer un rôle
+app.delete('/api/roles/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const { rowCount } = await pool.query('DELETE FROM demo_first.roles WHERE id=$1', [id])
+    if (rowCount === 0) return res.status(404).json({ error: 'Rôle introuvable' })
+
+    // 🔍 Audit log
+    await logAction(
+      null,
+      'role',
+      id,
+      'delete',
+      { message: `Suppression du rôle #${id}` }
+    )
+
+    res.status(204).send()
+  } catch (e) {
+    console.error('❌ Erreur SQL delete role:', e)
+    res.status(500).json({ error: 'Erreur serveur' })
+  }
+})
+
+// ----------------------------------------------------
+// ---------- Association USER ↔ ROLES ----------------
+// ----------------------------------------------------
+
+// 📌 Récupérer les rôles d’un utilisateur
 app.get('/api/users/:id/roles', async (req, res) => {
   try {
     const { id } = req.params
@@ -302,11 +400,12 @@ app.get('/api/users/:id/roles', async (req, res) => {
     )
     res.json(result.rows)
   } catch (e) {
-    console.error('❌ Erreur SQL :', e)
+    console.error('❌ Erreur SQL get user roles:', e)
     res.status(500).json({ error: 'Erreur serveur' })
   }
 })
 
+// 📌 Associer des rôles à un utilisateur (remplace l’existant)
 app.post('/api/users/:id/roles', async (req, res) => {
   try {
     const { id } = req.params
@@ -319,7 +418,7 @@ app.post('/api/users/:id/roles', async (req, res) => {
     // 🗑️ Supprimer les anciens rôles
     await pool.query('DELETE FROM demo_first.user_roles WHERE user_id = $1', [id])
 
-    // ➕ Réinsérer les nouveaux
+    // ➕ Ajouter les nouveaux
     for (const role_id of roles) {
       await pool.query(
         `INSERT INTO demo_first.user_roles (user_id, role_id) VALUES ($1, $2)`,
@@ -327,23 +426,23 @@ app.post('/api/users/:id/roles', async (req, res) => {
       )
     }
 
-    // 📝 Log dans l’audit
+    // 🔍 Audit log
     await logAction(
-      id,            // ici tu peux aussi mettre l’ID de l’admin connecté si tu as un système d’auth
-      'user_roles',  // type d’entité
-      id,            // ID de l’utilisateur impacté
-      'update',      // action
-      { roles }      // meta JSON → la liste finale des rôles attribués
+      id,
+      'user_roles',
+      id,
+      'update',
+      { roles }
     )
 
     res.status(201).json({ success: true })
   } catch (e) {
-    console.error('❌ Erreur SQL association rôles:', e)
+    console.error('❌ Erreur SQL assoc user roles:', e)
     res.status(500).json({ error: 'Erreur lors de l’association des rôles' })
   }
 })
 
-
+// 📌 Supprimer un rôle spécifique d’un utilisateur
 app.delete('/api/users/:id/roles/:role_id', async (req, res) => {
   try {
     const { id, role_id } = req.params
@@ -353,13 +452,13 @@ app.delete('/api/users/:id/roles/:role_id', async (req, res) => {
     )
     if (rowCount === 0) return res.status(404).json({ error: 'Lien non trouvé' })
 
-    // 📝 Audit log
+    // 🔍 Audit log
     await logAction(
-      id,               // utilisateur concerné (ou admin connecté si tu gères une auth)
-      'user_roles',     // entité
-      id,               // ID de l’utilisateur impacté
-      'delete',         // action
-      { role_id }       // meta JSON → quel rôle a été supprimé
+      id,
+      'user_roles',
+      id,
+      'delete',
+      { role_id }
     )
 
     res.status(204).send()
@@ -369,9 +468,9 @@ app.delete('/api/users/:id/roles/:role_id', async (req, res) => {
   }
 })
 
-// ----------------------------------------------------
-// --------------------- DOCUMENTS -------------------
-// ----------------------------------------------------
+
+
+
 // ----------------------------------------------------
 // --------------------- DOCUMENTS -------------------
 // ----------------------------------------------------
@@ -532,17 +631,40 @@ app.get('/api/conges', async (req, res) => {
   }
 })
 
-
-// --- POST une nouvelle demande
 app.post('/api/conges', async (req, res) => {
   try {
-    const { user_id, name, email, start_date, end_date, reason } = req.body
+    const { name, email, start_date, end_date, reason } = req.body
+
+    // 👉 1. Insertion DB
     const { rows } = await pool.query(
-      `INSERT INTO demo_first.leave_requests (user_id, name, email, start_date, end_date, reason) 
-       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-      [user_id, name, email, start_date, end_date, reason]
+      `INSERT INTO demo_first.leave_requests 
+       (name, email, start_date, end_date, reason, status, created_at, updated_at) 
+       VALUES ($1, $2, $3, $4, $5, 'EN ATTENTE', NOW(), NOW()) RETURNING *`,
+      [name, email, start_date, end_date, reason]
     )
-    res.status(201).json(rows[0])
+    const demande = rows[0]
+
+    // 👉 2. Déclenchement workflow Activepieces
+    try {
+      await fetch('http://activepieces/api/v1/webhooks/gNnUPovuxR1ichOa9zdHQ', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: demande.id,          // utile pour suivi
+          name: demande.name,
+          email: demande.email,
+          start_date: demande.start_date,
+          end_date: demande.end_date,
+          reason: demande.reason,
+        }),
+      })
+      console.log("✅ Workflow Activepieces déclenché")
+    } catch (err) {
+      console.error("⚠️ Erreur déclenchement workflow:", err.message)
+    }
+
+    // 👉 3. Retour au frontend
+    res.status(201).json(demande)
   } catch (e) {
     console.error('❌ Erreur SQL leave_requests insert:', e)
     res.status(500).json({ error: 'Erreur serveur' })
@@ -550,25 +672,48 @@ app.post('/api/conges', async (req, res) => {
 })
 
 
+
 // --- PUT pour mettre à jour le statut (approuver/refuser)
+// ✅ Mettre à jour le statut d'une demande
 app.put('/api/conges/:id/status', async (req, res) => {
   try {
     const { id } = req.params
-    const { status } = req.body
+    const { status } = req.body // "APPROUVÉ" ou "REJETÉ"
+
     const { rows } = await pool.query(
-      `UPDATE demo_first.leave_requests 
-       SET status=$1, updated_at=NOW() 
-       WHERE id=$2 RETURNING *`,
+      `UPDATE demo_first.leave_requests
+       SET status = $1, updated_at = NOW()
+       WHERE id = $2
+       RETURNING *`,
       [status, id]
     )
-    if (rows.length === 0) return res.status(404).json({ error: 'Demande introuvable' })
+
+    if (rows.length === 0) return res.status(404).json({ error: 'Demande non trouvée' })
+
     res.json(rows[0])
   } catch (e) {
-    console.error('❌ Erreur SQL leave_requests update:', e)
+    console.error('❌ Erreur maj statut:', e)
     res.status(500).json({ error: 'Erreur serveur' })
   }
 })
 
+
+app.get('/api/conges/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { rows } = await pool.query(
+      'SELECT * FROM demo_first.leave_requests WHERE id = $1',
+      [id]
+    )
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Demande introuvable' })
+    }
+    res.json(rows[0])
+  } catch (e) {
+    console.error('❌ Erreur SQL leave_requests get by id:', e)
+    res.status(500).json({ error: 'Erreur serveur' })
+  }
+})
 
 
 

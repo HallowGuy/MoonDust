@@ -15,8 +15,8 @@ import "react-pdf/dist/Page/AnnotationLayer.css"
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url"
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker
 
-import { API_BASE } from 'src/api'
-const API = API_BASE
+// ✅ API centralisée
+import { API_USERS, API_DOCS } from "src/api"
 
 const Documents = () => {
   const [docs, setDocs] = useState([])
@@ -30,35 +30,33 @@ const Documents = () => {
 
   const [editDoc, setEditDoc] = useState(null)
 
+  const [users, setUsers] = useState([])
+
   // ✅ Toaster
-const [toasts, setToasts] = useState([])
+  const [toasts, setToasts] = useState([])
+  const showToast = (message, color = "success") =>
+    setToasts((prev) => [...prev, { id: Date.now(), message, color }])
 
-const showToast = (message, color = "success") => {
-  setToasts((prev) => [...prev, { id: Date.now(), message, color }])
-}
-
-const [users, setUsers] = useState([])
-
-useEffect(() => {
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch(`${API}/users`)
-      if (!res.ok) throw new Error("Erreur chargement utilisateurs")
-      const data = await res.json()
-      setUsers(data)
-    } catch (err) {
-      console.error(err)
-      showToast("Impossible de charger les utilisateurs", "danger")
+  // ---- Charger les utilisateurs (pour propriétaire) ----
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(API_USERS)
+        if (!res.ok) throw new Error("Erreur chargement utilisateurs")
+        const data = await res.json()
+        setUsers(data)
+      } catch (err) {
+        console.error(err)
+        showToast("Impossible de charger les utilisateurs", "danger")
+      }
     }
-  }
-  fetchUsers()
-}, [])
-
+    fetchUsers()
+  }, [])
 
   // ---- Charger la liste ----
   const fetchDocs = async () => {
     try {
-      const res = await fetch(`${API}/documents`)
+      const res = await fetch(API_DOCS)
       if (!res.ok) throw new Error("Impossible de charger les documents")
       setDocs(await res.json())
     } catch (e) {
@@ -72,7 +70,7 @@ useEffect(() => {
   // ---- Charger un document ----
   const openDoc = async (doc) => {
     try {
-      const res = await fetch(`${API}/documents/${doc.id}`)
+      const res = await fetch(`${API_DOCS}/${doc.id}`)
       if (!res.ok) throw new Error("Impossible de charger le document")
       const data = await res.json()
       setSelectedDoc(data)
@@ -93,7 +91,7 @@ useEffect(() => {
       if (!selectedDoc?.versions?.length) return
 
       const file = selectedDoc.versions[0]
-      const url = `${API.replace("/api", "")}/uploads/${file.storage_uri}`
+      const url = `${window.location.origin}/uploads/${file.storage_uri}`
 
       try {
         const res = await fetch(url)
@@ -111,7 +109,7 @@ useEffect(() => {
   const handleAdd = async (e) => {
     e.preventDefault()
     try {
-      const res = await fetch(`${API}/documents`, {
+      const res = await fetch(API_DOCS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newDoc),
@@ -122,7 +120,7 @@ useEffect(() => {
       if (file) {
         const formData = new FormData()
         formData.append("file", file)
-        await fetch(`${API}/documents/${doc.id}/upload`, { method: "POST", body: formData })
+        await fetch(`${API_DOCS}/${doc.id}/upload`, { method: "POST", body: formData })
       }
 
       setNewDoc({ name: "", owner_user_id: "" })
@@ -140,7 +138,7 @@ useEffect(() => {
   const handleDelete = async (id) => {
     if (!window.confirm("Supprimer ce document ?")) return
     try {
-      const res = await fetch(`${API}/documents/${id}`, { method: "DELETE" })
+      const res = await fetch(`${API_DOCS}/${id}`, { method: "DELETE" })
       if (res.ok) {
         setDocs((prev) => prev.filter((d) => d.id !== id))
         setSelectedDoc(null)
@@ -157,7 +155,7 @@ useEffect(() => {
   // ---- Update métadonnées ----
   const handleUpdate = async () => {
     try {
-      const res = await fetch(`${API}/documents/${editDoc.id}`, {
+      const res = await fetch(`${API_DOCS}/${editDoc.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editDoc),
@@ -178,7 +176,7 @@ useEffect(() => {
     if (!doc?.versions?.length) return <p className="text-center mt-3">Aucune version disponible</p>
 
     const file = doc.versions[0]
-    const url = `${API.replace("/api", "")}/uploads/${file.storage_uri}`
+    const url = `${window.location.origin}/uploads/${file.storage_uri}`
     const mime = doc.document.mime_type || ""
 
     if (mime.startsWith("image/")) {
@@ -211,22 +209,20 @@ useEffect(() => {
   return (
     <>
       {/* ✅ TOASTER */}
-<CToaster placement="bottom-end" className="p-3" style={{ zIndex: 9999 }}>
-  {toasts.map((t) => (
-    <CToast
-      key={t.id}
-      visible
-      autohide
-      delay={3000}
-      color={t.color}
-      onClose={() => setToasts((prev) => prev.filter((toast) => toast.id !== t.id))}
-    >
-      <CToastBody className="text-white">{t.message}</CToastBody>
-    </CToast>
-  ))}
-</CToaster>
-
-
+      <CToaster placement="bottom-end" className="p-3" style={{ zIndex: 9999 }}>
+        {toasts.map((t) => (
+          <CToast
+            key={t.id}
+            visible
+            autohide
+            delay={3000}
+            color={t.color}
+            onClose={() => setToasts((prev) => prev.filter((toast) => toast.id !== t.id))}
+          >
+            <CToastBody className="text-white">{t.message}</CToastBody>
+          </CToast>
+        ))}
+      </CToaster>
 
       {/* Table documents */}
       <CCard className="mb-4">
@@ -244,7 +240,7 @@ useEffect(() => {
                 <CTableHeaderCell>Nom</CTableHeaderCell>
                 <CTableHeaderCell>Propriétaire</CTableHeaderCell>
                 <CTableHeaderCell>Status</CTableHeaderCell>
-                <CTableHeaderCell  style={{ width: '100px', textAlign: 'center' }}>Actions</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '100px', textAlign: 'center' }}>Actions</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
@@ -252,7 +248,7 @@ useEffect(() => {
                 <CTableRow key={d.id}>
                   <CTableDataCell>{d.id}</CTableDataCell>
                   <CTableDataCell>{d.name}</CTableDataCell>
-                  <CTableDataCell>  {users.find((u) => u.id === d.owner_user_id)?.display_name || d.owner_user_id}</CTableDataCell>
+                  <CTableDataCell>{users.find((u) => u.id === d.owner_user_id)?.display_name || d.owner_user_id}</CTableDataCell>
                   <CTableDataCell>{d.status}</CTableDataCell>
                   <CTableDataCell className="d-flex gap-2" style={{ width: '100px', textAlign: 'center' }}>
                     <CButton size="sm" color="secondary" variant="ghost" onClick={() => openDoc(d)}><CIcon icon={cilSearch} /></CButton>
@@ -271,19 +267,17 @@ useEffect(() => {
         <COffcanvasBody>
           <CForm onSubmit={handleAdd} className="d-flex flex-column gap-3">
             <CFormInput type="text" label="Nom du document" value={newDoc.name} onChange={(e) => setNewDoc({ ...newDoc, name: e.target.value })} required />
-<CFormSelect
-  label="Propriétaire"
-  value={newDoc.owner_user_id}
-  onChange={(e) => setNewDoc({ ...newDoc, owner_user_id: e.target.value })}
-  required
->
-  <option value="">-- Sélectionner --</option>
-  {users.map((u) => (
-    <option key={u.id} value={u.id}>
-      {u.display_name}
-    </option>
-  ))}
-</CFormSelect>
+            <CFormSelect
+              label="Propriétaire"
+              value={newDoc.owner_user_id}
+              onChange={(e) => setNewDoc({ ...newDoc, owner_user_id: e.target.value })}
+              required
+            >
+              <option value="">-- Sélectionner --</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>{u.display_name}</option>
+              ))}
+            </CFormSelect>
             <CFormInput type="file" label="Fichier" onChange={(e) => setFile(e.target.files[0])} />
             <CButton type="submit" color="primary"><CIcon icon={cilCloudUpload} /> Enregistrer</CButton>
           </CForm>
@@ -304,49 +298,40 @@ useEffect(() => {
               <h6>Métadonnées</h6>
               {editDoc && (
                 <CForm className="row g-3">
-  <div className="col-md-6">
-    <CFormInput label="ID" value={editDoc.id} disabled />
-  </div>
-  <div className="col-md-6">
-            <CFormInput label="Format" value={editDoc.mime_type || "Inconnu"} disabled />
-
-  </div>
- <div className="col-md-12">
-    <CFormInput label="Nom" value={editDoc.name} onChange={(e) => setEditDoc({ ...editDoc, name: e.target.value })} />
-  </div>
-  <div className="col-md-6">
-<CFormSelect
-  label="Propriétaire"
-  value={editDoc.owner_user_id}
-  onChange={(e) => setEditDoc({ ...editDoc, owner_user_id: e.target.value })}
->
-  <option value="">-- Sélectionner --</option>
-  {users.map((u) => (
-    <option key={u.id} value={u.id}>
-      {u.display_name}
-    </option>
-  ))}
-</CFormSelect>
-  </div>
-  <div className="col-md-6">
-    <CFormInput label="Status" value={editDoc.status} onChange={(e) => setEditDoc({ ...editDoc, status: e.target.value })} />
-  </div>
-
-  <div className="col-md-6">
-    <CFormInput label="Créé le" value={new Date(editDoc.created_at).toLocaleString()} disabled />
-  </div>
-  <div className="col-md-6">
-    <CFormInput label="Mis à jour le" value={new Date(editDoc.updated_at).toLocaleString()} disabled />
-  </div>
-
-
-  <div className="col-12">
-    <CButton color="primary" onClick={handleUpdate}>
-      <CIcon icon={cilSave} /> Enregistrer
-    </CButton>
-  </div>
-</CForm>
-
+                  <div className="col-md-6">
+                    <CFormInput label="ID" value={editDoc.id} disabled />
+                  </div>
+                  <div className="col-md-6">
+                    <CFormInput label="Format" value={editDoc.mime_type || "Inconnu"} disabled />
+                  </div>
+                  <div className="col-md-12">
+                    <CFormInput label="Nom" value={editDoc.name} onChange={(e) => setEditDoc({ ...editDoc, name: e.target.value })} />
+                  </div>
+                  <div className="col-md-6">
+                    <CFormSelect
+                      label="Propriétaire"
+                      value={editDoc.owner_user_id}
+                      onChange={(e) => setEditDoc({ ...editDoc, owner_user_id: e.target.value })}
+                    >
+                      <option value="">-- Sélectionner --</option>
+                      {users.map((u) => (
+                        <option key={u.id} value={u.id}>{u.display_name}</option>
+                      ))}
+                    </CFormSelect>
+                  </div>
+                  <div className="col-md-6">
+                    <CFormInput label="Status" value={editDoc.status} onChange={(e) => setEditDoc({ ...editDoc, status: e.target.value })} />
+                  </div>
+                  <div className="col-md-6">
+                    <CFormInput label="Créé le" value={new Date(editDoc.created_at).toLocaleString()} disabled />
+                  </div>
+                  <div className="col-md-6">
+                    <CFormInput label="Mis à jour le" value={new Date(editDoc.updated_at).toLocaleString()} disabled />
+                  </div>
+                  <div className="col-12">
+                    <CButton color="primary" onClick={handleUpdate}><CIcon icon={cilSave} /> Enregistrer</CButton>
+                  </div>
+                </CForm>
               )}
 
               <h6 className="mt-4">Versions</h6>
@@ -355,7 +340,7 @@ useEffect(() => {
                   <li key={v.id}>
                     v{v.version_no} - {v.storage_uri} ({new Date(v.created_at).toLocaleString()})
                     {" "}
-                    <a href={`${API.replace("/api", "")}/uploads/${v.storage_uri}`} target="_blank" rel="noreferrer">Télécharger</a>
+                    <a href={`${window.location.origin}/uploads/${v.storage_uri}`} target="_blank" rel="noreferrer">Télécharger</a>
                   </li>
                 ))}
               </ul>

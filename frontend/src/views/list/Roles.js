@@ -8,10 +8,7 @@ import {
 
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus } from '@coreui/icons'
-import { API_BASE } from 'src/api'
-
-const API = `${API_BASE}/roles`
-console.log("👉 API utilisée (roles):", API)
+import { API_ROLES } from 'src/api'
 
 const Roles = () => {
   const [roles, setRoles] = useState([])
@@ -38,9 +35,10 @@ const Roles = () => {
   const [editCode, setEditCode] = useState('')
   const [editLabel, setEditLabel] = useState('')
 
+  // --- FETCH ROLES ---
   const fetchRoles = async () => {
     try {
-      const res = await fetch(API)
+      const res = await fetch(API_ROLES)
       if (!res.ok) throw new Error('Impossible de charger les rôles')
       const data = await res.json()
       setRoles(data)
@@ -62,7 +60,7 @@ const Roles = () => {
     if (!createCode || !createLabel) return showError('Code et label requis')
 
     try {
-      const res = await fetch(API, {
+      const res = await fetch(API_ROLES, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: createCode, label: createLabel }),
@@ -91,7 +89,7 @@ const Roles = () => {
     if (!editCode || !editLabel) return showError('Code et label requis')
 
     try {
-      const res = await fetch(`${API}/${editRole.id}`, {
+      const res = await fetch(`${API_ROLES}/${editRole.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: editCode, label: editLabel }),
@@ -112,7 +110,7 @@ const Roles = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Supprimer ce rôle ?')) return
     try {
-      const res = await fetch(`${API}/${id}`, { method: 'DELETE' })
+      const res = await fetch(`${API_ROLES}/${id}`, { method: 'DELETE' })
       if (!(res.ok || res.status === 204)) {
         const payload = await safeJson(res)
         throw new Error(payload?.error || 'Suppression impossible')
@@ -197,25 +195,23 @@ const Roles = () => {
             </COffcanvasHeader>
             <COffcanvasBody>
               <div className="d-flex flex-column gap-3">
-                  <div className="row">
-                    <div className="col-md-6">
-                      <CFormInput
-                        label="Code"
-                        value={createCode}
-                        onChange={(e) => setCreateCode(e.target.value)}
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <CFormInput
-                        label="Label"
-                        value={createLabel}
-                        onChange={(e) => setCreateLabel(e.target.value)}
-                      />
-                    </div>
+                <div className="row">
+                  <div className="col-md-6">
+                    <CFormInput
+                      label="Code"
+                      value={createCode}
+                      onChange={(e) => setCreateCode(e.target.value)}
+                    />
                   </div>
+                  <div className="col-md-6">
+                    <CFormInput
+                      label="Label"
+                      value={createLabel}
+                      onChange={(e) => setCreateLabel(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-               
-                
                 <div className="d-flex gap-2 justify-content-end">
                   <CButton color="secondary" variant="ghost" onClick={() => setShowCreate(false)}>
                     Annuler
@@ -236,21 +232,21 @@ const Roles = () => {
             <COffcanvasBody>
               <div className="d-flex flex-column gap-4">
                 <div className="row">
-                <div className="col-md-6">
-                  <CFormInput
-                    label="Code"
-                    value={editCode}
-                    onChange={(e) => setEditCode(e.target.value)}
-                  />
+                  <div className="col-md-6">
+                    <CFormInput
+                      label="Code"
+                      value={editCode}
+                      onChange={(e) => setEditCode(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <CFormInput
+                      label="Label"
+                      value={editLabel}
+                      onChange={(e) => setEditLabel(e.target.value)}
+                    />
+                  </div>
                 </div>
-                <div className="col-md-6">
-                  <CFormInput
-                    label="Label"
-                    value={editLabel}
-                    onChange={(e) => setEditLabel(e.target.value)}
-                  />
-                </div>
-              </div>
 
                 <div className="d-flex gap-2 justify-content-end">
                   <CButton color="secondary" variant="ghost" onClick={() => setShowEdit(false)}>

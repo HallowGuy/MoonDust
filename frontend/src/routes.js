@@ -11,6 +11,9 @@ const ThemeLogo = React.lazy(() => import('./views/custom/ThemeLogo'))
 const AuditLogs = React.lazy(() => import('./views/custom/AuditLogs'))
 const Test = React.lazy(() => import('./views/wkf/Test'))
 const AvancementWorkflow = React.lazy(() => import('./views/wkf/AvancementWorkflow'))
+const Workflow = React.lazy(() => import('./views/wkf/Workflow'))
+const DetailConge = React.lazy(() => import('./views/wkf/DetailConge'))
+
 
 
 
@@ -73,6 +76,10 @@ const routes = [
 { path: '/custom/auditlogs', name: 'Journal audit', element: AuditLogs },
 { path: '/wkf/test', name: 'Test Workflow', element: Test },
 { path: '/wkf/avancementworkflow', name: 'Avancement Workflow', element: AvancementWorkflow },
+{ path: '/wkf/workflow', name: 'Liste Workflow', element: Workflow },
+{ path: '/wkf/DetailConge/detail/:id', name: 'Liste CongesList', element: DetailConge },
+
+
 
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
