@@ -34,13 +34,13 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Liste utilisateurs',
-    to: '/list/users',
+    to: '/settings/list/users',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: 'Liste rôles',
-    to: '/list/roles',
+    to: '/settings/list/roles',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
   {
@@ -52,7 +52,7 @@ const _nav = [
    {
     component: CNavItem,
     name: 'Audit',
-    to: '/custom/AuditLogs',
+    to: '/settings/custom/AuditLogs',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
   {
@@ -97,13 +97,13 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Couleurs',
-    to: '/custom/themecolors',
+    to: '/settings/custom/themecolors',
     icon: <CIcon icon={cilDrop} customClassName="nav-icon" />,
   },
    {
     component: CNavItem,
     name: 'Logo',
-    to: '/custom/themelogo',
+    to: '/settings/custom/themelogo',
     icon: <CIcon icon={cilImagePlus} customClassName="nav-icon" />,
   },
 
