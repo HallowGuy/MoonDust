@@ -55,18 +55,41 @@ const _nav = [
     to: '/custom/AuditLogs',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
- {
+  {
+    component: CNavTitle,
+    name: 'Workflow',
+  },
+  {
   component: CNavItem,
   name: 'Workflow',
-  to: '/wkf/test',
+  to: '/wkf/Workflow',
   icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
 },
+
 {
   component: CNavItem,
   name: 'Suivi demande',
   to: '/wkf/avancementworkflow',
   icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
 },
+
+{
+    component: CNavGroup,
+    name: 'Détails',
+    to: '/details',
+    icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+    items: [
+       {
+  component: CNavItem,
+  name: 'Demande de congés',
+  to: '/wkf/test',
+  icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+},
+      
+     
+    ],
+  },
+
  {
     component: CNavTitle,
     name: 'Personnalisation',
