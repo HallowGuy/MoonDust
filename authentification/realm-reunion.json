@@ -1,0 +1,26 @@
+{
+  "realm": "REALM_REUNION",
+  "enabled": true,
+  "loginWithEmailAllowed": true,
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "sslRequired": "none",
+  "users": [
+    {
+      "username": "reunion.user",
+      "enabled": true,
+      "email": "reunion.user@example.com",
+      "emailVerified": true,
+      "firstName": "Reunion",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ChangeMe123!",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}
+
