@@ -133,6 +133,28 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # ------------------------
+  # Keycloak (Identity & Access)
+  # ------------------------
+  keycloak:
+    image: ${KEYCLOAK_IMAGE}
+    container_name: ${KEYCLOAK_CONTAINER_NAME}
+    command: ["start-dev"]
+    environment:
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KC_DB=postgres
+      - KC_DB_URL_HOST=db
+      - KC_DB_URL_PORT=5432
+      - KC_DB_URL_DATABASE=${KEYCLOAK_DB_NAME}
+      - KC_DB_USERNAME=${KEYCLOAK_DB_USER}
+      - KC_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD}
+    ports:
+      - "${KEYCLOAK_PORT_HOST}:${KEYCLOAK_PORT_CONTAINER}"
+    depends_on:
+      - db
+    restart: unless-stopped
+
 
 volumes:
   postgres_data:
