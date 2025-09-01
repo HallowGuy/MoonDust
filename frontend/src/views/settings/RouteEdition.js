@@ -19,6 +19,8 @@ const ROLE_COLORS = {
   user: 'success',
 }
 
+
+
 const RouteEdition = () => {
   const [search, setSearch] = useState('')
   const [config, setConfig] = useState({})
@@ -32,6 +34,19 @@ const RouteEdition = () => {
   }
   const showSuccess = (msg) => addToast(msg, 'success')
   const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id))
+
+const filtered = routes.filter(
+  (r) =>
+    r.name?.toLowerCase().includes(search.toLowerCase()) ||
+    r.path?.toLowerCase().includes(search.toLowerCase())
+)
+
+// Pagination appliquée après filtrage
+const [page, setPage] = useState(1)
+const perPage = 10
+const paginated = filtered.slice((page - 1) * perPage, page * perPage)
+const totalPages = Math.ceil(filtered.length / perPage)
+const [selectedRoutes, setSelectedRoutes] = useState([])
 
   // --- EDITION
   const [showEdit, setShowEdit] = useState(false)
@@ -112,22 +127,31 @@ const RouteEdition = () => {
   // Sauvegarder l'édition
  const handleSaveEdit = () => {
   if (!editRoute) return
-  const newConfig = { ...config, [editRoute.path]: editRoles }
+
+  let newConfig = { ...config }
+
+  if (Array.isArray(editRoute.path)) {
+    // 🔹 Mode édition en masse
+    editRoute.path.forEach((p) => {
+      newConfig[p] = editRoles
+    })
+  } else {
+    // 🔹 Édition simple
+    newConfig[editRoute.path] = editRoles
+  }
+
   console.log("💾 Sauvegarde config :", newConfig)
-saveConfig(newConfig)
+  saveConfig(newConfig)
 
   setShowEdit(false)
   setEditRoute(null)
+  setSelectedRoutes([]) // reset sélection
   showSuccess('Rôles mis à jour')
 }
 
 
-  // Filtrage recherche
-  const filtered = routes.filter(
-    (r) =>
-      r.name?.toLowerCase().includes(search.toLowerCase()) ||
-      r.path?.toLowerCase().includes(search.toLowerCase())
-  )
+
+
 
   return (
     <div className="container py-4">
@@ -137,6 +161,18 @@ saveConfig(newConfig)
         </CCardHeader>
 
         <CCardBody>
+          <CButton
+  color="primary"
+  disabled={selectedRoutes.length === 0}
+  onClick={() => {
+    setEditRoute({ path: selectedRoutes }) // on passe plusieurs paths
+    setEditRoles([]) // ou roles communs si tu veux
+    setShowEdit(true)
+  }}
+>
+  Modifier en masse ({selectedRoutes.length})
+</CButton>
+
           {/* Champ recherche */}
           <CFormInput
             className="mb-3"
@@ -150,6 +186,7 @@ saveConfig(newConfig)
           <CTable striped hover responsive>
             <CTableHead>
               <CTableRow>
+                <CTableHeaderCell></CTableHeaderCell>
                 <CTableHeaderCell>Nom</CTableHeaderCell>
                 <CTableHeaderCell>Chemin</CTableHeaderCell>
                 <CTableHeaderCell>Rôles</CTableHeaderCell>
@@ -160,10 +197,22 @@ saveConfig(newConfig)
             </CTableHead>
             <CTableBody>
               {filtered.length ? (
-                filtered.map((r, idx) => {
+                paginated.map((r, idx) => {
                   const currentRoles = config[r.path] ?? r.roles ?? []
                   return (
                     <CTableRow key={idx}>
+                        <CTableDataCell>
+                        <CFormCheck
+                          checked={selectedRoutes.includes(r.path)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedRoutes((prev) => [...prev, r.path])
+                            } else {
+                              setSelectedRoutes((prev) => prev.filter((p) => p !== r.path))
+                            }
+                          }}
+                        />
+                      </CTableDataCell>
                       <CTableDataCell>{r.name}</CTableDataCell>
                       <CTableDataCell>{r.path}</CTableDataCell>
                       <CTableDataCell>
@@ -201,6 +250,26 @@ saveConfig(newConfig)
               )}
             </CTableBody>
           </CTable>
+          <div className="d-flex justify-content-center align-items-center mt-3 gap-3">
+  <CButton
+    disabled={page === 1}
+    onClick={() => setPage((p) => Math.max(p - 1, 1))}
+  >
+    Précédent
+  </CButton>
+
+  <span>
+    Page {page} / {totalPages}
+  </span>
+
+  <CButton
+    disabled={page === totalPages}
+    onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+  >
+    Suivant
+  </CButton>
+</div>
+
         </CCardBody>
       </CCard>
 

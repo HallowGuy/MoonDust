@@ -6,6 +6,8 @@ const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 const Users = React.lazy(() => import('./views/settings/list/Users'))
 const Roles = React.lazy(() => import('./views/settings/list/Roles'))
+const Groupes = React.lazy(() => import('./views/settings/list/Groupes'))
+
 const Documents = React.lazy(() => import('./views/import/Documents'))
 const ThemeColors = React.lazy(() => import('./views/settings/custom/ThemeColors'))
 const ThemeLogo = React.lazy(() => import('./views/settings/custom/ThemeLogo'))
@@ -16,6 +18,8 @@ const Workflow = React.lazy(() => import('./views/wkf/Workflow'))
 const DetailConge = React.lazy(() => import('./views/wkf/DetailConge'))
 const Callback = React.lazy(() => import('./views/pages/login/Callback'))
 const RouteEdition = React.lazy(() => import('./views/settings/RouteEdition'))
+const Profil = React.lazy(() => import('./views/pages/profil/Profil.js'))
+
 
 
 
@@ -74,6 +78,8 @@ const routes = [
   { path: '/settings/list/users', name: 'Gestion des utilisateurs', element: Users, roles: ['admin'] },
   { path: '/import/documents', name: 'Gestion des documents', element: Documents },
   { path: '/settings/list/roles', name: 'Gestion des rôles', element: Roles,  roles: ['admin'] },
+    { path: '/settings/list/groupes', name: 'Gestion des groupes', element: Groupes},
+
     { path: '/settings/custom/themecolors', name: 'Gestion des couleurs', element: ThemeColors, roles: ['admin'] },
 { path: '/settings/custom/themelogo', name: 'Gestion du logo', element: ThemeLogo, roles: ['admin'] },
 { path: '/settings/custom/auditlogs', name: 'Journal audit', element: AuditLogs, roles: ['admin'] },
@@ -83,6 +89,7 @@ const routes = [
 { path: '/wkf/avancementworkflow', name: 'Avancement Workflow', element: AvancementWorkflow },
 { path: '/wkf/workflow', name: 'Liste Workflow', element: Workflow },
 { path: '/wkf/DetailConge/detail/:id', name: 'Liste CongesList', element: DetailConge },
+{ path: '/pages/profil/profil', name: 'Mon profil', element: Profil },
 
 
 

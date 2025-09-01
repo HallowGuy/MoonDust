@@ -11,12 +11,16 @@ import { fileURLToPath } from "url"
 import path from "path"
 import fs from "fs/promises"
 import fssync from "fs"
+import jwt from "jsonwebtoken"
+import jwksClient from "jwks-rsa"
+
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // ---------------- CONFIG ROUTES ----------------
 const CONFIG_FILE = path.join(__dirname, "routes-config.json")
+
 
 
 const app = express()
@@ -38,6 +42,14 @@ app.use(
 )
 
 app.use(express.json())
+
+function getKey(header, callback) {
+  client.getSigningKey(header.kid, (err, key) => {
+    if (err) return callback(err)
+    const signingKey = key.getPublicKey()
+    callback(null, signingKey)
+  })
+}
 
 // Healthcheck
 app.get("/health", (_req, res) => {
@@ -124,6 +136,10 @@ async function getAdminToken() {
   const data = await res.json()
   return data.access_token
 }
+
+const client = jwksClient({
+  jwksUri: `${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/certs`,
+})
 // ------------------- KEYCLOAK USERS -------------------
 
 // 🚀 Lister tous les utilisateurs
@@ -300,6 +316,48 @@ app.get("/api/users/:id/roles", async (req, res) => {
     res.json(roles)
   } catch (err) {
     console.error("❌ Erreur get user roles:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.get("/api/me/roles", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+      return res.status(401).json({ error: "Token manquant" })
+    }
+
+    const tokenUser = authHeader.split(" ")[1]
+    const decoded = jwt.decode(tokenUser)
+
+    if (!decoded || !decoded.sub) {
+      return res.status(401).json({ error: "Token utilisateur invalide" })
+    }
+
+    const userId = decoded.sub // UUID du user dans Keycloak
+
+    // 🔑 Récupérer un token admin
+    const tokenAdmin = await getAdminToken()
+
+    // 🔎 Appeler Keycloak pour récupérer les rôles du user
+    const rolesRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/users/${userId}/role-mappings/realm`,
+      {
+        headers: { Authorization: `Bearer ${tokenAdmin}` },
+      }
+    )
+
+    if (!rolesRes.ok) {
+      const errorText = await rolesRes.text()
+      throw new Error(`Erreur Keycloak: ${rolesRes.status} - ${errorText}`)
+    }
+
+    const roles = await rolesRes.json()
+
+    // 👉 Retourne juste la liste des noms de rôles
+    res.json({ roles: roles.map(r => r.name) })
+  } catch (err) {
+    console.error("❌ Erreur /api/me/roles:", err.message)
     res.status(500).json({ error: err.message })
   }
 })
@@ -485,6 +543,259 @@ app.get("/api/roles/:roleName/users", async (req, res) => {
   }
 })
 
+//
+// 🔹 CRUD GROUPES
+//
+
+// ✅ Lister tous les groupes
+// Liste des groupes + sous-groupes
+
+app.post("/api/groupes", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+
+    // 🔹 Récupère le nom et sous-groupes envoyés depuis le frontend
+    const { name, subGroups = [] } = req.body
+
+    if (!name) {
+      return res.status(400).json({ error: "Le nom du groupe est requis" })
+    }
+
+    // --- 1. Créer le groupe ---
+    const kcRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/groups`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name }),
+      }
+    )
+
+    if (!kcRes.ok) {
+      const err = await kcRes.text()
+      return res.status(kcRes.status).json({ error: err })
+    }
+
+    // --- 2. Récupérer l’ID du groupe créé depuis le header Location ---
+    const location = kcRes.headers.get("Location")
+    const groupId = location?.split("/").pop()
+
+    // --- 3. Créer les sous-groupes ---
+    for (const sg of subGroups) {
+      await fetch(
+        `${KEYCLOAK_URL}/admin/realms/${REALM}/groups/${groupId}/children`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: sg }),
+        }
+      )
+    }
+
+    res.status(201).json({ success: true, id: groupId })
+  } catch (err) {
+    console.error("❌ Erreur création groupe:", err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
+
+
+// ✅ Modifier un groupe
+app.put("/api/groupes/:id", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const kcRes = await fetch(`${KEYCLOAK_URL}/admin/realms/${REALM}/groups/${req.params.id}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(req.body),
+    })
+    if (!kcRes.ok) throw new Error(await kcRes.text())
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ✅ Supprimer un groupe
+app.delete("/api/groupes/:id", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const kcRes = await fetch(`${KEYCLOAK_URL}/admin/realms/${REALM}/groups/${req.params.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!(kcRes.ok || kcRes.status === 204)) throw new Error(await kcRes.text())
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+//
+// 🔹 Utilisateurs d’un groupe
+//
+// Récupère les utilisateurs d’un groupe (par nom, y compris sous-groupes)
+// GET /api/groupes/:id/users
+app.get("/api/groupes/:id/users", async (req, res) => {
+  try {
+    const { id } = req.params
+    const token = await getAdminToken()
+
+    const usersRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/groups/${id}/members`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+
+    if (!usersRes.ok) {
+      const errorText = await usersRes.text()
+      throw new Error(`Erreur Keycloak: ${usersRes.status} - ${errorText}`)
+    }
+
+    const users = await usersRes.json()
+    res.json(users)
+  } catch (err) {
+    console.error("❌ Erreur get group users:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.get("/api/groupes", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const kcRes = await fetch(`${KEYCLOAK_URL}/admin/realms/${REALM}/groups`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!kcRes.ok) throw new Error(await kcRes.text())
+    res.json(await kcRes.json())
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ✅ Récupérer les sous-groupes d’un groupe par son ID
+app.get("/api/groupes/:id/subgroups", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+
+    const { id } = req.params
+    const subgroupsRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/groups/${id}/children`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+
+    if (!subgroupsRes.ok) {
+      const err = await subgroupsRes.text()
+      return res.status(subgroupsRes.status).json({ error: err })
+    }
+
+    const subgroups = await subgroupsRes.json()
+    res.json(subgroups)
+  } catch (err) {
+    console.error("❌ Erreur récupération sous-groupes :", err)
+    res.status(500).json({ error: "Erreur serveur" })
+  }
+})
+
+
+app.post("/api/groupes/:id/subgroups", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const { id } = req.params
+    const { name } = req.body
+
+    const createRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/groups/${id}/children`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name }),
+      }
+    )
+
+    if (!createRes.ok) {
+      const err = await createRes.text()
+      return res.status(createRes.status).json({ error: err })
+    }
+
+    res.json({ success: true })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: "Erreur création sous-groupe" })
+  }
+})
+
+app.put("/api/groupes/:id", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const { id } = req.params
+    const { name, path, attributes } = req.body
+
+    const updateRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/groups/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, path, attributes }),
+      }
+    )
+
+    if (!updateRes.ok) {
+      const err = await updateRes.text()
+      return res.status(updateRes.status).json({ error: err })
+    }
+
+    res.json({ success: true })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: "Erreur update groupe" })
+  }
+})
+
+app.delete("/api/groupes/:id", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const { id } = req.params
+
+    const deleteRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/groups/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      }
+    )
+
+    if (!deleteRes.ok) {
+      const err = await deleteRes.text()
+      return res.status(deleteRes.status).json({ error: err })
+    }
+
+    res.json({ success: true })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: "Erreur suppression groupe" })
+  }
+})
 
 
 // 👉 servir les fichiers uploadés

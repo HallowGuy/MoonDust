@@ -19,6 +19,7 @@ import {
   
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import { API_ROUTES_CONFIG, API_BASE } from 'src/api'
 
 const _nav = [
   {
@@ -45,6 +46,12 @@ const _nav = [
   },
   {
     component: CNavItem,
+    name: 'Liste groupes',
+    to: '/settings/list/groupes',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
     name: 'Documents',
     to: '/import/documents',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
@@ -58,7 +65,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Edition route',
-    to: '/settings/custom/EditionRoute',
+    to: '/settings/custom/editionRoute',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
   {
@@ -573,5 +580,57 @@ const _nav = [
     icon: <CIcon icon={cilPencil} customClassName="nav-icon" />,
   },
 ]
+
+export async function getUserRoles() {
+  const token = localStorage.getItem("access_token")
+  //console.log("🔑 Token envoyé à /me/roles:", token)
+
+  const res = await fetch(`${API_BASE}/me/roles`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  //console.log("📡 Status réponse /me/roles:", res.status)
+
+  if (!res.ok) {
+    console.error("❌ Erreur brut /me/roles:", await res.text())
+    throw new Error("Impossible de récupérer les rôles utilisateur")
+  }
+
+  const data = await res.json()
+  //console.log("📥 Réponse JSON /me/roles:", data)
+
+  const roles = data.roles || []
+  console.log("✅ Rôles utilisateur extraits:", roles)
+
+  return roles
+}
+
+
+export async function buildNav() {
+  const roles = await getUserRoles()
+  const res = await fetch(API_ROUTES_CONFIG)
+  const config = await res.json()
+
+  const filterNav = (items) =>
+    items
+      .map((item) => {
+        if (item.items) {
+          const sub = filterNav(item.items)
+          return sub.length ? { ...item, items: sub } : null
+        } else if (item.to) {
+          const allowedRoles = config[item.to] || []
+          //console.log("🔎 Vérif accès:", item.to, "→ requis:", allowedRoles, "→ user:", roles)
+
+          if (allowedRoles.length === 0) return item
+          return allowedRoles.some((r) => roles.includes(r)) ? item : null
+        }
+        return item
+      })
+      .filter(Boolean)
+
+  return filterNav(_nav)
+}
 
 export default _nav

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
@@ -15,16 +15,29 @@ import CIcon from '@coreui/icons-react'
 import { AppSidebarNav } from './AppSidebarNav'
 import { logo } from 'src/assets/brand/logo'
 import { sygnet } from 'src/assets/brand/sygnet'
-import { API_THEME_LOGO  } from 'src/api'
+import { API_THEME_LOGO } from 'src/api'
 
-
-// sidebar nav config
-import navigation from '../_nav'
+import { buildNav } from '../_nav'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
+
+  const [navItems, setNavItems] = useState([])
+
+  useEffect(() => {
+    const fetchNav = async () => {
+      try {
+        const filtered = await buildNav()
+        setNavItems(filtered)
+      } catch (err) {
+        console.error("❌ Erreur chargement menu:", err)
+        setNavItems([]) // fallback vide ou tu pourrais charger _nav brut
+      }
+    }
+    fetchNav()
+  }, [])
 
   return (
     <CSidebar
@@ -38,15 +51,13 @@ const AppSidebar = () => {
       }}
     >
       <CSidebarHeader className="border-bottom">
-        {/* ✅ Utilise Link de React Router */}
-          <CSidebarBrand as={Link} to="/">
+        <CSidebarBrand as={Link} to="/">
           <img
-  src={API_THEME_LOGO}
-  alt="Logo"
-  className="sidebar-brand-full"
-  style={{ width: "90%", height: "auto" }}
-/>
-
+            src={API_THEME_LOGO}
+            alt="Logo"
+            className="sidebar-brand-full"
+            style={{ width: "90%", height: "auto" }}
+          />
           <CIcon
             customClassName="sidebar-brand-narrow"
             icon={sygnet}
@@ -61,7 +72,8 @@ const AppSidebar = () => {
         />
       </CSidebarHeader>
 
-      <AppSidebarNav items={navigation} />
+      {/* 🔥 Ici on passe la navigation filtrée */}
+      <AppSidebarNav items={navItems} />
 
       <CSidebarFooter className="border-top d-none d-lg-flex">
         <CSidebarToggler

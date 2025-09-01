@@ -1,11 +1,11 @@
 {
   "/dashboard": [
     "contribute",
-    "default-roles-realm_reunion"
+    "default-roles-realm_reunion",
+    "admin"
   ],
   "/settings/custom/themecolors": [
-    "admin",
-    "contribute"
+    "read"
   ],
   "/settings/list/users": [
     "admin",
@@ -15,6 +15,18 @@
   ],
   "/": [
     "default-roles-realm_reunion",
+    "read"
+  ],
+  "/settings/custom/editionroute": [
+    "admin"
+  ],
+  "/import/documents": [
+    "read"
+  ],
+  "/settings/list/roles": [
+    "admin"
+  ],
+  "/settings/custom/themelogo": [
     "read"
   ]
 }
