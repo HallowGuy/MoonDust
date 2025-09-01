@@ -45,5 +45,12 @@ export const API_USER_ROLES = (userId) => `${API_BASE}/users/${userId}/roles`
 export const API_ROLES = `${API_BASE}/roles`
 export const API_ROLE_USERS = (roleName) => `${API_ROLES}/${roleName}/users`
 
+// ---------- ENDPOINTS ROLES ----------
+export const API_GROUPES = `${API_BASE}/groupes`
+export const API_GROUPE_USERS = (groupeId) => `${API_GROUPES}/${groupeId}/users`
+
+export const API_GROUPE_SUBGROUPS = (id) => `${API_GROUPES}/${id}/subgroups`
+
+
 // ---------- ENDPOINTS ROUTES CONFIG ----------
 export const API_ROUTES_CONFIG = `${API_BASE}/routes-config`

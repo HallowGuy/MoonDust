@@ -10,6 +10,7 @@ import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilCheckCircle, cilXCircle } from '@coreui/icons'
 import Select from 'react-select'
 import { API_USERS, API_ROLES, API_USER_ROLES } from 'src/api'
+import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal"
 
 
 const Users = () => {
@@ -172,22 +173,7 @@ const Users = () => {
 
 
   // ---------- DELETE ----------
-  const handleDelete = async (id) => {
-    if (!window.confirm('Supprimer cet utilisateur ?')) return
-    try {
-      const res = await fetch(`${API_USERS}/${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-      })
-      if (!(res.ok || res.status === 204)) {
-        throw new Error('Suppression impossible')
-      }
-      setUsers((prev) => prev.filter((u) => u.id !== id))
-      showSuccess('Utilisateur supprimé')
-    } catch (e) {
-      showError(e.message || 'Erreur lors de la suppression')
-    }
-  }
+  
 
   // Styles dynamiques pour react-select
   const customStyles = {
@@ -240,14 +226,14 @@ const Users = () => {
           </CButton>
         </CCardHeader>
         <CCardBody>
-          <CTable striped hover responsive>
+          <CTable striped hover responsive className="align-middle">
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell>Username</CTableHeaderCell>
+                <CTableHeaderCell>Identifiant</CTableHeaderCell>
                 <CTableHeaderCell>Email</CTableHeaderCell>
                 <CTableHeaderCell>Nom complet</CTableHeaderCell>
                 <CTableHeaderCell style={{ width: '100px', textAlign: 'center' }}>Actif</CTableHeaderCell>
-                <CTableHeaderCell style={{ width: '100px', textAlign: 'center' }}>Actions</CTableHeaderCell>
+                <CTableHeaderCell style={{textAlign: 'center' }}>Actions</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
@@ -258,19 +244,38 @@ const Users = () => {
                   <CTableDataCell>{`${u.firstName || ''} ${u.lastName || ''}`}</CTableDataCell>
                   <CTableDataCell style={{ width: '100px', textAlign: 'center' }}>
                     {u.enabled ? (
-                      <CIcon icon={cilCheckCircle} className="text-success" />
+                      <CIcon icon={cilCheckCircle} className="text-success" size="lg"  />
                     ) : (
-                      <CIcon icon={cilXCircle} className="text-danger" />
+                      <CIcon icon={cilXCircle} className="text-danger" size="lg"  />
                     )}
                   </CTableDataCell>
-                  <CTableDataCell style={{ width: '100px', textAlign: 'center' }}>
-                    <CButton size="sm" color="secondary" className="me-2" variant="ghost"
+                  <CTableDataCell style={{ textAlign: 'center' }}>
+                    <CButton size="sm" color="success" className="me-2" variant="ghost"
                       onClick={() => openOffcanvas(u)}>
-                      <CIcon icon={cilPencil} />
+                      <CIcon icon={cilPencil} size="lg" />
                     </CButton>
-                    <CButton size="sm" color="danger" variant="ghost" onClick={() => handleDelete(u.id)}>
-                      <CIcon icon={cilTrash} />
-                    </CButton>
+                    <ConfirmDeleteModal
+  title="Supprimer l'utilisateur"
+  message="Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
+  trigger={
+    <CButton size="sm" color="danger" variant="ghost">
+      <CIcon icon={cilTrash} size="lg" />
+    </CButton>
+  }
+  onConfirm={async () => {
+    const res = await fetch(`${API_USERS}/${u.id}`, { method: "DELETE" })
+    if (!res.ok) {
+      const errorText = await res.text()
+      throw new Error(errorText || "Suppression impossible")
+    }
+
+    // ⚡ Mets à jour ton state utilisateur
+setUsers((prev) => prev.filter((user) => user.id !== u.id))
+
+    showSuccess("✅ Utilisateur supprimé")
+  }}
+/>
+
                   </CTableDataCell>
                 </CTableRow>
               ))}

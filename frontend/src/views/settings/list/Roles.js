@@ -9,6 +9,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilUser } from '@coreui/icons'
 import { API_ROLES, API_ROLE_USERS } from 'src/api'
+import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal"
 
 const Roles = () => {
   const [roles, setRoles] = useState([])
@@ -151,21 +152,7 @@ const openUsers = async (roleName) => {
     }
   }
 
-  // ---------- DELETE ----------
-  const handleDelete = async (name) => {
-    if (!window.confirm('Supprimer ce rôle ?')) return
-    try {
-      const res = await fetch(`${API_ROLES}/${name}`, { method: 'DELETE' })
-      if (!(res.ok || res.status === 204)) {
-        const payload = await safeJson(res)
-        throw new Error(payload?.error || 'Suppression impossible')
-      }
-      setRoles((prev) => prev.filter((r) => r.name !== name))
-      showSuccess('Rôle supprimé')
-    } catch (e) {
-      showError(e.message || 'Erreur lors de la suppression')
-    }
-  }
+  
 
   const filtered = roles.filter(
     (r) =>
@@ -216,9 +203,21 @@ const openUsers = async (roleName) => {
                       </CButton>
                       <CButton size="sm" color="info" variant="ghost" onClick={() => openUsers(r.name)}><CIcon icon={cilUser} size="lg" /></CButton>
 
-                      <CButton size="sm" color="danger" variant="ghost" onClick={() => handleDelete(r.name)}>
-                        <CIcon icon={cilTrash} size="lg" />
-                      </CButton>
+                      <ConfirmDeleteModal
+                        title="Supprimer le rôle"
+                        message="Êtes-vous sûr de vouloir supprimer ce rôle ? Cette action est irréversible."
+                        trigger={
+                          <CButton size="sm" color="danger" variant="ghost">
+                            <CIcon icon={cilTrash} size="lg" />
+                          </CButton>
+                        }
+                        onConfirm={async () => {
+    const res = await fetch(`${API_ROLES}/${r.name}`, { method: "DELETE" })
+    if (!res.ok) throw new Error("Suppression impossible")
+    setRoles((prev) => prev.filter((rr) => rr.name !== r.name))
+    showSuccess("✅ Rôle supprimé")
+                        }}
+                      />
                     </CTableDataCell>
                   </CTableRow>
                 ))
