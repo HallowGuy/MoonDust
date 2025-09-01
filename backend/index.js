@@ -13,7 +13,18 @@ import fs from "fs/promises"
 import fssync from "fs"
 import jwt from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
-
+import swaggerUi from "swagger-ui-express";
+import swaggerJSDoc from "swagger-jsdoc";  // ✅ import correct
+import auditRoutes from "./routes/audit.js";
+import configRoutes from "./routes/config.js";
+import congesRoutes from "./routes/conges.js";
+import documentsRoutes from "./routes/documents.js";
+import groupesRoutes from "./routes/groupes.js";
+import rolesRoutes from "./routes/roles.js";
+import systemRoutes from "./routes/system.js";
+import themeRoutes from "./routes/theme.js";
+import usersRoutes from "./routes/users.js";
+import helloRoutes from "./routes/hello.js";
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -50,6 +61,41 @@ function getKey(header, callback) {
     callback(null, signingKey)
   })
 }
+
+// Configuration Swagger
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "API MoonDust",
+      version: "1.0.0",
+      description: "Documentation MoonDust avec Swagger",
+    },
+    servers: [{ url: "http://localhost:5001" }],
+  },
+  apis: ["./routes/*.js"], // chemin vers tes fichiers de routes annotés
+};
+
+const swaggerSpec = swaggerJSDoc(swaggerOptions);
+
+// --- Swagger ---
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get("/api-docs-json", (req, res) => res.json(swaggerSpec));
+
+// --- Routes API ---
+app.use("/api/audit", auditRoutes);
+app.use("/api/config", configRoutes);
+app.use("/api/conges", congesRoutes);
+app.use("/api/documents", documentsRoutes);
+app.use("/api/groupes", groupesRoutes);
+app.use("/api/roles", rolesRoutes);
+app.use("/api/system", systemRoutes);
+app.use("/api/theme", themeRoutes);
+app.use("/api/users", usersRoutes);
+app.use("/api", helloRoutes);
+
+
+
 
 // Healthcheck
 app.get("/health", (_req, res) => {
