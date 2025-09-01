@@ -1,4 +1,5 @@
 import React from 'react'
+import PrivateRoute from './components/PrivateRoute'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
@@ -13,6 +14,8 @@ const Test = React.lazy(() => import('./views/wkf/Test'))
 const AvancementWorkflow = React.lazy(() => import('./views/wkf/AvancementWorkflow'))
 const Workflow = React.lazy(() => import('./views/wkf/Workflow'))
 const DetailConge = React.lazy(() => import('./views/wkf/DetailConge'))
+const Callback = React.lazy(() => import('./views/pages/login/Callback'))
+const RouteEdition = React.lazy(() => import('./views/settings/RouteEdition'))
 
 
 
@@ -68,13 +71,15 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
- { path: '/settings/list/users', name: 'Gestion des utilisateurs', element: Users },
+  { path: '/settings/list/users', name: 'Gestion des utilisateurs', element: Users, roles: ['admin'] },
   { path: '/import/documents', name: 'Gestion des documents', element: Documents },
-  { path: '/settings/list/roles', name: 'Gestion des rôles', element: Roles },
-    { path: '/settings/custom/themecolors', name: 'Gestion des couleurs', element: ThemeColors },
-{ path: '/settings/custom/themelogo', name: 'Gestion du logo', element: ThemeLogo },
-{ path: '/settings/custom/auditlogs', name: 'Journal audit', element: AuditLogs },
-{ path: '/wkf/test', name: 'Test Workflow', element: Test },
+  { path: '/settings/list/roles', name: 'Gestion des rôles', element: Roles,  roles: ['admin'] },
+    { path: '/settings/custom/themecolors', name: 'Gestion des couleurs', element: ThemeColors, roles: ['admin'] },
+{ path: '/settings/custom/themelogo', name: 'Gestion du logo', element: ThemeLogo, roles: ['admin'] },
+{ path: '/settings/custom/auditlogs', name: 'Journal audit', element: AuditLogs, roles: ['admin'] },
+{ path: '/settings/custom/editionroute', name: 'Édition des accès', element: RouteEdition, roles: ['admin'] },
+
+{ path: '/wkf/test', name: 'Test Workflow', element: Test, roles: ['read']  },
 { path: '/wkf/avancementworkflow', name: 'Avancement Workflow', element: AvancementWorkflow },
 { path: '/wkf/workflow', name: 'Liste Workflow', element: Workflow },
 { path: '/wkf/DetailConge/detail/:id', name: 'Liste CongesList', element: DetailConge },

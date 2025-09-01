@@ -1,0 +1,20 @@
+{
+  "/dashboard": [
+    "contribute",
+    "default-roles-realm_reunion"
+  ],
+  "/settings/custom/themecolors": [
+    "admin",
+    "contribute"
+  ],
+  "/settings/list/users": [
+    "admin",
+    "contribute",
+    "default-roles-realm_reunion",
+    "offline_access"
+  ],
+  "/": [
+    "default-roles-realm_reunion",
+    "read"
+  ]
+}

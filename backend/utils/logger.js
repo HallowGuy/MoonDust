@@ -1,6 +1,7 @@
-const pool = require('../db')
+// utils/logger.js
+import pool from "../db.js"
 
-async function logAction(actor_user_id, entity_type, entity_id, action, meta = {}) {
+export async function logAction(actor_user_id, entity_type, entity_id, action, meta = {}) {
   try {
     await pool.query(
       `INSERT INTO demo_first.audit_log 
@@ -9,8 +10,6 @@ async function logAction(actor_user_id, entity_type, entity_id, action, meta = {
       [actor_user_id, entity_type, entity_id, action, meta]
     )
   } catch (err) {
-    console.error('❌ Erreur enregistrement audit_log:', err)
+    console.error("❌ Erreur enregistrement audit_log:", err)
   }
 }
-
-module.exports = { logAction }
