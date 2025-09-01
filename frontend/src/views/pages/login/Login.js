@@ -18,6 +18,10 @@ const Login = () => {
   const handleLogin = async () => {
     const { verifier, challenge } = await generatePKCE()
     sessionStorage.setItem('pkce_verifier', verifier)
+console.log("👉 VITE_KEYCLOAK_URL:", import.meta.env.VITE_KEYCLOAK_URL)
+console.log("👉 VITE_REALM:", import.meta.env.VITE_REALM)
+console.log("👉 VITE_FRONT_ID:", import.meta.env.VITE_FRONT_ID)
+console.log("ENV:", import.meta.env);
 
 const url = new URL(`${import.meta.env.VITE_KEYCLOAK_URL}/realms/${import.meta.env.VITE_REALM}/protocol/openid-connect/auth`)
     url.searchParams.append('client_id', CLIENT_ID)
