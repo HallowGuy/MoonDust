@@ -37,6 +37,10 @@ services:
       args:
         # Optionally set at build-time; code defaults to '/api' if unset
         VITE_API_URL: ${VITE_API_URL:-}
+        # Ensure Keycloak config is baked for production builds
+        VITE_KEYCLOAK_URL: ${KEYCLOAK_PORT_HOST:+http://localhost:${KEYCLOAK_PORT_HOST}}
+        VITE_REALM: ${REALM:-REALM_REUNION}
+        VITE_FRONT_ID: ${VITE_FRONT_ID:-react-app}
     container_name: ${FRONTEND_CONTAINER_NAME}
     ports:
       - "${FRONTEND_PORT_HOST}:${FRONTEND_PORT_CONTAINER}"
