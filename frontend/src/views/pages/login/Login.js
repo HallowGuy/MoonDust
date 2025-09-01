@@ -12,18 +12,25 @@ import {
   CForm,
   CRow,
 } from '@coreui/react'
-import { API_THEME_LOGO  } from 'src/api'
-const CLIENT_ID = import.meta.env.VITE_FRONT_ID
+import { API_THEME_LOGO, KEYCLOAK_URL as KC_URL, REALM, CLIENT_ID } from 'src/api'
+import { safeBuildUrl } from 'src/utils/url'
 const Login = () => {
   const handleLogin = async () => {
     const { verifier, challenge } = await generatePKCE()
     sessionStorage.setItem('pkce_verifier', verifier)
 
-const url = new URL(`${import.meta.env.VITE_KEYCLOAK_URL}/realms/${import.meta.env.VITE_REALM}/protocol/openid-connect/auth`)
+    const redirectUri = `${window.location.origin}/callback`
+    if (!REALM || !CLIENT_ID) {
+      console.error('Missing REALM or CLIENT_ID', { REALM, CLIENT_ID })
+      return
+    }
+    const authUrlStr = safeBuildUrl(`/realms/${REALM}/protocol/openid-connect/auth`, KC_URL)
+    if (!authUrlStr) return
+    const url = new URL(authUrlStr)
     url.searchParams.append('client_id', CLIENT_ID)
     url.searchParams.append('response_type', 'code')
     url.searchParams.append('scope', 'openid profile email')
-    url.searchParams.append('redirect_uri', 'http://localhost:3002/callback')
+    url.searchParams.append('redirect_uri', redirectUri)
     url.searchParams.append('code_challenge', challenge)
     url.searchParams.append('code_challenge_method', 'S256')
     url.searchParams.append('prompt', 'login')
@@ -51,16 +58,13 @@ const url = new URL(`${import.meta.env.VITE_KEYCLOAK_URL}/realms/${import.meta.e
               {/* Connexion */}
               <CCard className="p-5 shadow-lg border-0 text-center">
                 <CCardBody>
-                  
+
                   <div>
                     <h2>Connexion</h2>
                     <p className="mt-3">Connectez-vous à votre compte via <strong>Keycloak</strong></p>
-                    <Link to="/login">
-                       <CButton color="primary" className="px-4 text-center" onClick={handleLogin}>
-                          Se connecter
-                        </CButton>
-                        
-                    </Link>
+                    <CButton type="button" color="primary" className="px-4 text-center" onClick={handleLogin}>
+                      Se connecter
+                    </CButton>
                   </div>
                 </CCardBody>
               </CCard>

@@ -12,9 +12,27 @@ export const API_THEME = `${API_BASE}/theme`
 // ---------------------
 // Keycloak
 // ---------------------
-export const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL
-export const REALM = import.meta.env.VITE_KEYCLOAK_REALM
-export const CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID
+// Align with frontend/.env keys and add safe fallbacks
+// Allows runtime override via window.__ENV if served statically.
+const runtimeEnv = typeof window !== 'undefined' ? (window.__ENV || {}) : {}
+export const KEYCLOAK_URL =
+  import.meta.env.VITE_KEYCLOAK_URL || runtimeEnv.VITE_KEYCLOAK_URL || 'http://localhost:8081'
+export const REALM =
+  import.meta.env.VITE_REALM || runtimeEnv.VITE_REALM || 'REALM_REUNION'
+export const CLIENT_ID =
+  import.meta.env.VITE_FRONT_ID || runtimeEnv.VITE_FRONT_ID || 'react-app'
+
+if (typeof window !== 'undefined') {
+  if (!import.meta.env.VITE_KEYCLOAK_URL && !runtimeEnv.VITE_KEYCLOAK_URL) {
+    console.warn('[config] VITE_KEYCLOAK_URL missing – using default', KEYCLOAK_URL)
+  }
+  if (!import.meta.env.VITE_REALM && !runtimeEnv.VITE_REALM) {
+    console.warn('[config] VITE_REALM missing – using default', REALM)
+  }
+  if (!import.meta.env.VITE_FRONT_ID && !runtimeEnv.VITE_FRONT_ID) {
+    console.warn('[config] VITE_FRONT_ID missing – using default', CLIENT_ID)
+  }
+}
 
 // Base URL Admin Keycloak
 export const BASE_URL = `${KEYCLOAK_URL}/admin/realms/${REALM}`

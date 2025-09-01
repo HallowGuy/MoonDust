@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react'
 import { CContainer, CRow, CCol, CCard, CCardBody } from '@coreui/react'
+import { KEYCLOAK_URL as KC_URL, REALM, CLIENT_ID } from 'src/api'
+import { safeBuildUrl } from 'src/utils/url'
 
 const Callback = () => {
   useEffect(() => {
@@ -12,14 +14,22 @@ const Callback = () => {
       return
     }
 
-    fetch('http://localhost:8081/realms/REALM_REUNION/protocol/openid-connect/token', {
+    if (!REALM || !CLIENT_ID) {
+      console.error('Missing REALM or CLIENT_ID', { REALM, CLIENT_ID })
+      return
+    }
+    const tokenUrl = safeBuildUrl(`/realms/${REALM}/protocol/openid-connect/token`, KC_URL)
+    if (!tokenUrl) return
+    const redirectUri = `${window.location.origin}/callback`
+
+    fetch(tokenUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
-        client_id: 'react-app',
+        client_id: CLIENT_ID,
         code,
-        redirect_uri: 'http://localhost:3002/callback',
+        redirect_uri: redirectUri,
         code_verifier: verifier,
       }),
     })
