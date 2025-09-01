@@ -9,7 +9,8 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilCheckCircle, cilXCircle } from '@coreui/icons'
 import Select from 'react-select'
-import { API_USERS, API_ROLES } from 'src/api'
+import { API_USERS, API_ROLES, API_USER_ROLES } from 'src/api'
+
 
 const Users = () => {
   const [users, setUsers] = useState([])
@@ -20,7 +21,8 @@ const Users = () => {
   const [editUser, setEditUser] = useState(null)
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
-  const [displayName, setDisplayName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [isActive, setIsActive] = useState(true)
   const [userRoles, setUserRoles] = useState([])
 
@@ -34,10 +36,15 @@ const Users = () => {
   const showSuccess = (msg) => addToast(msg, 'success')
   const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id))
 
+  const getAuthHeaders = () => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+  })
+
   // ---------- FETCH DATA ----------
   const fetchUsers = async () => {
     try {
-      const res = await fetch(API_USERS)
+      const res = await fetch(`${API_USERS}`, { headers: getAuthHeaders() })
       if (!res.ok) throw new Error('Impossible de charger les utilisateurs')
       const data = await res.json()
       setUsers(data)
@@ -48,7 +55,7 @@ const Users = () => {
 
   const fetchRoles = async () => {
     try {
-      const res = await fetch(API_ROLES)
+      const res = await fetch(`${API_ROLES}`, { headers: getAuthHeaders() })
       if (!res.ok) throw new Error('Impossible de charger les rôles')
       const data = await res.json()
       setRoles(data)
@@ -59,7 +66,7 @@ const Users = () => {
 
   const fetchUserRoles = async (id) => {
     try {
-      const res = await fetch(`${API_USERS}/${id}/roles`)
+    const res = await fetch(`${API_USERS}/${id}/roles`, { headers: getAuthHeaders() })
       if (!res.ok) return []
       return await res.json()
     } catch (e) {
@@ -78,75 +85,102 @@ const Users = () => {
     if (user) {
       setEditUser(user)
       setUsername(user.username)
-      setEmail(user.email)
-      setDisplayName(user.display_name || '')
-      setIsActive(user.is_active)
+      setEmail(user.email || '')
+      setFirstName(user.firstName || '')
+      setLastName(user.lastName || '')
+      setIsActive(user.enabled)
 
       // Charger ses rôles
       const r = await fetchUserRoles(user.id)
-      setUserRoles(r.map((role) => role.id))
+      setUserRoles(r.map((role) => role.name))
     } else {
       setEditUser(null)
       setUsername('')
       setEmail('')
-      setDisplayName('')
+      setFirstName('')
+      setLastName('')
       setIsActive(true)
       setUserRoles([])
     }
     setVisible(true)
   }
 
-  // ---------- SAVE USER ----------
   const handleSave = async () => {
-    const payload = { username, email, display_name: displayName, is_active: isActive }
-    try {
-      let userSaved
-      if (editUser) {
-        const res = await fetch(`${API_USERS}/${editUser.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
-        userSaved = await res.json()
-        if (!res.ok) throw new Error(userSaved?.error || 'Mise à jour impossible')
-        setUsers((prev) => prev.map((u) => (u.id === userSaved.id ? userSaved : u)))
-        showSuccess('Utilisateur mis à jour')
-      } else {
-        const res = await fetch(API_USERS, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
-        userSaved = await res.json()
-        if (!res.ok) throw new Error(userSaved?.error || 'Création impossible')
-        setUsers((prev) => [...prev, userSaved])
-        showSuccess('Utilisateur créé')
-      }
-
-      // Sauvegarder les rôles associés
-      if (userSaved?.id) {
-        const resRoles = await fetch(`${API_USERS}/${userSaved.id}/roles`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ roles: userRoles }),
-        })
-        if (!resRoles.ok) showError('Erreur lors de l’association des rôles')
-      }
-
-      setVisible(false)
-    } catch (e) {
-      showError(e.message || 'Erreur lors de la sauvegarde')
-    }
+  const payload = {
+    username,
+    email,
+    enabled: isActive,
+    firstName,
+    lastName,
   }
+
+  try {
+    let userId = editUser?.id
+
+    // --- CREATE OR UPDATE USER ---
+    if (editUser) {
+      const res = await fetch(`${API_USERS}/${editUser.id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error('Mise à jour impossible')
+      showSuccess('Utilisateur mis à jour')
+    } else {
+      const res = await fetch(`${API_USERS}`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error('Création impossible')
+      const newUser = await res.json()
+      userId = newUser.id // ⚡ récupère l’ID du nouvel utilisateur
+      showSuccess('Utilisateur créé')
+    }
+
+    // --- UPDATE ROLES ---
+    if (userId) {
+      // 1. Supprimer tous les rôles existants
+      await fetch(`${API_USERS}/${userId}/roles`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          roles: await fetchUserRoles(userId), // ⚡ récupère les rôles actuels
+        }),
+      })
+
+      // 2. Réassigner uniquement ceux choisis
+      const selectedRoles = roles.filter((r) => userRoles.includes(r.name))
+      if (selectedRoles.length > 0) {
+        await fetch(`${API_USERS}/${userId}/roles`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ roles: selectedRoles }),
+        })
+      }
+
+      showSuccess('Rôles mis à jour')
+    }
+
+    // --- REFRESH + CLOSE ---
+    await fetchUsers()
+    setVisible(false)
+  } catch (e) {
+    showError(e.message || 'Erreur lors de la sauvegarde')
+  }
+}
+
 
   // ---------- DELETE ----------
   const handleDelete = async (id) => {
     if (!window.confirm('Supprimer cet utilisateur ?')) return
     try {
-      const res = await fetch(`${API_USERS}/${id}`, { method: 'DELETE' })
+      const res = await fetch(`${API_USERS}/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      })
       if (!(res.ok || res.status === 204)) {
-        const payload = await res.json().catch(() => null)
-        throw new Error(payload?.error || 'Suppression impossible')
+        throw new Error('Suppression impossible')
       }
       setUsers((prev) => prev.filter((u) => u.id !== id))
       showSuccess('Utilisateur supprimé')
@@ -197,7 +231,7 @@ const Users = () => {
   }
 
   return (
-    <>
+    <><div className="container py-4">
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <h2 className="mb-0">Utilisateurs</h2>
@@ -209,10 +243,9 @@ const Users = () => {
           <CTable striped hover responsive>
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell>ID</CTableHeaderCell>
                 <CTableHeaderCell>Username</CTableHeaderCell>
                 <CTableHeaderCell>Email</CTableHeaderCell>
-                <CTableHeaderCell>Display Name</CTableHeaderCell>
+                <CTableHeaderCell>Nom complet</CTableHeaderCell>
                 <CTableHeaderCell style={{ width: '100px', textAlign: 'center' }}>Actif</CTableHeaderCell>
                 <CTableHeaderCell style={{ width: '100px', textAlign: 'center' }}>Actions</CTableHeaderCell>
               </CTableRow>
@@ -220,12 +253,11 @@ const Users = () => {
             <CTableBody>
               {users.map((u) => (
                 <CTableRow key={u.id}>
-                  <CTableDataCell>{u.id}</CTableDataCell>
                   <CTableDataCell>{u.username}</CTableDataCell>
                   <CTableDataCell>{u.email}</CTableDataCell>
-                  <CTableDataCell>{u.display_name}</CTableDataCell>
+                  <CTableDataCell>{`${u.firstName || ''} ${u.lastName || ''}`}</CTableDataCell>
                   <CTableDataCell style={{ width: '100px', textAlign: 'center' }}>
-                    {u.is_active ? (
+                    {u.enabled ? (
                       <CIcon icon={cilCheckCircle} className="text-success" />
                     ) : (
                       <CIcon icon={cilXCircle} className="text-danger" />
@@ -275,11 +307,21 @@ const Users = () => {
             <div className="row mt-3">
               <div className="col-md-6">
                 <CFormInput
-                  label="Display Name"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
+                  label="Prénom"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
                 />
               </div>
+              <div className="col-md-6">
+                <CFormInput
+                  label="Nom"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="row mt-3">
               <div className="col-md-6 d-flex align-items-center">
                 <CFormSwitch
                   label="Actif"
@@ -294,8 +336,8 @@ const Users = () => {
                 <label className="form-label">Rôles</label>
                 <Select
                   isMulti
-                  options={roles.map(r => ({ value: r.id, label: r.label }))}
-                  value={roles.filter(r => userRoles.includes(r.id)).map(r => ({ value: r.id, label: r.label }))}
+                  options={roles.map(r => ({ value: r.name, label: r.name }))}
+                  value={roles.filter(r => userRoles.includes(r.name)).map(r => ({ value: r.name, label: r.name }))}
                   onChange={(selected) => {
                     setUserRoles(selected.map(s => s.value))
                   }}
@@ -328,6 +370,7 @@ const Users = () => {
           </CToast>
         ))}
       </CToaster>
+      </div>
     </>
   )
 }

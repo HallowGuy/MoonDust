@@ -4,7 +4,7 @@
   "loginWithEmailAllowed": true,
   "registrationAllowed": false,
   "resetPasswordAllowed": true,
-  "sslRequired": "none",
+  "sslRequired": "NONE",
   "users": [
     {
       "username": "metropole.user",

@@ -15,6 +15,8 @@ import CIcon from '@coreui/icons-react'
 import { AppSidebarNav } from './AppSidebarNav'
 import { logo } from 'src/assets/brand/logo'
 import { sygnet } from 'src/assets/brand/sygnet'
+import { API_THEME_LOGO  } from 'src/api'
+
 
 // sidebar nav config
 import navigation from '../_nav'
@@ -38,12 +40,13 @@ const AppSidebar = () => {
       <CSidebarHeader className="border-bottom">
         {/* ✅ Utilise Link de React Router */}
           <CSidebarBrand as={Link} to="/">
-           <img
-    src={`${(import.meta.env?.VITE_API_URL || '/api')}/theme/logo?ts=${Date.now()}`} 
-    alt="Logo"
-    height="70"
-    className="sidebar-brand-full"
-  />
+          <img
+  src={API_THEME_LOGO}
+  alt="Logo"
+  className="sidebar-brand-full"
+  style={{ width: "90%", height: "auto" }}
+/>
+
           <CIcon
             customClassName="sidebar-brand-narrow"
             icon={sygnet}

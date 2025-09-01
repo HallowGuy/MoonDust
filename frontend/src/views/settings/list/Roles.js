@@ -7,8 +7,8 @@ import {
 } from '@coreui/react'
 
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash, cilPlus } from '@coreui/icons'
-import { API_ROLES } from 'src/api'
+import { cilPencil, cilTrash, cilPlus, cilUser } from '@coreui/icons'
+import { API_ROLES, API_ROLE_USERS } from 'src/api'
 
 const Roles = () => {
   const [roles, setRoles] = useState([])
@@ -26,14 +26,20 @@ const Roles = () => {
 
   // --- Création
   const [showCreate, setShowCreate] = useState(false)
-  const [createCode, setCreateCode] = useState('')
-  const [createLabel, setCreateLabel] = useState('')
+  const [createName, setCreateName] = useState('')
+  const [createDescription, setCreateDescription] = useState('')
+
+  // --- Voir utilisateurs d’un rôle
+const [showUsers, setShowUsers] = useState(false)
+const [selectedRole, setSelectedRole] = useState(null)
+const [usersByRole, setUsersByRole] = useState([])
+
 
   // --- Édition
   const [showEdit, setShowEdit] = useState(false)
   const [editRole, setEditRole] = useState(null)
-  const [editCode, setEditCode] = useState('')
-  const [editLabel, setEditLabel] = useState('')
+  const [editName, setEditName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
 
   // --- FETCH ROLES ---
   const fetchRoles = async () => {
@@ -47,28 +53,65 @@ const Roles = () => {
     }
   }
 
+  const fetchUsersByRole = async (roleName) => {
+  try {
+    const res = await fetch(API_ROLE_USERS(roleName))
+    if (!res.ok) throw new Error("Impossible de charger les utilisateurs du rôle")
+    return await res.json()
+  } catch (e) {
+    console.error(e)
+    return []
+  }
+}
+
+
   useEffect(() => { fetchRoles() }, [])
+
 
   // ---------- CREATE ----------
   const openCreate = () => {
-    setCreateCode('')
-    setCreateLabel('')
+    setCreateName('')
+    setCreateDescription('')
     setShowCreate(true)
   }
 
+const openUsers = async (roleName) => {
+  console.log("👉 roleName reçu:", roleName)
+  if (!roleName) {
+    console.error("⚠️ Aucun roleName reçu !");
+    return
+  }
+
+  setSelectedRole(roleName)
+  setShowUsers(true)
+
+  try {
+    const res = await fetch(API_ROLE_USERS(roleName))
+    if (!res.ok) throw new Error("Impossible de charger les utilisateurs du rôle")
+    const data = await res.json()
+    setUsersByRole(data)
+  } catch (e) {
+    showError(e.message || "Erreur chargement utilisateurs")
+  }
+}
+
+
+
+
   const handleCreate = async () => {
-    if (!createCode || !createLabel) return showError('Code et label requis')
+    if (!createName) return showError('Nom requis')
 
     try {
       const res = await fetch(API_ROLES, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: createCode, label: createLabel }),
+        body: JSON.stringify({ name: createName, description: createDescription }),
       })
-      const payload = await safeJson(res)
-      if (!res.ok) throw new Error(payload?.error || 'Création impossible')
-
-      setRoles((prev) => [...prev, payload])
+      if (!res.ok) {
+        const payload = await safeJson(res)
+        throw new Error(payload?.error || 'Création impossible')
+      }
+      await fetchRoles()
       setShowCreate(false)
       showSuccess('Rôle créé avec succès')
     } catch (e) {
@@ -79,25 +122,27 @@ const Roles = () => {
   // ---------- EDIT ----------
   const openEdit = (r) => {
     setEditRole(r)
-    setEditCode(r.code || '')
-    setEditLabel(r.label || '')
+    setEditName(r.name || '')
+    setEditDescription(r.description || '')
     setShowEdit(true)
   }
 
   const handleSaveEdit = async () => {
     if (!editRole) return
-    if (!editCode || !editLabel) return showError('Code et label requis')
+    if (!editName) return showError('Nom requis')
 
     try {
-      const res = await fetch(`${API_ROLES}/${editRole.id}`, {
+      const res = await fetch(`${API_ROLES}/${editRole.name}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: editCode, label: editLabel }),
+        body: JSON.stringify({ name: editName, description: editDescription }),
       })
-      const payload = await safeJson(res)
-      if (!res.ok) throw new Error(payload?.error || 'Mise à jour impossible')
+      if (!res.ok) {
+        const payload = await safeJson(res)
+        throw new Error(payload?.error || 'Mise à jour impossible')
+      }
 
-      setRoles((prev) => prev.map((r) => (r.id === payload.id ? payload : r)))
+      await fetchRoles()
       setShowEdit(false)
       setEditRole(null)
       showSuccess('Rôle mis à jour')
@@ -107,15 +152,15 @@ const Roles = () => {
   }
 
   // ---------- DELETE ----------
-  const handleDelete = async (id) => {
+  const handleDelete = async (name) => {
     if (!window.confirm('Supprimer ce rôle ?')) return
     try {
-      const res = await fetch(`${API_ROLES}/${id}`, { method: 'DELETE' })
+      const res = await fetch(`${API_ROLES}/${name}`, { method: 'DELETE' })
       if (!(res.ok || res.status === 204)) {
         const payload = await safeJson(res)
         throw new Error(payload?.error || 'Suppression impossible')
       }
-      setRoles((prev) => prev.filter((r) => r.id !== id))
+      setRoles((prev) => prev.filter((r) => r.name !== name))
       showSuccess('Rôle supprimé')
     } catch (e) {
       showError(e.message || 'Erreur lors de la suppression')
@@ -124,12 +169,12 @@ const Roles = () => {
 
   const filtered = roles.filter(
     (r) =>
-      r.code?.toLowerCase().includes(search.toLowerCase()) ||
-      r.label?.toLowerCase().includes(search.toLowerCase())
+      r.name?.toLowerCase().includes(search.toLowerCase()) ||
+      r.description?.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
-    <>
+    <><div className="container py-4">
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <span>Rôles</span>
@@ -143,7 +188,7 @@ const Roles = () => {
           <CFormInput
             className="mb-3"
             type="text"
-            placeholder="Rechercher par code ou label…"
+            placeholder="Rechercher par nom ou description…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -151,10 +196,9 @@ const Roles = () => {
           <CTable striped hover responsive>
             <CTableHead>
               <CTableRow className="align-middle">
-                <CTableHeaderCell style={{ textAlign: 'center' }}>ID</CTableHeaderCell>
-                <CTableHeaderCell>Code</CTableHeaderCell>
-                <CTableHeaderCell>Label</CTableHeaderCell>
-                <CTableHeaderCell style={{ width: '100px', textAlign: 'center' }}>
+                <CTableHeaderCell>Nom</CTableHeaderCell>
+                <CTableHeaderCell>Description</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '130px', textAlign: 'center' }}>
                   Actions
                 </CTableHeaderCell>
               </CTableRow>
@@ -163,16 +207,16 @@ const Roles = () => {
               {filtered.length ? (
                 filtered.map((r) => (
                   <CTableRow key={r.id}>
-                    <CTableDataCell style={{ width: '50px', textAlign: 'center' }} className="align-middle">
-                      {r.id}
-                    </CTableDataCell>
-                    <CTableDataCell className="align-middle">{r.code}</CTableDataCell>
-                    <CTableDataCell className="align-middle">{r.label}</CTableDataCell>
+
+                    <CTableDataCell className="align-middle">{r.name}</CTableDataCell>
+                    <CTableDataCell className="align-middle">{r.description}</CTableDataCell>
                     <CTableDataCell className="text-center align-middle">
-                      <CButton size="sm" color="secondary" variant="ghost" onClick={() => openEdit(r)}>
+                      <CButton size="sm" color="success" variant="ghost" onClick={() => openEdit(r)}>
                         <CIcon icon={cilPencil} size="lg" />
                       </CButton>
-                      <CButton size="sm" color="danger" variant="ghost" onClick={() => handleDelete(r.id)}>
+                      <CButton size="sm" color="info" variant="ghost" onClick={() => openUsers(r.name)}><CIcon icon={cilUser} size="lg" /></CButton>
+
+                      <CButton size="sm" color="danger" variant="ghost" onClick={() => handleDelete(r.name)}>
                         <CIcon icon={cilTrash} size="lg" />
                       </CButton>
                     </CTableDataCell>
@@ -195,22 +239,16 @@ const Roles = () => {
             </COffcanvasHeader>
             <COffcanvasBody>
               <div className="d-flex flex-column gap-3">
-                <div className="row">
-                  <div className="col-md-6">
-                    <CFormInput
-                      label="Code"
-                      value={createCode}
-                      onChange={(e) => setCreateCode(e.target.value)}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <CFormInput
-                      label="Label"
-                      value={createLabel}
-                      onChange={(e) => setCreateLabel(e.target.value)}
-                    />
-                  </div>
-                </div>
+                <CFormInput
+                  label="Nom"
+                  value={createName}
+                  onChange={(e) => setCreateName(e.target.value)}
+                />
+                <CFormInput
+                  label="Description"
+                  value={createDescription}
+                  onChange={(e) => setCreateDescription(e.target.value)}
+                />
 
                 <div className="d-flex gap-2 justify-content-end">
                   <CButton color="secondary" variant="ghost" onClick={() => setShowCreate(false)}>
@@ -223,30 +261,57 @@ const Roles = () => {
               </div>
             </COffcanvasBody>
           </COffcanvas>
+          <COffcanvas
+  placement="end"
+  visible={showUsers}
+  onHide={() => setShowUsers(false)}
+  style={{ width: "33%" }}
+>
+  <COffcanvasHeader>
+    <h5 className="mb-0">Utilisateurs du rôle : {selectedRole}</h5>
+  </COffcanvasHeader>
+  <COffcanvasBody>
+    {usersByRole.length ? (
+      <CTable striped hover responsive>
+        <CTableHead>
+          <CTableRow>
+            <CTableHeaderCell>Username</CTableHeaderCell>
+            <CTableHeaderCell>Email</CTableHeaderCell>
+          </CTableRow>
+        </CTableHead>
+        <CTableBody>
+          {usersByRole.map((u) => (
+            <CTableRow key={u.id}>
+              <CTableDataCell>{u.username}</CTableDataCell>
+              <CTableDataCell>{u.email}</CTableDataCell>
+            </CTableRow>
+          ))}
+        </CTableBody>
+      </CTable>
+    ) : (
+      <p>Aucun utilisateur associé</p>
+    )}
+  </COffcanvasBody>
+</COffcanvas>
+
 
           {/* Sidebar édition */}
           <COffcanvas placement="end" visible={showEdit} onHide={() => setShowEdit(false)} style={{ width: "33%" }}>
             <COffcanvasHeader>
-              <h5 className="mb-0">Éditer : {editRole?.code}</h5>
+              <h5 className="mb-0">Éditer : {editRole?.name}</h5>
             </COffcanvasHeader>
             <COffcanvasBody>
               <div className="d-flex flex-column gap-4">
-                <div className="row">
-                  <div className="col-md-6">
-                    <CFormInput
-                      label="Code"
-                      value={editCode}
-                      onChange={(e) => setEditCode(e.target.value)}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <CFormInput
-                      label="Label"
-                      value={editLabel}
-                      onChange={(e) => setEditLabel(e.target.value)}
-                    />
-                  </div>
-                </div>
+                <CFormInput
+                  label="Nom"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                />
+                <CFormInput
+                  label="Description"
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                />
 
                 <div className="d-flex gap-2 justify-content-end">
                   <CButton color="secondary" variant="ghost" onClick={() => setShowEdit(false)}>
@@ -277,6 +342,7 @@ const Roles = () => {
           </CToast>
         ))}
       </CToaster>
+      </div>
     </>
   )
 }

@@ -56,6 +56,12 @@ const _nav = [
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
   {
+    component: CNavItem,
+    name: 'Edition route',
+    to: '/settings/custom/EditionRoute',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  },
+  {
     component: CNavTitle,
     name: 'Workflow',
   },

@@ -1,59 +1,520 @@
-const express = require('express')
-const cors = require('cors')
-const pool = require('./db')
-const fs = require('fs')
-const path = require('path')
-const mime = require('mime-types')
-require('dotenv').config()
-const nodemailer = require('nodemailer')
-const multer = require('multer')
-const { logAction } = require('./utils/logger')
+import express from "express"
+import cors from "cors"
+import fetch from "node-fetch"
+import dotenv from "dotenv"
+import mime from "mime-types"
+import nodemailer from "nodemailer"
+import multer from "multer"
+import { logAction } from "./utils/logger.js"
+import pool from "./db.js"
+import { fileURLToPath } from "url"
+import path from "path"
+import fs from "fs/promises"
+import fssync from "fs"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// ---------------- CONFIG ROUTES ----------------
+const CONFIG_FILE = path.join(__dirname, "routes-config.json")
+
 
 const app = express()
-const PORT = process.env.PORT || 5001
+//const PORT = process.env.PORT || 5001
+
+
 
 // ---------- MIDDLEWARES ----------
-app.use(cors({
-  origin: [
-    'http://localhost:3000',  // CRA
-    'http://localhost:5173',  // Vite par défaut
-    'http://localhost:3002'   // ✅ ton nouveau port frontend
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type']
-}))
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000", // CRA
+      "http://localhost:5173", // Vite
+      "http://localhost:3002", // ton port frontend
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"], // <-- ajoute Authorization ici
+  })
+)
+
 app.use(express.json())
 
 // Healthcheck
-app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'ok' })
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" })
 })
+// Lire la config depuis le fichier
+// Lire la config depuis le fichier
+async function getConfig() {
+  try {
+    const data = await fs.readFile(CONFIG_FILE, { encoding: "utf-8" })
+    return JSON.parse(data)
+  } catch (err) {
+    console.error("⚠️ Aucun fichier routes-config.json trouvé, retour objet vide")
+    return {}
+  }
+}
+
+// Écrire la config dans le fichier
+async function setConfig(config) {
+  await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2), { encoding: "utf-8" })
+  console.log("💾 Config sauvegardée dans :", CONFIG_FILE)
+}
+
+
+
+
+// 🚀 Endpoint GET : récupérer la config
+app.get('/api/routes-config', async (req, res) => {
+  try {
+    const config = await getConfig()
+    res.json(config)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 🚀 Endpoint POST : sauvegarder la config
+app.post('/api/routes-config', async (req, res) => {
+  try {
+    const config = req.body
+    console.log("📥 Nouvelle config reçue :", config)
+    await setConfig(config)
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
+
+
+dotenv.config({ path: path.resolve(__dirname, "../.env") })
+
+
+
+
+// ---------------- KEYCLOAK CONFIG ----------------
+// ---------------- KEYCLOAK CONFIG ----------------
+const KEYCLOAK_URL = process.env.KEYCLOAK_URL
+const REALM = process.env.REALM
+const CLIENT_ID = process.env.CLIENT_ID
+const CLIENT_SECRET = process.env.CLIENT_SECRET
+
+console.log("🔧 KEYCLOAK_URL =", KEYCLOAK_URL)
+console.log("🔧 REALM =", REALM)
+console.log("🔧 CLIENT_ID =", CLIENT_ID)
+console.log("🔧 CLIENT_SECRET =", CLIENT_SECRET ? "****" : "undefined")
+
+// 🔑 Fonction pour récupérer un token admin
+async function getAdminToken() {
+  const res = await fetch(
+    `${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/token`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        grant_type: "client_credentials",
+      }),
+    },
+  )
+
+  const data = await res.json()
+  return data.access_token
+}
+// ------------------- KEYCLOAK USERS -------------------
+
+// 🚀 Lister tous les utilisateurs
+app.get("/api/users", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const usersRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/users`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+
+    if (!usersRes.ok) {
+      throw new Error(`Erreur Keycloak: ${usersRes.status}`)
+    }
+
+    const users = await usersRes.json()
+    res.json(users)
+  } catch (err) {
+    console.error("❌ Erreur /api/users:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 🚀 Créer un utilisateur
+// 🚀 Lister tous les utilisateurs
+// 🚀 Créer un utilisateur
+app.post("/api/users", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+
+    const newUser = {
+      username: req.body.username,
+      email: req.body.email,
+      firstName: req.body.firstName || "",
+      lastName: req.body.lastName || "",
+      enabled: true,          // ✅ activé
+      emailVerified: true,    // ✅ marqué comme vérifié
+      credentials: [
+        {
+          type: "password",
+          value: req.body.password || "TempPass123!", // ⚡ mot de passe par défaut si rien n'est fourni
+          temporary: true, // obligé de le changer à la 1ère connexion
+        },
+      ],
+    }
+
+    const createRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/users`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newUser),
+      }
+    )
+
+    if (!createRes.ok) {
+      const errorText = await createRes.text()
+      throw new Error(`Erreur Keycloak: ${createRes.status} - ${errorText}`)
+    }
+
+    res.status(201).json({ message: "Utilisateur créé avec succès" })
+  } catch (err) {
+    console.error("❌ Erreur création user:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
+
+
+// 🚀 Mettre à jour un utilisateur
+app.put("/api/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const token = await getAdminToken()
+    const updateRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/users/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(req.body),
+      }
+    )
+
+    if (!updateRes.ok) {
+      const errorText = await updateRes.text()
+      throw new Error(`Erreur Keycloak: ${updateRes.status} - ${errorText}`)
+    }
+
+    res.json({ message: "Utilisateur mis à jour" })
+  } catch (err) {
+    console.error("❌ Erreur update user:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 🚀 Supprimer un utilisateur
+app.delete("/api/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const token = await getAdminToken()
+    const deleteRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/users/${id}`,
+      {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      }
+    )
+
+    if (!deleteRes.ok) {
+      const errorText = await deleteRes.text()
+      throw new Error(`Erreur Keycloak: ${deleteRes.status} - ${errorText}`)
+    }
+
+    res.status(204).send()
+  } catch (err) {
+    console.error("❌ Erreur delete user:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
+// ------------------- KEYCLOAK ROLES -------------------
+
+// 🚀 Lister les rôles
+app.get("/api/roles", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const rolesRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/roles`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+
+    if (!rolesRes.ok) {
+      throw new Error(`Erreur Keycloak: ${rolesRes.status}`)
+    }
+
+    const roles = await rolesRes.json()
+    res.json(roles)
+  } catch (err) {
+    console.error("❌ Erreur /api/roles:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
+// 🚀 Récupérer les rôles d’un utilisateur (Keycloak)
+app.get("/api/users/:id/roles", async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const token = await getAdminToken()
+    const rolesRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/users/${id}/role-mappings/realm`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+
+    if (!rolesRes.ok) {
+      const errorText = await rolesRes.text()
+      throw new Error(`Erreur Keycloak: ${rolesRes.status} - ${errorText}`)
+    }
+
+    const roles = await rolesRes.json()
+    res.json(roles)
+  } catch (err) {
+    console.error("❌ Erreur get user roles:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 🚀 Assigner des rôles à un utilisateur (remplace l’existant)
+app.post("/api/users/:id/roles", async (req, res) => {
+  try {
+    const { id } = req.params
+    const { roles } = req.body  // tableau d’objets { id, name }
+
+    if (!Array.isArray(roles)) {
+      return res.status(400).json({ error: "roles (array) requis" })
+    }
+
+    const token = await getAdminToken()
+    const assignRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/users/${id}/role-mappings/realm`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(roles),
+      }
+    )
+
+    if (!assignRes.ok) {
+      const errorText = await assignRes.text()
+      throw new Error(`Erreur Keycloak: ${assignRes.status} - ${errorText}`)
+    }
+
+    res.json({ success: true })
+  } catch (err) {
+    console.error("❌ Erreur assign roles:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 🚀 Supprimer un rôle spécifique d’un utilisateur (Keycloak)
+// 🚀 Supprimer plusieurs rôles d’un utilisateur
+app.delete("/api/users/:id/roles", async (req, res) => {
+  try {
+    const { id } = req.params
+    const { roles } = req.body // tableau [{id, name}, ...]
+
+    if (!Array.isArray(roles) || roles.length === 0) {
+      return res.status(400).json({ error: "roles (array) requis" })
+    }
+
+    const token = await getAdminToken()
+
+    const removeRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/users/${id}/role-mappings/realm`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(roles),
+      }
+    )
+
+    if (!removeRes.ok) {
+      const errorText = await removeRes.text()
+      throw new Error(`Erreur Keycloak: ${removeRes.status} - ${errorText}`)
+    }
+
+    res.status(204).send()
+  } catch (err) {
+    console.error("❌ Erreur delete roles:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
+// 🚀 Créer un rôle
+app.post("/api/roles", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const createRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/roles`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(req.body), // { name, description }
+      }
+    )
+
+    if (!createRes.ok) {
+      const errorText = await createRes.text()
+      throw new Error(`Erreur Keycloak: ${createRes.status} - ${errorText}`)
+    }
+
+    res.status(201).json({ message: "Rôle créé avec succès" })
+  } catch (err) {
+    console.error("❌ Erreur création rôle:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 🚀 Modifier un rôle
+app.put("/api/roles/:name", async (req, res) => {
+  try {
+    const { name } = req.params
+    const token = await getAdminToken()
+
+    const updateRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/roles/${name}`,
+      {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(req.body), // { name, description }
+      }
+    )
+
+    if (!updateRes.ok) {
+      const errorText = await updateRes.text()
+      throw new Error(`Erreur Keycloak: ${updateRes.status} - ${errorText}`)
+    }
+
+    res.json({ message: "Rôle mis à jour avec succès" })
+  } catch (err) {
+    console.error("❌ Erreur update rôle:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 🚀 Supprimer un rôle
+app.delete("/api/roles/:name", async (req, res) => {
+  try {
+    const { name } = req.params
+    const token = await getAdminToken()
+
+    const deleteRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/roles/${name}`,
+      {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      }
+    )
+
+    if (!deleteRes.ok) {
+      const errorText = await deleteRes.text()
+      throw new Error(`Erreur Keycloak: ${deleteRes.status} - ${errorText}`)
+    }
+
+    res.status(204).send()
+  } catch (err) {
+    console.error("❌ Erreur suppression rôle:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 🚀 Lister les utilisateurs associés à un rôle
+app.get("/api/roles/:roleName/users", async (req, res) => {
+  try {
+    const { roleName } = req.params
+    const token = await getAdminToken()
+
+    const usersRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/roles/${roleName}/users`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+
+    if (!usersRes.ok) {
+      const errorText = await usersRes.text()
+      throw new Error(`Erreur Keycloak: ${usersRes.status} - ${errorText}`)
+    }
+
+    const users = await usersRes.json()
+    res.json(users)
+  } catch (err) {
+    console.error("❌ Erreur get users by role:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
 
 // 👉 servir les fichiers uploadés
-app.get('/uploads/:file', (req, res) => {
-  const filePath = path.join(__dirname, 'uploads', req.params.file)
+app.get("/uploads/:file", (req, res) => {
+  const __dirname = path.resolve()
+  const filePath = path.join(__dirname, "uploads", req.params.file)
 
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send('Fichier introuvable')
+  if (!fssync.existsSync(filePath)) {
+    return res.status(404).send("Fichier introuvable")
   }
 
-  const type = mime.lookup(filePath) || 'application/octet-stream'
-  res.setHeader('Content-Type', type)
-  res.setHeader('Content-Disposition', `inline; filename="${req.params.file}"`)
+  const type = mime.lookup(filePath) || "application/octet-stream"
+  res.setHeader("Content-Type", type)
+  res.setHeader("Content-Disposition", `inline; filename="${req.params.file}"`)
 
-  fs.createReadStream(filePath).pipe(res)
+  fssync.createReadStream(filePath).pipe(res)
 })
+
 
 // ---------- EMAIL (Nodemailer) ----------
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT || 587),
-  secure: process.env.SMTP_SECURE === 'true',   // true pour 465
+  secure: process.env.SMTP_SECURE === "true",
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
+    pass: process.env.SMTP_PASS,
+  },
 })
+
 
 transporter.verify()
   .catch(err => console.error('⚠️ SMTP non dispo :', err.message))
@@ -73,186 +534,6 @@ const storage = multer.diskStorage({
   }
 })
 const upload = multer({ storage })
-
-// ----------------------------------------------------
-// ------------------------- USERS --------------------
-// ----------------------------------------------------
-app.get('/api/users', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM demo_first.users ORDER BY id')
-    res.json(result.rows)
-  } catch (error) {
-    console.error('❌ Erreur SQL :', error)
-    res.status(500).json({ error: 'Erreur serveur' })
-  }
-})
-
-app.get('/api/users/count', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT COUNT(*) FROM demo_first.users')
-    res.json({ count: result.rows[0].count })
-  } catch (err) {
-    console.error('❌ Erreur SQL :', err)
-    res.status(500).send('Erreur serveur')
-  }
-})
-
-// Compter les utilisateurs actifs du mois courant
-app.get('/api/users/active', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT COUNT(*) 
-      FROM demo_first.users 
-      WHERE is_active = true
-    `)
-    res.json({ userActive: Number(result.rows[0].count) })
-  } catch (err) {
-    console.error('❌ Erreur SQL (active users month):', err)
-    res.status(500).send('Erreur serveur')
-  }
-})
-
-
-app.post('/api/users', async (req, res) => {
-  try {
-    const { username, email, display_name } = req.body
-    if (!username || !email) {
-      return res.status(400).json({ error: 'username et email requis' })
-    }
-
-    const { rows } = await pool.query(
-      `INSERT INTO demo_first.users (username, email, display_name) 
-       VALUES ($1, $2, $3) RETURNING *`,
-      [username, email, display_name || null]
-    )
-    const newUser = rows[0]
-
-    await logAction(
-  newUser.id,               // l’utilisateur qui agit (ici c’est le nouvel utilisateur lui-même, mais tu peux mettre l’admin connecté si tu as un système d’auth)
-  'user',                   // type d’entité
-  newUser.id,               // ID de l’entité concernée
-  'create',                 // action
-  { username: newUser.username, email: newUser.email } // meta JSON
-)
-
-
-    try {
-      await transporter.sendMail({
-  from: process.env.MAIL_FROM || process.env.SMTP_USER,
-  to: newUser.email,
-  subject: `Bienvenue ${newUser.username} !`,
-  text: `Bonjour ${newUser.display_name || newUser.username},
-
-Votre compte a bien été créé 🚀
-Cliquez sur le lien ci-dessous pour vous connecter :
-${process.env.APP_URL || 'http://localhost:5173'}/login
-  `,
-  html: `
-    <p>Bonjour <b>${newUser.display_name || newUser.username}</b>,</p>
-    <p>Votre compte a bien été créé 🚀</p>
-    <p>
-      <a href="${process.env.APP_URL || 'http://localhost:5173'}/login"
-         style="display:inline-block;
-                padding:10px 20px;
-                background-color:#4f46e5;
-                color:#fff;
-                border-radius:6px;
-                text-decoration:none;
-                font-weight:bold;">
-        Se connecter
-      </a>
-    </p>
-  `
-})
-
-      console.log(`📧 Mail envoyé à ${newUser.email}`)
-    } catch (mailErr) {
-      console.error('⚠️ Erreur envoi mail:', mailErr)
-    }
-
-    res.status(201).json(newUser)
-  } catch (e) {
-    console.error('❌ Erreur SQL :', e)
-    res.status(500).json({ error: 'Erreur serveur' })
-  }
-})
-
-
-app.put('/api/users/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    const { username, email, display_name, is_active } = req.body
-    if (!username || !email) {
-      return res.status(400).json({ error: 'username et email requis' })
-    }
-
-    const { rows } = await pool.query(
-      `UPDATE demo_first.users 
-       SET username=$1, email=$2, display_name=$3, is_active=$4, updated_at=NOW()
-       WHERE id=$5 RETURNING *`,
-      [username, email, display_name || null, is_active ?? true, id]
-    )
-
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'User introuvable' })
-    }
-
-    const updatedUser = rows[0]
-
-    // 📝 Audit log
-    await logAction(
-      id,                     // acteur → si tu as un admin connecté remplace par son ID
-      'user',                 // type d’entité
-      updatedUser.id,         // ID du user modifié
-      'update',               // action
-      {                       // meta JSON
-        username: updatedUser.username,
-        email: updatedUser.email,
-        display_name: updatedUser.display_name,
-        is_active: updatedUser.is_active
-      }
-    )
-
-    res.json(updatedUser)
-  } catch (e) {
-    console.error('❌ Erreur SQL :', e)
-    res.status(500).json({ error: 'Erreur serveur' })
-  }
-})
-
-
-app.delete('/api/users/:id', async (req, res) => {
-  const client = await pool.connect()
-  try {
-    await client.query('BEGIN')
-
-    const { id } = req.params
-
-    // 1. supprimer les rôles liés
-    await client.query('DELETE FROM demo_first.user_roles WHERE user_id = $1', [id])
-
-    // 2. supprimer l’utilisateur
-    const { rowCount } = await client.query('DELETE FROM demo_first.users WHERE id=$1', [id])
-    if (rowCount === 0) {
-      await client.query('ROLLBACK')
-      return res.status(404).json({ error: 'User introuvable' })
-    }
-
-    // 3. audit log
-    await logAction(null, 'user', id, 'delete', { message: `Suppression de l’utilisateur #${id}` })
-
-    await client.query('COMMIT')
-    res.status(204).send()
-  } catch (e) {
-    await client.query('ROLLBACK')
-    console.error('❌ Erreur delete user:', e)
-    res.status(500).json({ error: 'Erreur serveur' })
-  } finally {
-    client.release()
-  }
-})
-
-
 
 
 // ----------------------------------------------------
@@ -274,199 +555,6 @@ app.get('/api/audit', async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur audit' })
   }
 })
-
-
-
-// ----------------------------------------------------
-// ------------------------- ROLES --------------------
-// ----------------------------------------------------
-
-// 📌 Lister tous les rôles
-app.get('/api/roles', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM demo_first.roles ORDER BY id')
-    res.json(result.rows)
-  } catch (e) {
-    console.error('❌ Erreur SQL get roles:', e)
-    res.status(500).json({ error: 'Erreur serveur' })
-  }
-})
-
-// 📌 Créer un rôle
-app.post('/api/roles', async (req, res) => {
-  try {
-    const { code, label } = req.body
-    if (!code || !label) {
-      return res.status(400).json({ error: 'code et label requis' })
-    }
-
-    const { rows } = await pool.query(
-      `INSERT INTO demo_first.roles (code, label) VALUES ($1, $2) RETURNING *`,
-      [code, label]
-    )
-    const newRole = rows[0]
-
-    // 🔍 Audit log
-    await logAction(
-      null,          // pas d’acteur identifié (à remplacer par l’ID admin si tu ajoutes l’auth)
-      'role',        // type d’entité
-      newRole.id,    // ID du rôle créé
-      'create',      // action
-      { code, label } // meta JSON
-    )
-
-    res.status(201).json(newRole)
-  } catch (e) {
-    console.error('❌ Erreur SQL insert role:', e)
-    res.status(500).json({ error: 'Erreur serveur' })
-  }
-})
-
-// 📌 Modifier un rôle
-app.put('/api/roles/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    const { code, label } = req.body
-    if (!code || !label) {
-      return res.status(400).json({ error: 'code et label requis' })
-    }
-
-    const { rows } = await pool.query(
-      `UPDATE demo_first.roles 
-       SET code=$1, label=$2 
-       WHERE id=$3 RETURNING *`,
-      [code, label, id]
-    )
-
-    if (rows.length === 0) return res.status(404).json({ error: 'Rôle introuvable' })
-
-    const updatedRole = rows[0]
-
-    // 🔍 Audit log
-    await logAction(
-      null,
-      'role',
-      updatedRole.id,
-      'update',
-      { code: updatedRole.code, label: updatedRole.label }
-    )
-
-    res.json(updatedRole)
-  } catch (e) {
-    console.error('❌ Erreur SQL update role:', e)
-    res.status(500).json({ error: 'Erreur serveur' })
-  }
-})
-
-// 📌 Supprimer un rôle
-app.delete('/api/roles/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-
-    const { rowCount } = await pool.query('DELETE FROM demo_first.roles WHERE id=$1', [id])
-    if (rowCount === 0) return res.status(404).json({ error: 'Rôle introuvable' })
-
-    // 🔍 Audit log
-    await logAction(
-      null,
-      'role',
-      id,
-      'delete',
-      { message: `Suppression du rôle #${id}` }
-    )
-
-    res.status(204).send()
-  } catch (e) {
-    console.error('❌ Erreur SQL delete role:', e)
-    res.status(500).json({ error: 'Erreur serveur' })
-  }
-})
-
-// ----------------------------------------------------
-// ---------- Association USER ↔ ROLES ----------------
-// ----------------------------------------------------
-
-// 📌 Récupérer les rôles d’un utilisateur
-app.get('/api/users/:id/roles', async (req, res) => {
-  try {
-    const { id } = req.params
-    const result = await pool.query(
-      `SELECT r.* 
-       FROM demo_first.user_roles ur
-       JOIN demo_first.roles r ON ur.role_id = r.id
-       WHERE ur.user_id = $1`,
-      [id]
-    )
-    res.json(result.rows)
-  } catch (e) {
-    console.error('❌ Erreur SQL get user roles:', e)
-    res.status(500).json({ error: 'Erreur serveur' })
-  }
-})
-
-// 📌 Associer des rôles à un utilisateur (remplace l’existant)
-app.post('/api/users/:id/roles', async (req, res) => {
-  try {
-    const { id } = req.params
-    const { roles } = req.body
-
-    if (!roles || !Array.isArray(roles)) {
-      return res.status(400).json({ error: 'roles (array) requis' })
-    }
-
-    // 🗑️ Supprimer les anciens rôles
-    await pool.query('DELETE FROM demo_first.user_roles WHERE user_id = $1', [id])
-
-    // ➕ Ajouter les nouveaux
-    for (const role_id of roles) {
-      await pool.query(
-        `INSERT INTO demo_first.user_roles (user_id, role_id) VALUES ($1, $2)`,
-        [id, role_id]
-      )
-    }
-
-    // 🔍 Audit log
-    await logAction(
-      id,
-      'user_roles',
-      id,
-      'update',
-      { roles }
-    )
-
-    res.status(201).json({ success: true })
-  } catch (e) {
-    console.error('❌ Erreur SQL assoc user roles:', e)
-    res.status(500).json({ error: 'Erreur lors de l’association des rôles' })
-  }
-})
-
-// 📌 Supprimer un rôle spécifique d’un utilisateur
-app.delete('/api/users/:id/roles/:role_id', async (req, res) => {
-  try {
-    const { id, role_id } = req.params
-    const { rowCount } = await pool.query(
-      'DELETE FROM demo_first.user_roles WHERE user_id=$1 AND role_id=$2',
-      [id, role_id]
-    )
-    if (rowCount === 0) return res.status(404).json({ error: 'Lien non trouvé' })
-
-    // 🔍 Audit log
-    await logAction(
-      id,
-      'user_roles',
-      id,
-      'delete',
-      { role_id }
-    )
-
-    res.status(204).send()
-  } catch (e) {
-    console.error('❌ Erreur suppression rôle utilisateur:', e)
-    res.status(500).json({ error: 'Erreur serveur' })
-  }
-})
-
 
 
 
@@ -543,7 +631,7 @@ app.delete('/api/documents/:id', async (req, res) => {
 
     versions.rows.forEach(v => {
       const filePath = path.join(__dirname, 'uploads', v.storage_uri)
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath)
+      if (fssync.existsSync(filePath)) fssync.unlinkSync(filePath)
     })
 
     await client.query('DELETE FROM demo_first.document_versions WHERE document_id=$1', [id])
@@ -591,26 +679,37 @@ app.put('/api/documents/:id', async (req, res) => {
 // ---------------------- THEME ----------------------
 // ----------------------------------------------------
 const themesPath = path.join(__dirname, 'themes.json')
-let themes = JSON.parse(fs.readFileSync(themesPath, 'utf8'))
+let themes = JSON.parse(fssync.readFileSync(themesPath, 'utf8'))
 let currentTheme = 'default'
 
-// ---------- LOGO THEME (⚠️ avant /api/theme/:name) ----------
+// 🔥 Rendre le dossier logo accessible publiquement
+app.use('/uploads/logo', express.static(path.join(__dirname, 'uploads/logo')))
+
+// ---------- LOGO THEME ----------
 app.get('/api/theme/logo', (req, res) => {
   const logoPath = path.join(__dirname, 'uploads/logo/theme-logo.svg')
-  if (!fs.existsSync(logoPath)) {
+
+  if (!fssync.existsSync(logoPath)) {
     return res.status(404).json({ error: 'Aucun logo défini' })
   }
+
+  // ✅ Utilisation de res.sendFile avec chemin absolu
   res.sendFile(logoPath)
 })
 
 app.post('/api/theme/logo', uploadLogo.single('file'), (req, res) => {
   try {
-    res.json({ ok: true, message: 'Logo mis à jour' })
+    res.json({
+      ok: true,
+      message: 'Logo mis à jour',
+      url: `/api/theme/logo?t=${Date.now()}`, // cache-busting
+    })
   } catch (err) {
     console.error('❌ Erreur upload logo:', err)
     res.status(500).json({ error: 'Échec upload logo' })
   }
 })
+
 
 
 // ----------------------------------------------------
@@ -749,7 +848,7 @@ app.get('/api/theme/:name', (req, res) => {
 app.put('/api/theme/colors', (req, res) => {
   const newColors = req.body
   themes[currentTheme] = newColors
-  fs.writeFileSync(themesPath, JSON.stringify(themes, null, 2), 'utf8')
+  fssync.writeFileSync(themesPath, JSON.stringify(themes, null, 2), 'utf8')
   res.json({ ok: true, theme: newColors })
 })
 
@@ -758,9 +857,12 @@ app.get('/api/theme/colors', (req, res) => {
 })
 
 
+
 // ----------------------------------------------------
 // ---------------------- SERVER ---------------------
 // ----------------------------------------------------
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ API démarrée sur http://localhost:${PORT}`)
+const PORT = process.env.PORT || 5001
+
+app.listen(PORT, () => {
+  console.log(`✅ Backend API running on http://localhost:${PORT}`)
 })
