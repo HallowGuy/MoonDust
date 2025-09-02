@@ -19,6 +19,7 @@ const DetailConge = React.lazy(() => import('./views/wkf/DetailConge'))
 const Callback = React.lazy(() => import('./views/pages/login/Callback'))
 const RouteEdition = React.lazy(() => import('./views/settings/RouteEdition'))
 const Profil = React.lazy(() => import('./views/pages/profil/Profil.js'))
+const Settings = React.lazy(() => import('./views/settings/Settings.js'))
 
 
 
@@ -73,8 +74,10 @@ const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
 const routes = [
-  { path: '/', exact: true, name: 'Home' },
+  { path: '/', exact: true, name: 'Accueil', element: Settings  },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+    { path: '/settings/settings', name: 'Paramétrage', element: Settings, roles: ['admin'] },
+
   { path: '/settings/list/users', name: 'Gestion des utilisateurs', element: Users, roles: ['admin'] },
   { path: '/import/documents', name: 'Gestion des documents', element: Documents },
   { path: '/settings/list/roles', name: 'Gestion des rôles', element: Roles,  roles: ['admin'] },

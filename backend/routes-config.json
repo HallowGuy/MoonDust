@@ -5,7 +5,8 @@
     "admin"
   ],
   "/settings/custom/themecolors": [
-    "read"
+    "read",
+    "admin"
   ],
   "/settings/list/users": [
     "admin",
@@ -27,7 +28,8 @@
     "admin"
   ],
   "/settings/custom/themelogo": [
-    "read"
+    "read",
+    "admin"
   ],
   "/settings/list/groupes": [
     "admin",
