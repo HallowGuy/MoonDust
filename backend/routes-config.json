@@ -1,41 +1,305 @@
 {
-  "/dashboard": [
+  "*": [
+    "read",
     "contribute",
-    "default-roles-realm_reunion",
     "admin"
   ],
-  "/settings/custom/themecolors": [
+  "/": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/dashboard": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/settings/settings": [
+    "read",
     "contribute",
     "admin"
   ],
   "/settings/list/users": [
-    "admin",
+    "read",
     "contribute",
-    "default-roles-realm_reunion",
-    "offline_access"
-  ],
-  "/": [
-    "default-roles-realm_reunion",
-    "read"
-  ],
-  "/settings/custom/editionroute": [
     "admin"
   ],
   "/import/documents": [
-    "read"
-  ],
-  "/settings/list/roles": [
+    "read",
+    "contribute",
     "admin"
   ],
-  "/settings/custom/themelogo": [
+  "/settings/list/roles": [
+    "read",
     "contribute",
     "admin"
   ],
   "/settings/list/groupes": [
-    "admin",
-    "contribute"
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/settings/custom/themecolors": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/settings/custom/themelogo": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/settings/custom/auditlogs": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/settings/editionroute": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/settings/editionpermission": [
+    "read",
+    "contribute",
+    "admin"
   ],
   "/wkf/test": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/wkf/avancementworkflow": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/wkf/workflow": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/wkf/DetailConge/detail/:id": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/pages/profil/profil": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/theme": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/theme/colors": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/theme/typography": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/accordion": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/breadcrumbs": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/cards": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/carousels": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/collapses": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/list-groups": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/navs": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/paginations": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/placeholders": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/popovers": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/progress": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/spinners": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/tabs": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/tables": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/tooltips": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/buttons": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/buttons/buttons": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/buttons/dropdowns": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/buttons/button-groups": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/charts": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/form-control": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/select": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/checks-radios": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/range": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/input-group": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/floating-labels": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/layout": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/validation": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/icons": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/icons/coreui-icons": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/icons/flags": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/icons/brands": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/notifications": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/notifications/alerts": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/notifications/badges": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/notifications/modals": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/notifications/toasts": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/widgets": [
     "read",
     "contribute",
     "admin"

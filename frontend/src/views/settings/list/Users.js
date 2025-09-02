@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import {
   CCard, CCardHeader, CCardBody,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
@@ -11,6 +11,9 @@ import { cilPencil, cilTrash, cilPlus, cilCheckCircle, cilXCircle } from '@coreu
 import Select from 'react-select'
 import { API_USERS, API_ROLES, API_USER_ROLES } from 'src/api'
 import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal"
+import ProtectedButton from "../../../components/ProtectedButton"
+import { PermissionsContext } from '/src/context/PermissionsContext'
+
 
 
 const Users = () => {
@@ -26,6 +29,10 @@ const Users = () => {
   const [lastName, setLastName] = useState('')
   const [isActive, setIsActive] = useState(true)
   const [userRoles, setUserRoles] = useState([])
+const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
+
+  console.log("🔑 actionsConfig:", actionsConfig)
+  console.log("🔑 currentUserRoles:", currentUserRoles)
 
   // ---------- TOASTS ----------
   const [toasts, setToasts] = useState([])
@@ -221,9 +228,12 @@ const Users = () => {
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <h2 className="mb-0">Utilisateurs</h2>
+           <ProtectedButton
+  action="user.new"
+>
           <CButton color="primary" onClick={() => openOffcanvas()}>
             <CIcon icon={cilPlus} className="me-2" /> Nouvel utilisateur
-          </CButton>
+          </CButton></ProtectedButton>
         </CCardHeader>
         <CCardBody>
           <CTable striped hover responsive className="align-middle">
@@ -250,31 +260,53 @@ const Users = () => {
                     )}
                   </CTableDataCell>
                   <CTableDataCell style={{ textAlign: 'center' }}>
-                    <CButton size="sm" color="success" className="me-2" variant="ghost"
-                      onClick={() => openOffcanvas(u)}>
-                      <CIcon icon={cilPencil} size="lg" />
-                    </CButton>
-                    <ConfirmDeleteModal
-  title="Supprimer l'utilisateur"
-  message="Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
-  trigger={
-    <CButton size="sm" color="danger" variant="ghost">
+                    <ProtectedButton
+  action="user.edit"
+  actionsConfig={actionsConfig}
+  currentUserRoles={currentUserRoles}
+>
+  <CButton
+    size="sm"
+    color="success"
+    className="me-2"
+    variant="ghost"
+    onClick={() => openOffcanvas(u)}
+  >
+    <CIcon icon={cilPencil} size="lg" />
+  </CButton>
+</ProtectedButton>
+<ProtectedButton
+  action="user.delete"
+  actionsConfig={actionsConfig}
+  currentUserRoles={currentUserRoles}
+>
+  {u.username.includes("reunion") ? (
+    // 🔒 Si username contient "reunion", bouton grisé et désactivé
+    <CButton size="sm" color="secondary" variant="ghost" disabled>
       <CIcon icon={cilTrash} size="lg" />
     </CButton>
-  }
-  onConfirm={async () => {
-    const res = await fetch(`${API_USERS}/${u.id}`, { method: "DELETE" })
-    if (!res.ok) {
-      const errorText = await res.text()
-      throw new Error(errorText || "Suppression impossible")
-    }
-
-    // ⚡ Mets à jour ton state utilisateur
-setUsers((prev) => prev.filter((user) => user.id !== u.id))
-
-    showSuccess("Utilisateur supprimé")
-  }}
-/>
+  ) : (
+    // ✅ Sinon, bouton avec modal de confirmation
+    <ConfirmDeleteModal
+      title="Supprimer l'utilisateur"
+      message="Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
+      trigger={
+        <CButton size="sm" color="danger" variant="ghost">
+          <CIcon icon={cilTrash} size="lg" />
+        </CButton>
+      }
+      onConfirm={async () => {
+        const res = await fetch(`${API_USERS}/${u.id}`, { method: "DELETE" })
+        if (!res.ok) {
+          const errorText = await res.text()
+          throw new Error(errorText || "Suppression impossible")
+        }
+        setUsers((prev) => prev.filter((user) => user.id !== u.id))
+        showSuccess("Utilisateur supprimé")
+      }}
+    />
+  )}
+</ProtectedButton>
 
                   </CTableDataCell>
                 </CTableRow>

@@ -1310,6 +1310,54 @@ app.get('/api/theme/colors', (req, res) => {
   res.json(themes[currentTheme])
 })
 
+// ---------------- ACTIONS CONFIG ----------------
+const ACTIONS_CONFIG_FILE = path.join(__dirname, "actions-config.json")
+
+
+// Lire la config
+// Lire la config (et créer un fichier vide si besoin)
+async function getActionsConfig() {
+  try {
+    const data = await fs.readFile(ACTIONS_CONFIG_FILE, "utf-8")
+    return JSON.parse(data)
+  } catch (err) {
+    console.warn("⚠️ Aucun fichier actions-config.json trouvé → création vide")
+
+    // on crée un fichier vide pour initialiser
+    await fs.writeFile(ACTIONS_CONFIG_FILE, JSON.stringify({}, null, 2), "utf-8")
+    return {}
+  }
+}
+
+
+// Écrire la config
+async function setActionsConfig(config) {
+  await fs.writeFile(ACTIONS_CONFIG_FILE, JSON.stringify(config, null, 2), { encoding: "utf-8" })
+  console.log("💾 Actions config sauvegardée dans :", ACTIONS_CONFIG_FILE)
+}
+
+// 🚀 Endpoint GET : récupérer la config
+app.get('/api/actions-config', async (req, res) => {
+  try {
+    const config = await getActionsConfig()
+    res.json(config)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 🚀 Endpoint POST : sauvegarder la config
+app.post('/api/actions-config', async (req, res) => {
+  try {
+    const config = req.body
+    console.log("📥 Nouvelle actions-config reçue :", config)
+    await setActionsConfig(config)
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 
 
 // ----------------------------------------------------
