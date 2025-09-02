@@ -82,19 +82,6 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get("/api-docs-json", (req, res) => res.json(swaggerSpec));
 
-// --- Routes API ---
-app.use("/api/audit", auditRoutes);
-app.use("/api/config", configRoutes);
-app.use("/api/conges", congesRoutes);
-app.use("/api/documents", documentsRoutes);
-app.use("/api/groupes", groupesRoutes);
-app.use("/api/roles", rolesRoutes);
-app.use("/api/system", systemRoutes);
-app.use("/api/theme", themeRoutes);
-app.use("/api/users", usersRoutes);
-app.use("/api", helloRoutes);
-
-
 
 
 // Healthcheck
@@ -116,7 +103,7 @@ async function getConfig() {
 // Écrire la config dans le fichier
 async function setConfig(config) {
   await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2), { encoding: "utf-8" })
-  console.log("💾 Config sauvegardée dans :", CONFIG_FILE)
+  console.log("Config sauvegardée dans :", CONFIG_FILE)
 }
 
 

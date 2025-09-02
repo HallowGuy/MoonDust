@@ -272,7 +272,7 @@ const Users = () => {
     // ⚡ Mets à jour ton state utilisateur
 setUsers((prev) => prev.filter((user) => user.id !== u.id))
 
-    showSuccess("✅ Utilisateur supprimé")
+    showSuccess("Utilisateur supprimé")
   }}
 />
 
