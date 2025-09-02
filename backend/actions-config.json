@@ -11,13 +11,10 @@
     "uma_authorization",
     "master",
     "contribute"
-  ]
-  ,
+  ],
   "user.new": [
     "admin",
     "uma_authorization",
-    "master",
-    "contribute"
+    "master"
   ]
-  
 }
