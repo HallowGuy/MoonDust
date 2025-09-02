@@ -15,16 +15,7 @@ import jwt from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";  // ✅ import correct
-import auditRoutes from "./routes/audit.js";
-import configRoutes from "./routes/config.js";
-import congesRoutes from "./routes/conges.js";
-import documentsRoutes from "./routes/documents.js";
-import groupesRoutes from "./routes/groupes.js";
-import rolesRoutes from "./routes/roles.js";
-import systemRoutes from "./routes/system.js";
-import themeRoutes from "./routes/theme.js";
-import usersRoutes from "./routes/users.js";
-import helloRoutes from "./routes/hello.js";
+
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -195,6 +186,125 @@ app.get("/api/users", async (req, res) => {
     res.status(500).json({ error: err.message })
   }
 })
+
+// Nombre total d'utilisateurs
+app.get("/api/users/count", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const countRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/users/count`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+
+    if (!countRes.ok) {
+      throw new Error(`Erreur Keycloak: ${countRes.status}`)
+    }
+
+    const total = await countRes.json()
+    res.json({ count: total })
+  } catch (err) {
+    console.error("❌ Erreur /api/users/count:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
+// Nombre d'utilisateurs actifs (enabled = true)
+app.get("/api/users/active", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const usersRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/users`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+
+    if (!usersRes.ok) {
+      throw new Error(`Erreur Keycloak: ${usersRes.status}`)
+    }
+
+    const users = await usersRes.json()
+    const activeUsers = users.filter(u => u.enabled)
+
+    res.json({ userActive: activeUsers.length })
+  } catch (err) {
+    console.error("❌ Erreur /api/users/active:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
+// Nombre total de rôles
+app.get("/api/roles/count", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const rolesRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/roles`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+
+    if (!rolesRes.ok) {
+      throw new Error(`Erreur Keycloak: ${rolesRes.status}`)
+    }
+
+    const roles = await rolesRes.json()
+    res.json({ count: roles.length })
+  } catch (err) {
+    console.error("❌ Erreur /api/roles/count:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Fonction récursive pour compter tous les sous-groupes
+async function countSubGroups(groups, token) {
+  let total = 0
+
+  for (const g of groups) {
+    // 🔎 Récupère les enfants de ce groupe
+    const childrenRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/groups/${g.id}/children`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+
+    if (childrenRes.ok) {
+      const children = await childrenRes.json()
+      total += children.length
+      total += await countSubGroups(children, token) // récursif
+    }
+  }
+
+  return total
+}
+// 🚀 Stats groupes + sous-groupes
+app.get("/api/groupes/stats", async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const groupsRes = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/groups`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+
+    if (!groupsRes.ok) {
+      throw new Error(`Erreur Keycloak: ${groupsRes.status}`)
+    }
+
+    const groups = await groupsRes.json()
+    const totalGroups = groups.length
+    const totalSubGroups = await countSubGroups(groups, token)
+
+    res.json({
+      groups: totalGroups,
+      subGroups: totalSubGroups,
+    })
+  } catch (err) {
+    console.error("❌ Erreur /api/groupes/stats:", err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.get("/api/realm", (req, res) => {
+  res.json({ realm: process.env.REALM })
+})
+
 
 // 🚀 Créer un utilisateur
 // 🚀 Lister tous les utilisateurs

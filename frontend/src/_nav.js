@@ -24,8 +24,8 @@ import { API_ROUTES_CONFIG, API_BASE } from 'src/api'
 const _nav = [
   {
     component: CNavItem,
-    name: 'Dashboard',
-    to: '/dashboard',
+    name: 'Paramétrage',
+    to: '/settings/settings',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
   },
   {
@@ -68,6 +68,7 @@ const _nav = [
     to: '/settings/custom/editionRoute',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
+  
   {
     component: CNavTitle,
     name: 'Workflow',
