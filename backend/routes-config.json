@@ -28,5 +28,9 @@
   ],
   "/settings/custom/themelogo": [
     "read"
+  ],
+  "/settings/list/groupes": [
+    "admin",
+    "contribute"
   ]
 }
