@@ -5,7 +5,7 @@
     "admin"
   ],
   "/settings/custom/themecolors": [
-    "read",
+    "contribute",
     "admin"
   ],
   "/settings/list/users": [
@@ -28,7 +28,7 @@
     "admin"
   ],
   "/settings/custom/themelogo": [
-    "read",
+    "contribute",
     "admin"
   ],
   "/settings/list/groupes": [
