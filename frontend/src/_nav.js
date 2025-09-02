@@ -65,7 +65,13 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Edition route',
-    to: '/settings/custom/editionRoute',
+    to: '/settings/editionroute',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Edition permission',
+    to: '/settings/editionpermission',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
   

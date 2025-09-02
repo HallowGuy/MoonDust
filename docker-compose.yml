@@ -19,6 +19,7 @@ services:
     volumes:
       - ./backend/uploads:/usr/src/app/uploads
       - ./backend/routes-config.json:/usr/src/app/routes-config.json
+      - ./backend/actions-config.json:/usr/src/app/actions-config.json
     depends_on:
       - db
     healthcheck:

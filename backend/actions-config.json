@@ -1,0 +1,23 @@
+{
+  "user.edit": [
+    "admin",
+    "contribute",
+    "master",
+    "uma_authorization",
+    "read"
+  ],
+  "user.delete": [
+    "admin",
+    "uma_authorization",
+    "master",
+    "contribute"
+  ]
+  ,
+  "user.new": [
+    "admin",
+    "uma_authorization",
+    "master",
+    "contribute"
+  ]
+  
+}
