@@ -34,5 +34,10 @@
   "/settings/list/groupes": [
     "admin",
     "contribute"
+  ],
+  "/wkf/test": [
+    "read",
+    "contribute",
+    "admin"
   ]
 }
