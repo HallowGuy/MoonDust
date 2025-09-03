@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { PermissionsContext } from 'src/context/PermissionsContext'
 
 import {
   CCloseButton,
@@ -23,21 +24,15 @@ const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
+  const { routesConfig, currentUserRoles } = useContext(PermissionsContext)
 
   const [navItems, setNavItems] = useState([])
 
   useEffect(() => {
-    const fetchNav = async () => {
-      try {
-        const filtered = await buildNav()
-        setNavItems(filtered)
-      } catch (err) {
-        console.error("❌ Erreur chargement menu:", err)
-        setNavItems([]) // fallback vide ou tu pourrais charger _nav brut
-      }
-    }
-    fetchNav()
-  }, [])
+    if (!routesConfig || !currentUserRoles) return
+    const filtered = buildNav(routesConfig, currentUserRoles)
+    setNavItems(filtered)
+  }, [routesConfig, currentUserRoles]) // 👈 se relance automatiquement
 
   return (
     <CSidebar

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import {
   CCard, CCardHeader, CCardBody,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
@@ -9,6 +9,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilCheckCircle, cilXCircle } from '@coreui/icons'
 import Select from 'react-select'
+<<<<<<< HEAD
 import { API_USERS, API_ROLES } from 'src/api'
 import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal"
 <<<<<<< HEAD
@@ -17,6 +18,12 @@ import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal"
 import ProtectedButton from "../../../components/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
 >>>>>>> de09af57 (Actions + Routes cleaned)
+=======
+import { API_USERS, API_ROLES,API_USER_ME_ROLES } from 'src/api'
+import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal"
+import ProtectedButton from "../../../components/ProtectedButton"
+import { PermissionsContext } from '/src/context/PermissionsContext'
+>>>>>>> 2df0f9d2d927a31f8281aada6372d677fdf133a6
 
 const Users = () => {
   const [users, setUsers] = useState([])
@@ -36,6 +43,8 @@ const Users = () => {
 
   const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
 >>>>>>> de09af57 (Actions + Routes cleaned)
+
+  const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
 
   // ---------- TOASTS ----------
   const [toasts, setToasts] = useState([])
@@ -65,15 +74,28 @@ const Users = () => {
   }
 
   const fetchRoles = async () => {
-    try {
-      const res = await fetch(`${API_ROLES}`, { headers: getAuthHeaders() })
-      if (!res.ok) throw new Error('Impossible de charger les rôles')
-      const data = await res.json()
-      setRoles(data)
-    } catch (e) {
-      showError(e.message || 'Erreur lors du chargement des rôles')
+  try {
+    const res = await fetch(`${API_ROLES}`, { headers: getAuthHeaders() })
+    let data
+
+    if (res.headers.get("content-type")?.includes("application/json")) {
+      data = await res.json()
+    } else {
+      const text = await res.text()
+      throw new Error(`Réponse non JSON: ${text}`)
     }
+
+    if (!res.ok) {
+      throw new Error(data?.error || `Erreur API (${res.status})`)
+    }
+
+    setRoles(data)
+  } catch (e) {
+    console.error("❌ Erreur fetchRoles:", e)
+    showError(e.message || 'Erreur lors du chargement des rôles')
   }
+}
+
 
   const fetchUserRoles = async (id) => {
     try {
@@ -155,6 +177,11 @@ const Users = () => {
         await fetch(`${API_USERS}/${userId}/roles`, {
           method: 'DELETE',
           headers: getAuthHeaders(),
+<<<<<<< HEAD
+=======
+  body: JSON.stringify([]), // 🔹 envoie bien un array vide
+
+>>>>>>> 2df0f9d2d927a31f8281aada6372d677fdf133a6
         })
 
         const selectedRoles = roles.filter((r) => userRoles.includes(r.name))
@@ -236,18 +263,24 @@ const Users = () => {
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
 <<<<<<< HEAD
+<<<<<<< HEAD
           <h2 className="mb-0">Utilisateurs</h2>
           <CButton color="primary" onClick={() => openOffcanvas()}>
             <CIcon icon={cilPlus} className="me-2" /> Nouvel utilisateur
           </CButton>
 =======
+=======
+>>>>>>> 2df0f9d2d927a31f8281aada6372d677fdf133a6
           <span>Utilisateurs</span>
           <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="user.new">
             <CButton color="primary" onClick={() => openOffcanvas()}>
               <CIcon icon={cilPlus} className="me-2" /> Nouvel utilisateur
             </CButton>
           </ProtectedButton>
+<<<<<<< HEAD
 >>>>>>> de09af57 (Actions + Routes cleaned)
+=======
+>>>>>>> 2df0f9d2d927a31f8281aada6372d677fdf133a6
         </CCardHeader>
         <CCardBody>
           {/* Champ recherche */}
@@ -269,6 +302,7 @@ const Users = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
+<<<<<<< HEAD
 <<<<<<< HEAD
               {users.map((u) => (
                 <CTableRow key={u.id}>
@@ -310,6 +344,8 @@ setUsers((prev) => prev.filter((user) => user.id !== u.id))
 />
 
 =======
+=======
+>>>>>>> 2df0f9d2d927a31f8281aada6372d677fdf133a6
               {filteredUsers.length ? (
                 filteredUsers.map((u) => (
                   <CTableRow key={u.id}>
@@ -376,7 +412,10 @@ setUsers((prev) => prev.filter((user) => user.id !== u.id))
                 <CTableRow>
                   <CTableDataCell colSpan={5} className="text-center">
                     Aucun utilisateur trouvé
+<<<<<<< HEAD
 >>>>>>> de09af57 (Actions + Routes cleaned)
+=======
+>>>>>>> 2df0f9d2d927a31f8281aada6372d677fdf133a6
                   </CTableDataCell>
                 </CTableRow>
               )}

@@ -92,10 +92,13 @@ const AvancementWorkflow = () => {
   }
 
   return (
-    <CCard className="mb-4">
-      <CCardHeader>
-        <h2 className="mb-0">Avancement des demandes de congés</h2>
-      </CCardHeader>
+    <div className="container py-4">
+          <CCard className="mb-4">
+            <CCardHeader className="d-flex justify-content-between align-items-center">
+              <span>Avancement des demandes de congés</span>
+            </CCardHeader>
+    
+          {/* Main Card Body avec la grille */}
       <CCardBody>
         {/* filtres */}
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-2">
@@ -169,6 +172,7 @@ const AvancementWorkflow = () => {
         )}
       </CCardBody>
     </CCard>
+    </div>
   )
 }
 

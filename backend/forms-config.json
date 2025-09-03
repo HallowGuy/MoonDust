@@ -1,0 +1,100 @@
+[
+  {
+    "id": "Toto",
+    "name": "TestMax",
+    "schema": {
+      "display": "form",
+      "components": [
+        {
+          "label": "Text Field",
+          "applyMaskOn": "change",
+          "tableView": true,
+          "validateWhenHidden": false,
+          "key": "textField",
+          "type": "textfield",
+          "input": true
+        },
+        {
+          "label": "Coucou",
+          "showValidations": false,
+          "disableOnInvalid": true,
+          "tableView": false,
+          "key": "submit",
+          "type": "button",
+          "input": true,
+          "saveOnEnter": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "toto",
+    "name": "ezaezae",
+    "schema": {
+      "display": "form",
+      "components": []
+    }
+  },
+  {
+    "id": "mon_formulaire",
+    "name": "Mon Formulaire",
+    "schema": {
+      "display": "form",
+      "components": []
+    }
+  },
+  {
+    "id": "mon_formulaire_",
+    "name": "Mon Formulaire é",
+    "schema": {
+      "display": "form",
+      "components": []
+    }
+  },
+  {
+    "id": "formulaire_1",
+    "name": "Formulaire 1",
+    "schema": {
+      "display": "form",
+      "components": []
+    }
+  },
+  {
+    "id": "demande_de_congs",
+    "name": "Demande de congés",
+    "schema": {
+      "display": "form",
+      "components": [
+        {
+          "label": "Nom et prénom",
+          "applyMaskOn": "change",
+          "tableView": true,
+          "validateWhenHidden": false,
+          "key": "nomEtPrenom",
+          "type": "textfield",
+          "input": true
+        },
+        {
+          "label": "Text Area",
+          "applyMaskOn": "change",
+          "autoExpand": false,
+          "tableView": true,
+          "validateWhenHidden": false,
+          "key": "textArea",
+          "type": "textarea",
+          "input": true
+        },
+        {
+          "label": "Envoyer",
+          "showValidations": false,
+          "disableOnInvalid": true,
+          "tableView": false,
+          "key": "submit",
+          "type": "button",
+          "input": true,
+          "saveOnEnter": false
+        }
+      ]
+    }
+  }
+]

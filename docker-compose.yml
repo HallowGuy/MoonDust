@@ -19,13 +19,19 @@ services:
     volumes:
       - ./backend/uploads:/usr/src/app/uploads
 <<<<<<< HEAD
+<<<<<<< HEAD
       - ./backend/routes-config.json:/usr/src/app/routes-config.json
 =======
+=======
+>>>>>>> 2df0f9d2d927a31f8281aada6372d677fdf133a6
       - ./backend/config/config-routes.json:/usr/src/app/config/config-routes.json
       - ./backend/config/config-actions.json:/usr/src/app/config/config-actions.json
       - ./backend/forms-config.json:/usr/src/app/forms-config.json
 
+<<<<<<< HEAD
 >>>>>>> de09af57 (Actions + Routes cleaned)
+=======
+>>>>>>> 2df0f9d2d927a31f8281aada6372d677fdf133a6
     depends_on:
       - db
     healthcheck:

@@ -1,45 +1,50 @@
 import express from "express"
 import cors from "cors"
-import fetch from "node-fetch"
 import dotenv from "dotenv"
-import mime from "mime-types"
-import nodemailer from "nodemailer"
-import multer from "multer"
-import { logAction } from "./utils/logger.js"
-import pool from "./db.js"
-import { fileURLToPath } from "url"
 import path from "path"
-import fs from "fs/promises"
-import fssync from "fs"
-import jwt from "jsonwebtoken"
-import jwksClient from "jwks-rsa"
-import swaggerUi from "swagger-ui-express";
-import swaggerJSDoc from "swagger-jsdoc";  // ✅ import correct
-import auditRoutes from "./routes/audit.js";
-import configRoutes from "./routes/config.js";
-import congesRoutes from "./routes/conges.js";
-import documentsRoutes from "./routes/documents.js";
-import groupesRoutes from "./routes/groupes.js";
-import rolesRoutes from "./routes/roles.js";
-import systemRoutes from "./routes/system.js";
-import themeRoutes from "./routes/theme.js";
-import usersRoutes from "./routes/users.js";
-import helloRoutes from "./routes/hello.js";
+import { fileURLToPath } from "url"
+import swaggerUi from "swagger-ui-express"
+import swaggerJSDoc from "swagger-jsdoc"
+
+// ⚡ utils & DB
+import pool from "./db.js"
+import { getKey, getAdminToken, client } from "./utils/keycloak.js"
+//import "./utils/keycloak.js" // contient KEYCLOAK_URL, REALM, client, getAdminToken
+
+// 📂 routes
+import usersRoutes from "./routes/users.js"
+import groupesRoutes from "./routes/groupes.js"
+import rolesRoutes from "./routes/roles.js"
+import congesRoutes from "./routes/conges.js"
+import auditRoutes from "./routes/audit.js"
+import documentsRoutes from "./routes/documents.js"
+import themeRoutes from "./routes/theme.js"
+import uploadsRoutes from "./routes/uploads.js"
+import formsRoutes from "./routes/forms.js"
+import actionsConfigRoutes from "./routes/actions-config.js"
+import routesConfigRoutes from "./routes/routes-config.js"
+import systemRoutes from "./routes/system.js"
+import configRoutes from "./routes/config.js"
+import debugRoutes from "./routes/debug.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+<<<<<<< HEAD
 
 // ---------------- CONFIG ROUTES ----------------
 const CONFIG_FILE = path.join(__dirname, "config", "config-routes.json")
 
 
+=======
+dotenv.config({ path: path.resolve(__dirname, "../.env") })
+>>>>>>> 2df0f9d2d927a31f8281aada6372d677fdf133a6
 
 const app = express()
-//const PORT = process.env.PORT || 5001
-
+const PORT = process.env.PORT || 5001
 
 
 // ---------- MIDDLEWARES ----------
+
 app.use(
   cors({
     origin: [
@@ -48,21 +53,13 @@ app.use(
       "http://localhost:3002", // ton port frontend
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"], // <-- ajoute Authorization ici
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 )
 
 app.use(express.json())
 
-function getKey(header, callback) {
-  client.getSigningKey(header.kid, (err, key) => {
-    if (err) return callback(err)
-    const signingKey = key.getPublicKey()
-    callback(null, signingKey)
-  })
-}
-
-// Configuration Swagger
+// ---------- SWAGGER ----------
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
@@ -82,25 +79,32 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get("/api-docs-json", (req, res) => res.json(swaggerSpec));
 
-// --- Routes API ---
-app.use("/api/audit", auditRoutes);
-app.use("/api/config", configRoutes);
-app.use("/api/conges", congesRoutes);
-app.use("/api/documents", documentsRoutes);
-app.use("/api/groupes", groupesRoutes);
-app.use("/api/roles", rolesRoutes);
-app.use("/api/system", systemRoutes);
-app.use("/api/theme", themeRoutes);
-app.use("/api/users", usersRoutes);
-app.use("/api", helloRoutes);
+(async () => {
+  try {
+    const token = await getAdminToken();
+    console.log("🔑 Admin token généré:", token.substring(0, 30) + "...");
 
+    // Test direct sur Keycloak : lister les utilisateurs
+    const testRes = await fetch(`${process.env.KEYCLOAK_URL}/admin/realms/${process.env.REALM}/users`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
+    if (!testRes.ok) {
+      const errorText = await testRes.text();
+      throw new Error(`Keycloak refuse le token (${testRes.status}): ${errorText}`);
+    }
 
+    console.log("✅ Admin token VALIDE → accès confirmé à Keycloak");
+  } catch (err) {
+    console.error("❌ Impossible de valider l'admin token:", err.message);
+  }
+})();
 
-// Healthcheck
+// ---------- HEALTHCHECK ----------
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" })
 })
+<<<<<<< HEAD
 // Lire la config depuis le fichier
 // Lire la config depuis le fichier
 async function getConfig() {
@@ -112,16 +116,29 @@ async function getConfig() {
     return {}
   }
 }
-
-// Écrire la config dans le fichier
-async function setConfig(config) {
-  await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2), { encoding: "utf-8" })
-  console.log("💾 Config sauvegardée dans :", CONFIG_FILE)
-}
+=======
+>>>>>>> 2df0f9d2d927a31f8281aada6372d677fdf133a6
 
 
 
+// --- ROUTES API ---
+app.use("/api/users", usersRoutes)
+app.use("/api/groupes", groupesRoutes)
+app.use("/api/roles", rolesRoutes)
+app.use("/api/conges", congesRoutes)
+app.use("/api/audit", auditRoutes)
+app.use("/api/documents", documentsRoutes)
+app.use("/api/theme", themeRoutes)
+app.use("/api/uploads", uploadsRoutes)
+app.use("/api/forms", formsRoutes)
+app.use("/api/actions-config", actionsConfigRoutes)
+app.use("/api/routes-config", routesConfigRoutes)
+app.use("/api/system", systemRoutes)
+app.use("/api/config", configRoutes)
+app.use("/api/debug", debugRoutes)
 
+
+<<<<<<< HEAD
 // 🚀 Endpoint GET : récupérer la config
 app.get('/api/routes-config', async (req, res) => {
   try {
@@ -1369,6 +1386,11 @@ app.delete("/api/forms/:id", async (req, res) => {
 // ----------------------------------------------------
 const PORT = process.env.PORT || 5001
 
+=======
+// ---------- START ----------
+>>>>>>> 2df0f9d2d927a31f8281aada6372d677fdf133a6
 app.listen(PORT, () => {
   console.log(`✅ Backend API running on http://localhost:${PORT}`)
 })
+
+
