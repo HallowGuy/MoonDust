@@ -155,11 +155,7 @@ export async function getUserRoles() {
 }
 
 
-export async function buildNav() {
-  const roles = await getUserRoles()
-  const res = await fetch(API_ROUTES_CONFIG)
-  const config = await res.json()
-
+export function buildNav(routesConfig, userRoles) {
   const filterNav = (items) =>
     items
       .map((item) => {
@@ -167,11 +163,10 @@ export async function buildNav() {
           const sub = filterNav(item.items)
           return sub.length ? { ...item, items: sub } : null
         } else if (item.to) {
-          const allowedRoles = config[item.to] || []
-          //console.log("🔎 Vérif accès:", item.to, "→ requis:", allowedRoles, "→ user:", roles)
+          const allowedRoles = routesConfig[item.to] || []
 
           if (allowedRoles.length === 0) return item
-          return allowedRoles.some((r) => roles.includes(r)) ? item : null
+          return allowedRoles.some((r) => userRoles.includes(r)) ? item : null
         }
         return item
       })
@@ -179,5 +174,6 @@ export async function buildNav() {
 
   return filterNav(_nav)
 }
+
 
 export default _nav

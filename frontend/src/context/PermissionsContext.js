@@ -2,8 +2,9 @@ import { createContext } from "react"
 
 export const PermissionsContext = createContext({
   actionsConfig: {},
-  setActionsConfig: () => {},  // 👈 ajouté
+  setActionsConfig: () => {},
   routesConfig: {},
-  setRoutesConfig: () => {},   // 👈 déjà présent
+  setRoutesConfig: () => {},
   currentUserRoles: [],
+  setCurrentUserRoles: () => {}
 })

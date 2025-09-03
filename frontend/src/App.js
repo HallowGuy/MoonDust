@@ -75,7 +75,7 @@ const App = () => {
   }, [])
 
   return (
-    <PermissionsContext.Provider value={{ actionsConfig, routesConfig, currentUserRoles }}>
+    <PermissionsContext.Provider value={{ actionsConfig, setActionsConfig, routesConfig,setRoutesConfig, currentUserRoles, setCurrentUserRoles }}>
       <BrowserRouter>
         <Suspense
           fallback={

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import {
   CCard, CCardHeader, CCardBody, CFormInput, CButton,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
@@ -9,6 +9,7 @@ import CIcon from '@coreui/icons-react'
 import { cilPencil, cilSave } from '@coreui/icons'
 
 import { API_ROLES, API_ACTIONS_CONFIG } from 'src/api'
+import { PermissionsContext } from "src/context/PermissionsContext"
 
 // 🔹 Couleurs associées aux rôles (optionnel)
 const ROLE_COLORS = {
@@ -23,6 +24,9 @@ const PermissionEdition = () => {
   const [config, setConfig] = useState({})
   const [toasts, setToasts] = useState([])
   const [availableRoles, setAvailableRoles] = useState([])
+  const [saving, setSaving] = useState(false)
+
+  const { setActionsConfig } = useContext(PermissionsContext)
 
   // --- TOASTS
   const addToast = (message, color = 'danger') => {
@@ -34,12 +38,11 @@ const PermissionEdition = () => {
 
   // --- LISTE DES ACTIONS (clé JSON) ---
   const allActions = Object.keys(config || {})
-
   const filtered = allActions.filter((a) =>
     a.toLowerCase().includes(search.toLowerCase())
   )
 
-  // Pagination appliquée après filtrage
+  // Pagination
   const [page, setPage] = useState(1)
   const perPage = 10
   const paginated = filtered.slice((page - 1) * perPage, page * perPage)
@@ -59,13 +62,14 @@ const PermissionEdition = () => {
         if (!res.ok) throw new Error("Impossible de charger la config des actions")
         const data = await res.json()
         setConfig(data)
+        setActionsConfig(data) // 👈 initialise aussi le context global
       } catch (err) {
         console.error(err)
         addToast(err.message)
       }
     }
     fetchConfig()
-  }, [])
+  }, [setActionsConfig])
 
   // Charger les rôles depuis backend
   useEffect(() => {
@@ -84,27 +88,35 @@ const PermissionEdition = () => {
   }, [])
 
   // Sauvegarder config
-const saveConfig = async (newConfig) => {
-  try {
-    setConfig(newConfig) // maj immédiate
-    const res = await fetch(API_ACTIONS_CONFIG, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newConfig),
-    })
-    if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
+  const saveConfig = async (newConfig) => {
+    try {
+      setSaving(true)
 
-    // 🔥 recharge depuis backend après save
-    const refreshed = await fetch(API_ACTIONS_CONFIG).then(r => r.json())
-    setConfig(refreshed)
+      // maj immédiate locale
+      setConfig(JSON.parse(JSON.stringify(newConfig)))
+      setActionsConfig(JSON.parse(JSON.stringify(newConfig))) // 👈 maj context
 
-    showSuccess("Configuration sauvegardée")
-  } catch (err) {
-    addToast(err.message)
+      const res = await fetch(API_ACTIONS_CONFIG, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newConfig),
+      })
+      if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
+
+      // recharge depuis backend (avec anti-cache)
+      const refreshed = await fetch(`${API_ACTIONS_CONFIG}?t=${Date.now()}`)
+        .then(r => r.json())
+
+      setConfig(JSON.parse(JSON.stringify(refreshed)))
+      setActionsConfig(JSON.parse(JSON.stringify(refreshed))) // 👈 maj context global
+
+      showSuccess("Configuration sauvegardée")
+    } catch (err) {
+      addToast(err.message)
+    } finally {
+      setSaving(false)
+    }
   }
-}
-
-
 
   // Ouvrir l’édition
   const openEdit = (actionKey) => {
@@ -122,7 +134,7 @@ const saveConfig = async (newConfig) => {
   }
 
   // Sauvegarde
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editAction) return
     let newConfig = { ...config }
 
@@ -134,11 +146,10 @@ const saveConfig = async (newConfig) => {
       newConfig[editAction] = editRoles
     }
 
-    saveConfig(newConfig)
+    await saveConfig(newConfig)
     setShowEdit(false)
     setEditAction(null)
     setSelectedActions([])
-    showSuccess("Permissions mises à jour")
   }
 
   return (
@@ -266,9 +277,18 @@ const saveConfig = async (newConfig) => {
               <CButton color="secondary" variant="ghost" onClick={() => setShowEdit(false)}>
                 Annuler
               </CButton>
-              <CButton color="primary" onClick={handleSaveEdit}>
-                <CIcon icon={cilSave} className="me-2" />
-                Enregistrer
+              <CButton color="primary" onClick={handleSaveEdit} disabled={saving}>
+                {saving ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" />
+                    Sauvegarde…
+                  </>
+                ) : (
+                  <>
+                    <CIcon icon={cilSave} className="me-2" />
+                    Enregistrer
+                  </>
+                )}
               </CButton>
             </div>
           </div>

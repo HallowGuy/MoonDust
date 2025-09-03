@@ -28,6 +28,9 @@ const RouteEdition = () => {
   const [toasts, setToasts] = useState([])
   const [availableRoles, setAvailableRoles] = useState([])
   const { setRoutesConfig } = useContext(PermissionsContext)
+  const [saving, setSaving] = useState(false)
+const [editAction, setEditAction] = useState(null)
+
 
   // --- TOASTS
   const addToast = (message, color = 'danger') => {
@@ -87,6 +90,7 @@ const [selectedRoutes, setSelectedRoutes] = useState([])
         if (!res.ok) throw new Error("Impossible de charger la config des routes")
         const data = await res.json()
         setConfig(data)
+        setRoutesConfig(data)
       } catch (err) {
         console.error(err)
         addToast(err.message)
@@ -96,25 +100,34 @@ const [selectedRoutes, setSelectedRoutes] = useState([])
   }, [])
 
   // Sauvegarder config dans backend
-  const saveConfig = async (newConfig) => {
-    try {
-      const res = await fetch(API_ROUTES_CONFIG, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newConfig),
-      })
-      if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
+const saveConfig = async (newConfig) => {
+  try {
+    setSaving(true)
 
-      // 👇 Re-fetch immédiat pour mettre à jour le contexte global
-      const refresh = await fetch(API_ROUTES_CONFIG, { cache: "no-store" })
-      const updated = await refresh.json()
-      setRoutesConfig(updated)
+    setConfig(JSON.parse(JSON.stringify(newConfig)))
 
-      showSuccess("Configuration des routes mise à jour")
-    } catch (err) {
-      addToast(err.message)
-    }
+
+    const res = await fetch(API_ROUTES_CONFIG, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newConfig),
+    })
+    if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
+
+    const refreshed = await fetch(`${API_ROUTES_CONFIG}?t=${Date.now()}`)
+      .then(r => r.json())
+
+    setConfig(JSON.parse(JSON.stringify(refreshed)))
+    setRoutesConfig(refreshed) // 👈 update aussi le context
+
+    showSuccess("Configuration sauvegardée")
+  } catch (err) {
+    addToast(err.message)
+  } finally {
+    setSaving(false)
   }
+}
+
   // Ouvrir l'édition
   const openEdit = (route) => {
     setEditRoute(route)
@@ -131,28 +144,24 @@ const [selectedRoutes, setSelectedRoutes] = useState([])
   }
 
   // Sauvegarder l'édition
- const handleSaveEdit = () => {
+const handleSaveEdit = async () => {
   if (!editRoute) return
-
   let newConfig = { ...config }
 
   if (Array.isArray(editRoute.path)) {
-    // 🔹 Mode édition en masse
+    // édition en masse
     editRoute.path.forEach((p) => {
       newConfig[p] = editRoles
     })
   } else {
-    // 🔹 Édition simple
+    // édition simple
     newConfig[editRoute.path] = editRoles
   }
 
-  console.log("💾 Sauvegarde config :", newConfig)
-  saveConfig(newConfig)
-
+  await saveConfig(newConfig)
   setShowEdit(false)
   setEditRoute(null)
-  setSelectedRoutes([]) // reset sélection
-  showSuccess('Rôles mis à jour')
+  setSelectedRoutes([])
 }
 
 
@@ -304,10 +313,19 @@ const [selectedRoutes, setSelectedRoutes] = useState([])
               <CButton color="secondary" variant="ghost" onClick={() => setShowEdit(false)}>
                 Annuler
               </CButton>
-              <CButton color="primary" onClick={handleSaveEdit}>
-                <CIcon icon={cilSave} className="me-2" />
-                Enregistrer
-              </CButton>
+              <CButton color="primary" onClick={handleSaveEdit} disabled={saving}>
+  {saving ? (
+    <>
+      <span className="spinner-border spinner-border-sm me-2" />
+      Sauvegarde…
+    </>
+  ) : (
+    <>
+      <CIcon icon={cilSave} className="me-2" />
+      Enregistrer
+    </>
+  )}
+</CButton>
             </div>
           </div>
         </COffcanvasBody>

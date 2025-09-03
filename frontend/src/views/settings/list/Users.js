@@ -229,13 +229,15 @@ const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <h2 className="mb-0">Utilisateurs</h2>
            <ProtectedButton
-            actionsConfig={actionsConfig}
+  actionsConfig={actionsConfig}
   currentUserRoles={currentUserRoles}
   action="user.new"
 >
-          <CButton color="primary" onClick={() => openOffcanvas()}>
-            <CIcon icon={cilPlus} className="me-2" /> Nouvel utilisateur
-          </CButton></ProtectedButton>
+  <CButton color="primary" onClick={() => openOffcanvas()}>
+    <CIcon icon={cilPlus} className="me-2" /> Nouvel utilisateur
+  </CButton>
+</ProtectedButton>
+
         </CCardHeader>
         <CCardBody>
           <CTable striped hover responsive className="align-middle">
