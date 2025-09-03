@@ -40,4 +40,3 @@ coverage/
 docker-data/
 *.pid
 backend/uploads/
-zbctl
