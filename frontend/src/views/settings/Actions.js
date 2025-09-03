@@ -9,9 +9,9 @@ import CIcon from '@coreui/icons-react'
 import { cilPencil, cilSave } from '@coreui/icons'
 
 import { API_ROLES, API_ACTIONS_CONFIG } from 'src/api'
-import { PermissionsContext } from "src/context/PermissionsContext"
+import ProtectedButton from "/src/components/ProtectedButton"
+import { PermissionsContext } from '/src/context/PermissionsContext'
 
-// 🔹 Couleurs associées aux rôles (optionnel)
 const ROLE_COLORS = {
   admin: 'danger',
   read: 'info',
@@ -26,9 +26,8 @@ const PermissionEdition = () => {
   const [availableRoles, setAvailableRoles] = useState([])
   const [saving, setSaving] = useState(false)
 
-  const { setActionsConfig } = useContext(PermissionsContext)
+  const { actionsConfig, currentUserRoles, setActionsConfig } = useContext(PermissionsContext)
 
-  // --- TOASTS
   const addToast = (message, color = 'danger') => {
     const id = Date.now()
     setToasts((prev) => [...prev, { id, message, color }])
@@ -36,25 +35,21 @@ const PermissionEdition = () => {
   const showSuccess = (msg) => addToast(msg, 'success')
   const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id))
 
-  // --- LISTE DES ACTIONS (clé JSON) ---
   const allActions = Object.keys(config || {})
   const filtered = allActions.filter((a) =>
     a.toLowerCase().includes(search.toLowerCase())
   )
 
-  // Pagination
   const [page, setPage] = useState(1)
   const perPage = 10
   const paginated = filtered.slice((page - 1) * perPage, page * perPage)
   const totalPages = Math.ceil(filtered.length / perPage)
   const [selectedActions, setSelectedActions] = useState([])
 
-  // --- EDITION
   const [showEdit, setShowEdit] = useState(false)
   const [editAction, setEditAction] = useState(null)
   const [editRoles, setEditRoles] = useState([])
 
-  // Charger config des actions depuis backend
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -62,7 +57,7 @@ const PermissionEdition = () => {
         if (!res.ok) throw new Error("Impossible de charger la config des actions")
         const data = await res.json()
         setConfig(data)
-        setActionsConfig(data) // 👈 initialise aussi le context global
+        setActionsConfig(data)
       } catch (err) {
         console.error(err)
         addToast(err.message)
@@ -71,7 +66,6 @@ const PermissionEdition = () => {
     fetchConfig()
   }, [setActionsConfig])
 
-  // Charger les rôles depuis backend
   useEffect(() => {
     const fetchRoles = async () => {
       try {
@@ -87,14 +81,12 @@ const PermissionEdition = () => {
     fetchRoles()
   }, [])
 
-  // Sauvegarder config
   const saveConfig = async (newConfig) => {
     try {
       setSaving(true)
 
-      // maj immédiate locale
       setConfig(JSON.parse(JSON.stringify(newConfig)))
-      setActionsConfig(JSON.parse(JSON.stringify(newConfig))) // 👈 maj context
+      setActionsConfig(JSON.parse(JSON.stringify(newConfig)))
 
       const res = await fetch(API_ACTIONS_CONFIG, {
         method: 'POST',
@@ -103,12 +95,10 @@ const PermissionEdition = () => {
       })
       if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
 
-      // recharge depuis backend (avec anti-cache)
-      const refreshed = await fetch(`${API_ACTIONS_CONFIG}?t=${Date.now()}`)
-        .then(r => r.json())
+      const refreshed = await fetch(`${API_ACTIONS_CONFIG}?t=${Date.now()}`).then(r => r.json())
 
       setConfig(JSON.parse(JSON.stringify(refreshed)))
-      setActionsConfig(JSON.parse(JSON.stringify(refreshed))) // 👈 maj context global
+      setActionsConfig(JSON.parse(JSON.stringify(refreshed)))
 
       showSuccess("Configuration sauvegardée")
     } catch (err) {
@@ -118,7 +108,6 @@ const PermissionEdition = () => {
     }
   }
 
-  // Ouvrir l’édition
   const openEdit = (actionKey) => {
     setEditAction(actionKey)
     const currentRoles = config[actionKey] ?? []
@@ -126,14 +115,12 @@ const PermissionEdition = () => {
     setShowEdit(true)
   }
 
-  // Toggle checkbox
   const toggleRole = (role) => {
     setEditRoles((prev) =>
       prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
     )
   }
 
-  // Sauvegarde
   const handleSaveEdit = async () => {
     if (!editAction) return
     let newConfig = { ...config }
@@ -155,22 +142,27 @@ const PermissionEdition = () => {
   return (
     <div className="container py-4">
       <CCard className="mb-4">
-        <CCardHeader>
-          <span>Éditeur des permissions des actions</span>
+        <CCardHeader className="d-flex justify-content-between align-items-center">
+          <span>Édition des permissions des actions</span>
+          <ProtectedButton
+            actionsConfig={actionsConfig}
+            currentUserRoles={currentUserRoles}
+            action="actions.editMasse"
+          >
+            <CButton
+              color="primary"
+              disabled={selectedActions.length === 0}
+              onClick={() => {
+                setEditAction(selectedActions)
+                setEditRoles([])
+                setShowEdit(true)
+              }}
+            >
+              Modifier en masse ({selectedActions.length})
+            </CButton>
+          </ProtectedButton>
         </CCardHeader>
         <CCardBody>
-          <CButton
-            color="primary"
-            disabled={selectedActions.length === 0}
-            onClick={() => {
-              setEditAction(selectedActions)
-              setEditRoles([])
-              setShowEdit(true)
-            }}
-          >
-            Modifier en masse ({selectedActions.length})
-          </CButton>
-
           <CFormInput
             className="mb-3"
             type="text"
@@ -221,21 +213,27 @@ const PermissionEdition = () => {
                           : 'Aucun'}
                       </CTableDataCell>
                       <CTableDataCell className="text-center">
-                        <CButton
-                          size="sm"
-                          color="success"
-                          variant="ghost"
-                          onClick={() => openEdit(a)}
+                        <ProtectedButton
+                          actionsConfig={actionsConfig}
+                          currentUserRoles={currentUserRoles}
+                          action="actions.edit"
                         >
-                          <CIcon icon={cilPencil} size="lg" />
-                        </CButton>
+                          <CButton
+                            size="sm"
+                            color="success"
+                            variant="ghost"
+                            onClick={() => openEdit(a)}
+                          >
+                            <CIcon icon={cilPencil} size="lg" />
+                          </CButton>
+                        </ProtectedButton>
                       </CTableDataCell>
                     </CTableRow>
                   )
                 })
               ) : (
                 <CTableRow>
-                  <CTableDataCell colSpan={3} className="text-center">
+                  <CTableDataCell colSpan={4} className="text-center">
                     Aucune action trouvée
                   </CTableDataCell>
                 </CTableRow>

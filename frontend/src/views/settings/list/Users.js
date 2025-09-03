@@ -227,16 +227,8 @@ const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
     <><div className="container py-4">
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
-          <h2 className="mb-0">Utilisateurs</h2>
-           <ProtectedButton
-  actionsConfig={actionsConfig}
-  currentUserRoles={currentUserRoles}
-  action="user.new"
->
-  <CButton color="primary" onClick={() => openOffcanvas()}>
-    <CIcon icon={cilPlus} className="me-2" /> Nouvel utilisateur
-  </CButton>
-</ProtectedButton>
+          <span>Utilisateurs</span>
+           <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="user.new"><CButton color="primary" onClick={() => openOffcanvas()}><CIcon icon={cilPlus} className="me-2" /> Nouvel utilisateur</CButton></ProtectedButton>
 
         </CCardHeader>
         <CCardBody>

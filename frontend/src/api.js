@@ -55,3 +55,7 @@ export const API_GROUPE_SUBGROUPS = (id) => `${API_GROUPES}/${id}/subgroups`
 // ---------- ENDPOINTS ROUTES CONFIG ----------
 export const API_ROUTES_CONFIG = `${API_BASE}/routes-config`
 export const API_ACTIONS_CONFIG = `${API_BASE}/actions-config`
+
+// ---------- ENDPOINTS FORM CONFIG ----------
+export const API_FORM_CONFIG = `${API_BASE}/forms`
+

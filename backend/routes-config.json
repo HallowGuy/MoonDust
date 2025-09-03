@@ -304,5 +304,38 @@
     "read",
     "contribute",
     "admin"
+  ],
+  "/forms/formiobuilder": [
+    "contribute",
+    "read",
+    "admin"
+  ],
+  "/settings/formiorenderer": [
+    "contribute",
+    "read",
+    "admin"
+  ],
+  "/forms/editionforms": [
+    "admin",
+    "read",
+    "contribute"
+  ],
+  "/forms/formiorenderer": [
+    "admin",
+    "read",
+    "contribute"
+  ],
+  "/forms/:id/builder": [
+    "contribute",
+    "read",
+    "admin"
+  ],
+  "/forms/:id/view": [
+    "admin",
+    "read",
+    "contribute"
+  ],
+  "/settings/audit": [
+    "read"
   ]
 }

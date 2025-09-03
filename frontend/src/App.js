@@ -5,6 +5,9 @@ import { CSpinner, useColorModes } from "@coreui/react"
 
 import "./scss/style.scss"
 import "./scss/examples.scss"
+import "./formio-setup"
+import "formiojs/dist/formio.full.min.css"
+import "./style/formio-overrides.scss"
 
 import ProtectedRoute from "./components/ProtectedRoute"
 import { API_THEME, API_ACTIONS_CONFIG, API_BASE, API_ROUTES_CONFIG } from "src/api"

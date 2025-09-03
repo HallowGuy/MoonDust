@@ -26,11 +26,11 @@ const workflows = [
 
 const Workflow = () => {
   return (
-    <CCard className="mb-4 shadow-sm border-0">
-      {/* Main Card Header */}
-      <CCardHeader>
-        <h2 className="mb-0">Accès rapides</h2>
-      </CCardHeader>
+    <div className="container py-4">
+      <CCard className="mb-4">
+        <CCardHeader className="d-flex justify-content-between align-items-center">
+          <span>Workflow</span>
+        </CCardHeader>
 
       {/* Main Card Body avec la grille */}
       <CCardBody>
@@ -70,6 +70,8 @@ const Workflow = () => {
         </div>
       </CCardBody>
     </CCard>
+
+    </div>
   )
 }
 

@@ -8,15 +8,21 @@ const Groupes = React.lazy(() => import('./views/settings/list/Groupes'))
 const Documents = React.lazy(() => import('./views/import/Documents'))
 const ThemeColors = React.lazy(() => import('./views/settings/custom/ThemeColors'))
 const ThemeLogo = React.lazy(() => import('./views/settings/custom/ThemeLogo'))
-const AuditLogs = React.lazy(() => import('./views/settings/custom/AuditLogs'))
+const Audit = React.lazy(() => import('./views/settings/Audit'))
 const Test = React.lazy(() => import('./views/wkf/Test'))
 const AvancementWorkflow = React.lazy(() => import('./views/wkf/AvancementWorkflow'))
 const Workflow = React.lazy(() => import('./views/wkf/Workflow'))
 const DetailConge = React.lazy(() => import('./views/wkf/DetailConge'))
-const RouteEdition = React.lazy(() => import('./views/settings/RouteEdition'))
-const EditionPermission = React.lazy(() => import('./views/settings/PermissionEdition'))
+const Routes = React.lazy(() => import('./views/settings/Routes'))
+const Actions = React.lazy(() => import('./views/settings/Actions'))
 const Profil = React.lazy(() => import('./views/pages/profil/Profil'))
 const Settings = React.lazy(() => import('./views/settings/Settings'))
+const FormioBuilder = React.lazy(() => import('./views/forms/FormioBuilder'))
+const FormioRenderer = React.lazy(() => import('./views/forms/FormioRenderer'))
+const EditionForms = React.lazy(() => import('./views/forms/EditionForms'))
+const FormBuilderPage = React.lazy(() => import('./views/forms/FormBuilderPage'))
+const FormRenderPage = React.lazy(() => import('./views/forms/FormRenderPage'))
+
 
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
@@ -80,9 +86,15 @@ const routes = [
 
   { path: '/settings/custom/themecolors', name: 'Gestion des couleurs', element: ThemeColors  },
   { path: '/settings/custom/themelogo', name: 'Gestion du logo', element: ThemeLogo  },
-  { path: '/settings/custom/auditlogs', name: 'Journal audit', element: AuditLogs  },
-  { path: '/settings/editionroute', name: 'Édition des accès', element: RouteEdition  },
-  { path: '/settings/editionpermission', name: 'Permissions', element: EditionPermission  },
+  { path: '/settings/audit', name: 'Journal audit', element: Audit  },
+  { path: '/settings/routes', name: 'Édition des accès', element: Routes  },
+  { path: '/settings/actions', name: 'Permissions', element: Actions  },
+    { path: '/forms/formiobuilder', name: 'Permissions', element: FormioBuilder  },
+  { path: '/forms/formiorenderer', name: 'Affichage formulaire', element: FormioRenderer  },
+  { path: '/editionforms', name: 'Edition de formulaire', element: EditionForms  },
+  { path: '/forms/:id/builder', name: 'Edition formulaire ', element: FormBuilderPage  },
+    { path: '/forms/:id/view', name: 'Visualisation formulaire ', element: FormRenderPage  },
+
 
   { path: '/wkf/test', name: 'Test Workflow', element: Test  },
   { path: '/wkf/avancementworkflow', name: 'Avancement Workflow', element: AvancementWorkflow  },

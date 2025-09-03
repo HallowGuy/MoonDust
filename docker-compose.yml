@@ -20,6 +20,8 @@ services:
       - ./backend/uploads:/usr/src/app/uploads
       - ./backend/routes-config.json:/usr/src/app/routes-config.json
       - ./backend/actions-config.json:/usr/src/app/actions-config.json
+      - ./backend/forms-config.json:/usr/src/app/forms-config.json
+
     depends_on:
       - db
     healthcheck:
