@@ -9,7 +9,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilCheckCircle, cilXCircle } from '@coreui/icons'
 import Select from 'react-select'
-import { API_USERS, API_ROLES } from 'src/api'
+import { API_USERS, API_ROLES,API_USER_ME_ROLES } from 'src/api'
 import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal"
 import ProtectedButton from "../../../components/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
@@ -58,15 +58,28 @@ const Users = () => {
   }
 
   const fetchRoles = async () => {
-    try {
-      const res = await fetch(`${API_ROLES}`, { headers: getAuthHeaders() })
-      if (!res.ok) throw new Error('Impossible de charger les rôles')
-      const data = await res.json()
-      setRoles(data)
-    } catch (e) {
-      showError(e.message || 'Erreur lors du chargement des rôles')
+  try {
+    const res = await fetch(`${API_ROLES}`, { headers: getAuthHeaders() })
+    let data
+
+    if (res.headers.get("content-type")?.includes("application/json")) {
+      data = await res.json()
+    } else {
+      const text = await res.text()
+      throw new Error(`Réponse non JSON: ${text}`)
     }
+
+    if (!res.ok) {
+      throw new Error(data?.error || `Erreur API (${res.status})`)
+    }
+
+    setRoles(data)
+  } catch (e) {
+    console.error("❌ Erreur fetchRoles:", e)
+    showError(e.message || 'Erreur lors du chargement des rôles')
   }
+}
+
 
   const fetchUserRoles = async (id) => {
     try {
@@ -148,6 +161,8 @@ const Users = () => {
         await fetch(`${API_USERS}/${userId}/roles`, {
           method: 'DELETE',
           headers: getAuthHeaders(),
+  body: JSON.stringify([]), // 🔹 envoie bien un array vide
+
         })
 
         const selectedRoles = roles.filter((r) => userRoles.includes(r.name))

@@ -10,7 +10,7 @@ import "formiojs/dist/formio.full.min.css"
 import "./style/formio-overrides.scss"
 
 import ProtectedRoute from "./components/ProtectedRoute"
-import { API_THEME, API_ACTIONS_CONFIG, API_BASE, API_ROUTES_CONFIG } from "src/api"
+import { API_THEME, API_ACTIONS_CONFIG, API_BASE, API_ROUTES_CONFIG,API_USERS,API_USER_ME_ROLES } from "src/api"
 import { PermissionsContext } from "./context/PermissionsContext"
 
 // Containers
@@ -66,17 +66,26 @@ const App = () => {
 
   // Charger les rôles utilisateur
   useEffect(() => {
-    fetch(`${API_BASE}/me/roles`, {
+    fetch(API_USER_ME_ROLES, {
       headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("🔑 Rôles reçus:", data.roles)
-        setCurrentUserRoles(data.roles || [])
+       if (data.roles) {
+    console.log("🔑 Rôles reçus:", data.roles)
+    setCurrentUserRoles(data.roles)
+  } else {
+    console.warn("⚠️ Aucun rôle reçu:", data)
+    setCurrentUserRoles([]) // au lieu de planter
+  }
       })
       .catch((err) => console.error("❌ Erreur fetch roles:", err))
   }, [])
-
+useEffect(() => {
+  console.log("📌 State actuel → actionsConfig:", actionsConfig)
+  console.log("📌 State actuel → routesConfig:", routesConfig)
+  console.log("📌 State actuel → currentUserRoles:", currentUserRoles)
+}, [actionsConfig, routesConfig, currentUserRoles])
   return (
     <PermissionsContext.Provider value={{ actionsConfig, setActionsConfig, routesConfig,setRoutesConfig, currentUserRoles, setCurrentUserRoles }}>
       <BrowserRouter>
