@@ -13,7 +13,8 @@
   "/dashboard": [
     "read",
     "contribute",
-    "admin"
+    "admin",
+    "default-roles-realm_reunion"
   ],
   "/settings/settings": [
     "read",
@@ -22,7 +23,6 @@
   ],
   "/settings/list/users": [
     "read",
-    "contribute",
     "admin"
   ],
   "/import/documents": [
@@ -55,12 +55,12 @@
     "contribute",
     "admin"
   ],
-  "/settings/editionroute": [
+  "/settings/routes": [
     "read",
     "contribute",
     "admin"
   ],
-  "/settings/editionpermission": [
+  "/settings/actions": [
     "read",
     "contribute",
     "admin"
@@ -336,6 +336,7 @@
     "contribute"
   ],
   "/settings/audit": [
-    "read"
+    "read",
+    "admin"
   ]
 }

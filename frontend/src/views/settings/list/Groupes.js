@@ -167,7 +167,7 @@ const Groupes = () => {
           <CFormInput
             className="mb-3"
             type="text"
-            placeholder="Rechercher par nom ou description…"
+            placeholder="Rechercher par groupe"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -175,17 +175,17 @@ const Groupes = () => {
           <CTable striped hover responsive>
             <CTableHead>
               <CTableRow className="align-middle">
-                <CTableHeaderCell>Nom</CTableHeaderCell>
-                <CTableHeaderCell>Détails</CTableHeaderCell>
-                <CTableHeaderCell style={{ textAlign: 'center' }}>Actions</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '50%' }}>Nom</CTableHeaderCell>
+                <CTableHeaderCell style={{ textAlign: 'center',width: '30%' }}>Détails</CTableHeaderCell>
+                <CTableHeaderCell style={{ textAlign: 'center', width: '20%' }}>Actions</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
               {filtered.length ? (
                 filtered.map((g) => (
                   <CTableRow key={g.id}>
-                    <CTableDataCell className="align-middle">{g.name}</CTableDataCell>
-                    <CTableDataCell className="align-middle">
+                    <CTableDataCell className="align-middle" style={{ width: '50%' }}>{g.name}</CTableDataCell>
+                    <CTableDataCell className="align-middle" style={{ textAlign: 'center',width: '30%' }}>
                       <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="group.viewUsers">
                         <CButton size="sm" color="info" variant="ghost" onClick={() => openUsers(g)}>
                           <CIcon icon={cilUser} size="lg" /> Utilisateurs
@@ -197,7 +197,7 @@ const Groupes = () => {
                         </CButton>
                       </ProtectedButton>
                     </CTableDataCell>
-                    <CTableDataCell className="text-center align-middle">
+                    <CTableDataCell className="text-center align-middle" style={{ width: '20%' }}>
                       <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="group.edit">
                         <CButton size="sm" color="success" variant="ghost" onClick={() => openEdit(g)}>
                           <CIcon icon={cilPencil} size="lg" />

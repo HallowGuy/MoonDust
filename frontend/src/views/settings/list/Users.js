@@ -9,12 +9,10 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilCheckCircle, cilXCircle } from '@coreui/icons'
 import Select from 'react-select'
-import { API_USERS, API_ROLES, API_USER_ROLES } from 'src/api'
+import { API_USERS, API_ROLES } from 'src/api'
 import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal"
 import ProtectedButton from "../../../components/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
-
-
 
 const Users = () => {
   const [users, setUsers] = useState([])
@@ -29,10 +27,8 @@ const Users = () => {
   const [lastName, setLastName] = useState('')
   const [isActive, setIsActive] = useState(true)
   const [userRoles, setUserRoles] = useState([])
-const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
 
-  console.log("🔑 actionsConfig:", actionsConfig)
-  console.log("🔑 currentUserRoles:", currentUserRoles)
+  const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
 
   // ---------- TOASTS ----------
   const [toasts, setToasts] = useState([])
@@ -74,7 +70,7 @@ const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
 
   const fetchUserRoles = async (id) => {
     try {
-    const res = await fetch(`${API_USERS}/${id}/roles`, { headers: getAuthHeaders() })
+      const res = await fetch(`${API_USERS}/${id}/roles`, { headers: getAuthHeaders() })
       if (!res.ok) return []
       return await res.json()
     } catch (e) {
@@ -114,73 +110,78 @@ const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
   }
 
   const handleSave = async () => {
-  const payload = {
-    username,
-    email,
-    enabled: isActive,
-    firstName,
-    lastName,
-  }
-
-  try {
-    let userId = editUser?.id
-
-    // --- CREATE OR UPDATE USER ---
-    if (editUser) {
-      const res = await fetch(`${API_USERS}/${editUser.id}`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error('Mise à jour impossible')
-      showSuccess('Utilisateur mis à jour')
-    } else {
-      const res = await fetch(`${API_USERS}`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error('Création impossible')
-      const newUser = await res.json()
-      userId = newUser.id // ⚡ récupère l’ID du nouvel utilisateur
-      showSuccess('Utilisateur créé')
+    const payload = {
+      username,
+      email,
+      enabled: isActive,
+      firstName,
+      lastName,
     }
 
-    // --- UPDATE ROLES ---
-    if (userId) {
-      // 1. Supprimer tous les rôles existants
-      await fetch(`${API_USERS}/${userId}/roles`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          roles: await fetchUserRoles(userId), // ⚡ récupère les rôles actuels
-        }),
-      })
+    try {
+      let userId = editUser?.id
 
-      // 2. Réassigner uniquement ceux choisis
-      const selectedRoles = roles.filter((r) => userRoles.includes(r.name))
-      if (selectedRoles.length > 0) {
-        await fetch(`${API_USERS}/${userId}/roles`, {
+      // --- CREATE OR UPDATE USER ---
+      if (editUser) {
+        const res = await fetch(`${API_USERS}/${editUser.id}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error('Mise à jour impossible')
+        showSuccess('Utilisateur mis à jour')
+      } else {
+        const res = await fetch(`${API_USERS}`, {
           method: 'POST',
           headers: getAuthHeaders(),
-          body: JSON.stringify({ roles: selectedRoles }),
+          body: JSON.stringify(payload),
         })
+        if (!res.ok) throw new Error('Création impossible')
+        const newUser = await res.json()
+        userId = newUser.id
+        showSuccess('Utilisateur créé')
       }
 
-      showSuccess('Rôles mis à jour')
+      // --- UPDATE ROLES ---
+      if (userId) {
+        // supprimer puis réassigner les rôles
+        await fetch(`${API_USERS}/${userId}/roles`, {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+        })
+
+        const selectedRoles = roles.filter((r) => userRoles.includes(r.name))
+        if (selectedRoles.length > 0) {
+          await fetch(`${API_USERS}/${userId}/roles`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ roles: selectedRoles }),
+          })
+        }
+
+        showSuccess('Rôles mis à jour')
+      }
+
+      await fetchUsers()
+      setVisible(false)
+    } catch (e) {
+      showError(e.message || 'Erreur lors de la sauvegarde')
     }
-
-    // --- REFRESH + CLOSE ---
-    await fetchUsers()
-    setVisible(false)
-  } catch (e) {
-    showError(e.message || 'Erreur lors de la sauvegarde')
   }
-}
 
-
-  // ---------- DELETE ----------
-  
+  // ---------- SEARCH ----------
+  const [search, setSearch] = useState('')
+  const filteredUsers = users.filter((u) => {
+    const term = search.toLowerCase()
+    return (
+      u.username?.toLowerCase().includes(term) ||
+      u.email?.toLowerCase().includes(term) ||
+      u.firstName?.toLowerCase().includes(term) ||
+      u.lastName?.toLowerCase().includes(term) ||
+      (u.enabled ? 'actif' : 'inactif').includes(term) ||
+      (u.roles ? u.roles.join(' ').toLowerCase() : '').includes(term)
+    )
+  })
 
   // Styles dynamiques pour react-select
   const customStyles = {
@@ -200,8 +201,8 @@ const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
       backgroundColor: state.isSelected
         ? '#1a43a1'
         : state.isFocused
-        ? '#1a43a1'
-        : getComputedStyle(document.documentElement).getPropertyValue('--cui-body-bg'),
+          ? '#1a43a1'
+          : getComputedStyle(document.documentElement).getPropertyValue('--cui-body-bg'),
       color: state.isSelected || state.isFocused ? '#fff' : getComputedStyle(document.documentElement).getPropertyValue('--cui-body-color'),
       cursor: 'pointer',
     }),
@@ -228,10 +229,21 @@ const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <span>Utilisateurs</span>
-           <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="user.new"><CButton color="primary" onClick={() => openOffcanvas()}><CIcon icon={cilPlus} className="me-2" /> Nouvel utilisateur</CButton></ProtectedButton>
-
+          <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="user.new">
+            <CButton color="primary" onClick={() => openOffcanvas()}>
+              <CIcon icon={cilPlus} className="me-2" /> Nouvel utilisateur
+            </CButton>
+          </ProtectedButton>
         </CCardHeader>
         <CCardBody>
+          {/* Champ recherche */}
+          <CFormInput
+            className="mb-3"
+            placeholder="Rechercher…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
           <CTable striped hover responsive className="align-middle">
             <CTableHead>
               <CTableRow>
@@ -239,74 +251,79 @@ const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
                 <CTableHeaderCell>Email</CTableHeaderCell>
                 <CTableHeaderCell>Nom complet</CTableHeaderCell>
                 <CTableHeaderCell style={{ width: '100px', textAlign: 'center' }}>Actif</CTableHeaderCell>
-                <CTableHeaderCell style={{textAlign: 'center' }}>Actions</CTableHeaderCell>
+                <CTableHeaderCell style={{ textAlign: 'center' }}>Actions</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {users.map((u) => (
-                <CTableRow key={u.id}>
-                  <CTableDataCell>{u.username}</CTableDataCell>
-                  <CTableDataCell>{u.email}</CTableDataCell>
-                  <CTableDataCell>{`${u.firstName || ''} ${u.lastName || ''}`}</CTableDataCell>
-                  <CTableDataCell style={{ width: '100px', textAlign: 'center' }}>
-                    {u.enabled ? (
-                      <CIcon icon={cilCheckCircle} className="text-success" size="lg"  />
-                    ) : (
-                      <CIcon icon={cilXCircle} className="text-danger" size="lg"  />
-                    )}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: 'center' }}>
-                    <ProtectedButton
-  action="user.edit"
-  actionsConfig={actionsConfig}
-  currentUserRoles={currentUserRoles}
->
-  <CButton
-    size="sm"
-    color="success"
-    className="me-2"
-    variant="ghost"
-    onClick={() => openOffcanvas(u)}
-  >
-    <CIcon icon={cilPencil} size="lg" />
-  </CButton>
-</ProtectedButton>
-<ProtectedButton
-  action="user.delete"
-  actionsConfig={actionsConfig}
-  currentUserRoles={currentUserRoles}
->
-  {u.username.includes("reunion") ? (
-    // 🔒 Si username contient "reunion", bouton grisé et désactivé
-    <CButton size="sm" color="secondary" variant="ghost" disabled>
-      <CIcon icon={cilTrash} size="lg" />
-    </CButton>
-  ) : (
-    // ✅ Sinon, bouton avec modal de confirmation
-    <ConfirmDeleteModal
-      title="Supprimer l'utilisateur"
-      message="Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
-      trigger={
-        <CButton size="sm" color="danger" variant="ghost">
-          <CIcon icon={cilTrash} size="lg" />
-        </CButton>
-      }
-      onConfirm={async () => {
-        const res = await fetch(`${API_USERS}/${u.id}`, { method: "DELETE" })
-        if (!res.ok) {
-          const errorText = await res.text()
-          throw new Error(errorText || "Suppression impossible")
-        }
-        setUsers((prev) => prev.filter((user) => user.id !== u.id))
-        showSuccess("Utilisateur supprimé")
-      }}
-    />
-  )}
-</ProtectedButton>
-
+              {filteredUsers.length ? (
+                filteredUsers.map((u) => (
+                  <CTableRow key={u.id}>
+                    <CTableDataCell>{u.username}</CTableDataCell>
+                    <CTableDataCell>{u.email}</CTableDataCell>
+                    <CTableDataCell>{`${u.firstName || ''} ${u.lastName || ''}`}</CTableDataCell>
+                    <CTableDataCell style={{ width: '100px', textAlign: 'center' }}>
+                      {u.enabled ? (
+                        <CIcon icon={cilCheckCircle} className="text-success" size="lg" />
+                      ) : (
+                        <CIcon icon={cilXCircle} className="text-danger" size="lg" />
+                      )}
+                    </CTableDataCell>
+                    <CTableDataCell style={{ textAlign: 'center' }}>
+                      <ProtectedButton
+                        action="user.edit"
+                        actionsConfig={actionsConfig}
+                        currentUserRoles={currentUserRoles}
+                      >
+                        <CButton
+                          size="sm"
+                          color="success"
+                          className="me-2"
+                          variant="ghost"
+                          onClick={() => openOffcanvas(u)}
+                        >
+                          <CIcon icon={cilPencil} size="lg" />
+                        </CButton>
+                      </ProtectedButton>
+                      <ProtectedButton
+                        action="user.delete"
+                        actionsConfig={actionsConfig}
+                        currentUserRoles={currentUserRoles}
+                      >
+                        {u.username.includes("reunion") ? (
+                          <CButton size="sm" color="secondary" variant="ghost" disabled>
+                            <CIcon icon={cilTrash} size="lg" />
+                          </CButton>
+                        ) : (
+                          <ConfirmDeleteModal
+                            title="Supprimer l'utilisateur"
+                            message="Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
+                            trigger={
+                              <CButton size="sm" color="danger" variant="ghost">
+                                <CIcon icon={cilTrash} size="lg" />
+                              </CButton>
+                            }
+                            onConfirm={async () => {
+                              const res = await fetch(`${API_USERS}/${u.id}`, { method: "DELETE" })
+                              if (!res.ok) {
+                                const errorText = await res.text()
+                                throw new Error(errorText || "Suppression impossible")
+                              }
+                              setUsers((prev) => prev.filter((user) => user.id !== u.id))
+                              showSuccess("Utilisateur supprimé")
+                            }}
+                          />
+                        )}
+                      </ProtectedButton>
+                    </CTableDataCell>
+                  </CTableRow>
+                ))
+              ) : (
+                <CTableRow>
+                  <CTableDataCell colSpan={5} className="text-center">
+                    Aucun utilisateur trouvé
                   </CTableDataCell>
                 </CTableRow>
-              ))}
+              )}
             </CTableBody>
           </CTable>
         </CCardBody>
@@ -403,7 +420,7 @@ const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
           </CToast>
         ))}
       </CToaster>
-      </div>
+    </div>
     </>
   )
 }

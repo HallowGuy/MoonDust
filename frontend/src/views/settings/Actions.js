@@ -35,10 +35,22 @@ const PermissionEdition = () => {
   const showSuccess = (msg) => addToast(msg, 'success')
   const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id))
 
-  const allActions = Object.keys(config || {})
-  const filtered = allActions.filter((a) =>
-    a.toLowerCase().includes(search.toLowerCase())
+ const allActions = Object.keys(config || {})
+
+const filtered = allActions.filter((a) => {
+  const actionKey = a.toLowerCase()
+  const thematique = (config[a]?.thematique || "").toLowerCase()
+  const roles = (config[a]?.roles || []).join(" ").toLowerCase()
+
+  const searchTerm = search.toLowerCase()
+
+  return (
+    actionKey.includes(searchTerm) ||
+    thematique.includes(searchTerm) ||
+    roles.includes(searchTerm)
   )
+})
+
 
   const [page, setPage] = useState(1)
   const perPage = 10
@@ -49,6 +61,7 @@ const PermissionEdition = () => {
   const [showEdit, setShowEdit] = useState(false)
   const [editAction, setEditAction] = useState(null)
   const [editRoles, setEditRoles] = useState([])
+  const [editThematique, setEditThematique] = useState("")
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -85,20 +98,20 @@ const PermissionEdition = () => {
     try {
       setSaving(true)
 
-      setConfig(JSON.parse(JSON.stringify(newConfig)))
-      setActionsConfig(JSON.parse(JSON.stringify(newConfig)))
+      setConfig({ ...newConfig })
+      setActionsConfig({ ...newConfig })
 
       const res = await fetch(API_ACTIONS_CONFIG, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newConfig),
       })
       if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
 
-      const refreshed = await fetch(`${API_ACTIONS_CONFIG}?t=${Date.now()}`).then(r => r.json())
+      const refreshed = await fetch(`${API_ACTIONS_CONFIG}?t=${Date.now()}`).then((r) => r.json())
 
-      setConfig(JSON.parse(JSON.stringify(refreshed)))
-      setActionsConfig(JSON.parse(JSON.stringify(refreshed)))
+      setConfig({ ...refreshed })
+      setActionsConfig({ ...refreshed })
 
       showSuccess("Configuration sauvegardée")
     } catch (err) {
@@ -110,8 +123,8 @@ const PermissionEdition = () => {
 
   const openEdit = (actionKey) => {
     setEditAction(actionKey)
-    const currentRoles = config[actionKey] ?? []
-    setEditRoles(currentRoles)
+    setEditRoles(config[actionKey]?.roles ?? [])
+    setEditThematique(config[actionKey]?.thematique || "")
     setShowEdit(true)
   }
 
@@ -127,10 +140,16 @@ const PermissionEdition = () => {
 
     if (Array.isArray(editAction)) {
       editAction.forEach((a) => {
-        newConfig[a] = editRoles
+        newConfig[a] = {
+          roles: editRoles,
+          thematique: editThematique || "Autre",
+        }
       })
     } else {
-      newConfig[editAction] = editRoles
+      newConfig[editAction] = {
+        roles: editRoles,
+        thematique: editThematique || "Autre",
+      }
     }
 
     await saveConfig(newConfig)
@@ -174,8 +193,21 @@ const PermissionEdition = () => {
           <CTable striped hover responsive>
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell></CTableHeaderCell>
+                <CTableHeaderCell>
+                  <CFormCheck
+                    checked={paginated.length > 0 && selectedActions.length === paginated.length}
+                    indeterminate={selectedActions.length > 0 && selectedActions.length < paginated.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedActions(paginated.map((a) => a))
+                      } else {
+                        setSelectedActions([])
+                      }
+                    }}
+                  />
+                </CTableHeaderCell>
                 <CTableHeaderCell>Action</CTableHeaderCell>
+                <CTableHeaderCell>Thématique</CTableHeaderCell>
                 <CTableHeaderCell>Rôles</CTableHeaderCell>
                 <CTableHeaderCell style={{ width: '80px', textAlign: 'center' }}>Actions</CTableHeaderCell>
               </CTableRow>
@@ -183,7 +215,8 @@ const PermissionEdition = () => {
             <CTableBody>
               {paginated.length ? (
                 paginated.map((a, idx) => {
-                  const currentRoles = config[a] ?? []
+                  const currentRoles = config[a]?.roles ?? []
+                  const thematique = config[a]?.thematique || "Aucune"
                   return (
                     <CTableRow key={idx}>
                       <CTableDataCell>
@@ -199,6 +232,7 @@ const PermissionEdition = () => {
                         />
                       </CTableDataCell>
                       <CTableDataCell>{a}</CTableDataCell>
+                      <CTableDataCell>{thematique}</CTableDataCell>
                       <CTableDataCell>
                         {currentRoles.length
                           ? currentRoles.map((role) => (
@@ -233,7 +267,7 @@ const PermissionEdition = () => {
                 })
               ) : (
                 <CTableRow>
-                  <CTableDataCell colSpan={4} className="text-center">
+                  <CTableDataCell colSpan={5} className="text-center">
                     Aucune action trouvée
                   </CTableDataCell>
                 </CTableRow>
@@ -262,6 +296,12 @@ const PermissionEdition = () => {
         </COffcanvasHeader>
         <COffcanvasBody>
           <div className="d-flex flex-column gap-3">
+            <CFormInput
+              label="Thématique"
+              value={editThematique}
+              onChange={(e) => setEditThematique(e.target.value)}
+            />
+
             {availableRoles.map((role) => (
               <CFormCheck
                 key={role}

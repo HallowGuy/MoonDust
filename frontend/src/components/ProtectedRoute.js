@@ -14,11 +14,7 @@ const ProtectedRoute = ({ action, children }) => {
     r.toLowerCase()
   )
 
-  console.log("🔒 Vérification ProtectedRoute", {
-    currentPath,
-    allowedRoles,
-    userRoles,
-  })
+  //console.log("🔒 Vérification ProtectedRoute", {    currentPath,    allowedRoles,    userRoles,  })
 
   // Si la config ou les rôles ne sont pas encore chargés → on attend
   if (!routesConfig || Object.keys(routesConfig).length === 0 || userRoles.length === 0) {

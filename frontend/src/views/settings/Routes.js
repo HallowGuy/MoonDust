@@ -26,7 +26,8 @@ const RouteEdition = () => {
   const [config, setConfig] = useState({})
   const [toasts, setToasts] = useState([])
   const [availableRoles, setAvailableRoles] = useState([])
-  const { setRoutesConfig, currentUserRoles, routesConfig } = useContext(PermissionsContext)
+  const { setRoutesConfig, currentUserRoles, routesConfig, actionsConfig } = useContext(PermissionsContext)
+
   const [saving, setSaving] = useState(false)
 
   // Pagination
@@ -89,32 +90,35 @@ const RouteEdition = () => {
   }, [])
 
   // Sauvegarder config dans backend
-  const saveConfig = async (newConfig) => {
-    try {
-      setSaving(true)
+// Sauvegarder config dans backend
+const saveConfig = async (newConfig) => {
+  try {
+    setSaving(true)
 
-      setConfig(JSON.parse(JSON.stringify(newConfig)))
+    const res = await fetch(API_ROUTES_CONFIG, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newConfig),
+    })
+    if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
 
-      const res = await fetch(API_ROUTES_CONFIG, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newConfig),
-      })
-      if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
+    // 👉 recharger depuis backend avec cache buster
+    const refreshed = await fetch(`${API_ROUTES_CONFIG}?t=${Date.now()}`)
+      .then(r => r.json())
 
-      const refreshed = await fetch(`${API_ROUTES_CONFIG}?t=${Date.now()}`)
-        .then(r => r.json())
+    setConfig(refreshed)
 
-      setConfig(JSON.parse(JSON.stringify(refreshed)))
-      setRoutesConfig(refreshed)
+    // ✅ bien notifier le contexte avec un *nouvel objet*
+    setRoutesConfig({ ...refreshed })
 
-      showSuccess("Configuration sauvegardée")
-    } catch (err) {
-      addToast(err.message)
-    } finally {
-      setSaving(false)
-    }
+    showSuccess("Configuration sauvegardée")
+  } catch (err) {
+    addToast(err.message)
+  } finally {
+    setSaving(false)
   }
+}
+
 
   // Ouvrir l'édition
   const openEdit = (route) => {
@@ -158,7 +162,7 @@ const RouteEdition = () => {
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <span>Éditeur des accès aux routes</span>
           <ProtectedButton
-            actionsConfig={routesConfig}
+            actionsConfig={actionsConfig}
             currentUserRoles={currentUserRoles}
             action="routes.editMasse"
           >
@@ -188,7 +192,21 @@ const RouteEdition = () => {
           <CTable striped hover responsive>
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell></CTableHeaderCell>
+                <CTableHeaderCell>
+      <CFormCheck
+        checked={paginated.length > 0 && selectedRoutes.length === paginated.length}
+        indeterminate={selectedRoutes.length > 0 && selectedRoutes.length < paginated.length}
+        onChange={(e) => {
+          if (e.target.checked) {
+            // tout cocher → ajouter toutes les routes de la page courante
+            setSelectedRoutes(paginated.map((r) => r.path))
+          } else {
+            // tout décocher
+            setSelectedRoutes([])
+          }
+        }}
+      />
+    </CTableHeaderCell>
                 <CTableHeaderCell>Nom</CTableHeaderCell>
                 <CTableHeaderCell>Chemin</CTableHeaderCell>
                 <CTableHeaderCell>Rôles</CTableHeaderCell>
@@ -232,7 +250,7 @@ const RouteEdition = () => {
                       </CTableDataCell>
                       <CTableDataCell className="text-center">
                         <ProtectedButton
-                          actionsConfig={routesConfig}
+                          actionsConfig={actionsConfig}
                           currentUserRoles={currentUserRoles}
                           action="routes.edit"
                         >
