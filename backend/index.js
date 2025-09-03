@@ -21,7 +21,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // ---------------- CONFIG ROUTES ----------------
-const CONFIG_FILE = path.join(__dirname, "routes-config.json")
+const CONFIG_FILE = path.join(__dirname, "config", "config-routes.json")
 
 
 
@@ -86,7 +86,7 @@ async function getConfig() {
     const data = await fs.readFile(CONFIG_FILE, { encoding: "utf-8" })
     return JSON.parse(data)
   } catch (err) {
-    console.error("⚠️ Aucun fichier routes-config.json trouvé, retour objet vide")
+    console.error("⚠️ Aucun fichier config-routes.json trouvé, retour objet vide")
     return {}
   }
 }
@@ -1311,7 +1311,7 @@ app.get('/api/theme/colors', (req, res) => {
 })
 
 // ---------------- ACTIONS CONFIG ----------------
-const ACTIONS_CONFIG_FILE = path.join(__dirname, "actions-config.json")
+const ACTIONS_CONFIG_FILE = path.join(__dirname, "config", "config-actions.json")
 
 
 // Lire la config
@@ -1321,7 +1321,7 @@ async function getActionsConfig() {
     const data = await fs.readFile(ACTIONS_CONFIG_FILE, "utf-8")
     return JSON.parse(data)
   } catch (err) {
-    console.warn("⚠️ Aucun fichier actions-config.json trouvé → création vide")
+    console.warn("⚠️ Aucun fichier config-actions.json trouvé → création vide")
 
     // on crée un fichier vide pour initialiser
     await fs.writeFile(ACTIONS_CONFIG_FILE, JSON.stringify({}, null, 2), "utf-8")
@@ -1350,6 +1350,13 @@ app.get('/api/actions-config', async (req, res) => {
 app.post('/api/actions-config', async (req, res) => {
   try {
     const config = req.body
+
+     // validation légère
+    Object.keys(config).forEach((key) => {
+      if (!config[key].roles) config[key].roles = []
+      if (!config[key].thematique) config[key].thematique = "Autre"
+    })
+
     console.log("📥 Nouvelle actions-config reçue :", config)
     await setActionsConfig(config)
     res.json({ success: true })

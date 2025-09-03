@@ -18,8 +18,8 @@ services:
       - .env
     volumes:
       - ./backend/uploads:/usr/src/app/uploads
-      - ./backend/routes-config.json:/usr/src/app/routes-config.json
-      - ./backend/actions-config.json:/usr/src/app/actions-config.json
+      - ./backend/config/config-routes.json:/usr/src/app/config/config-routes.json
+      - ./backend/config/config-actions.json:/usr/src/app/config/config-actions.json
       - ./backend/forms-config.json:/usr/src/app/forms-config.json
 
     depends_on:

@@ -1,16 +1,33 @@
-import React, { useEffect, useState,useContext } from "react"
-import { PermissionsContext } from "src/context/PermissionsContext"
-const ProtectedButton = ({ action, children }) => {
-  const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
+// ProtectedButton.js
+import React from "react"
 
-  if (!actionsConfig || !currentUserRoles) return null
+const ProtectedButton = ({ actionsConfig, currentUserRoles, action, children }) => {
+  if (!actionsConfig || !currentUserRoles) {
+    console.log("❌ Missing actionsConfig or currentUserRoles")
+    return null
+  }
 
-  const allowedRoles = (actionsConfig[action] || []).map(r => r.toLowerCase())
-  const userRoles = currentUserRoles.map(r => r.toLowerCase())
+  const actionConf = actionsConfig[action]
+  let allowedRoles = []
 
-  const canAccess = userRoles.some(role => allowedRoles.includes(role))
-  if (!canAccess) return null
+  if (Array.isArray(actionConf)) {
+    allowedRoles = actionConf
+  } else if (actionConf && Array.isArray(actionConf.roles)) {
+    allowedRoles = actionConf.roles
+  }
 
+  console.log("🔎 ProtectedButton check", {
+    action,
+    actionConf,
+    allowedRoles,
+    currentUserRoles,
+  })
+
+  const hasAccess = currentUserRoles.some((role) => allowedRoles.includes(role))
+
+  console.log(`➡️ Action "${action}" => accès ${hasAccess ? "✅ AUTORISÉ" : "⛔ REFUSÉ"}`)
+
+  if (!hasAccess) return null
   return <>{children}</>
 }
 
