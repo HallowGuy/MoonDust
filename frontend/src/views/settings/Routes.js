@@ -9,6 +9,7 @@ import CIcon from '@coreui/icons-react'
 import { cilPencil, cilSave } from '@coreui/icons'
 import routes from '../../routes'
 import { PermissionsContext } from "src/context/PermissionsContext"
+import ProtectedButton from "src/components/ProtectedButton"
 
 import { API_ROLES, API_ROUTES_CONFIG } from 'src/api'
 
@@ -20,17 +21,22 @@ const ROLE_COLORS = {
   user: 'success',
 }
 
-
-
 const RouteEdition = () => {
   const [search, setSearch] = useState('')
   const [config, setConfig] = useState({})
   const [toasts, setToasts] = useState([])
   const [availableRoles, setAvailableRoles] = useState([])
-  const { setRoutesConfig } = useContext(PermissionsContext)
+  const { setRoutesConfig, currentUserRoles, routesConfig } = useContext(PermissionsContext)
   const [saving, setSaving] = useState(false)
-const [editAction, setEditAction] = useState(null)
 
+  // Pagination
+  const [page, setPage] = useState(1)
+  const perPage = 10
+
+  const [selectedRoutes, setSelectedRoutes] = useState([])
+  const [showEdit, setShowEdit] = useState(false)
+  const [editRoute, setEditRoute] = useState(null)
+  const [editRoles, setEditRoles] = useState([])
 
   // --- TOASTS
   const addToast = (message, color = 'danger') => {
@@ -40,47 +46,14 @@ const [editAction, setEditAction] = useState(null)
   const showSuccess = (msg) => addToast(msg, 'success')
   const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id))
 
-const filtered = routes.filter(
-  (r) =>
-    r.name?.toLowerCase().includes(search.toLowerCase()) ||
-    r.path?.toLowerCase().includes(search.toLowerCase())
-)
-
-// Pagination appliquée après filtrage
-const [page, setPage] = useState(1)
-const perPage = 10
-const paginated = filtered.slice((page - 1) * perPage, page * perPage)
-const totalPages = Math.ceil(filtered.length / perPage)
-const [selectedRoutes, setSelectedRoutes] = useState([])
-
-  // --- EDITION
-  const [showEdit, setShowEdit] = useState(false)
-  const [editRoute, setEditRoute] = useState(null)
-  const [editRoles, setEditRoles] = useState([])
-
-  // Charger config depuis localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem('routesConfig')
-    if (stored) {
-      setConfig(JSON.parse(stored))
-    }
-  }, [])
-
-  // 🔹 Charger les rôles disponibles depuis backend
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const res = await fetch(API_ROLES)
-        if (!res.ok) throw new Error("Impossible de charger les rôles depuis l’API")
-        const data = await res.json()
-        setAvailableRoles(data.map(r => r.name)) // garder juste le nom
-      } catch (err) {
-        console.error(err)
-        addToast(err.message)
-      }
-    }
-    fetchRoles()
-  }, [])
+  // Filtrage
+  const filtered = routes.filter(
+    (r) =>
+      r.name?.toLowerCase().includes(search.toLowerCase()) ||
+      r.path?.toLowerCase().includes(search.toLowerCase())
+  )
+  const paginated = filtered.slice((page - 1) * perPage, page * perPage)
+  const totalPages = Math.ceil(filtered.length / perPage)
 
   // Charger config depuis backend
   useEffect(() => {
@@ -97,36 +70,51 @@ const [selectedRoutes, setSelectedRoutes] = useState([])
       }
     }
     fetchConfig()
+  }, [setRoutesConfig])
+
+  // Charger les rôles disponibles depuis backend
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await fetch(API_ROLES)
+        if (!res.ok) throw new Error("Impossible de charger les rôles depuis l’API")
+        const data = await res.json()
+        setAvailableRoles(data.map(r => r.name)) // garder juste le nom
+      } catch (err) {
+        console.error(err)
+        addToast(err.message)
+      }
+    }
+    fetchRoles()
   }, [])
 
   // Sauvegarder config dans backend
-const saveConfig = async (newConfig) => {
-  try {
-    setSaving(true)
+  const saveConfig = async (newConfig) => {
+    try {
+      setSaving(true)
 
-    setConfig(JSON.parse(JSON.stringify(newConfig)))
+      setConfig(JSON.parse(JSON.stringify(newConfig)))
 
+      const res = await fetch(API_ROUTES_CONFIG, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newConfig),
+      })
+      if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
 
-    const res = await fetch(API_ROUTES_CONFIG, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newConfig),
-    })
-    if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
+      const refreshed = await fetch(`${API_ROUTES_CONFIG}?t=${Date.now()}`)
+        .then(r => r.json())
 
-    const refreshed = await fetch(`${API_ROUTES_CONFIG}?t=${Date.now()}`)
-      .then(r => r.json())
+      setConfig(JSON.parse(JSON.stringify(refreshed)))
+      setRoutesConfig(refreshed)
 
-    setConfig(JSON.parse(JSON.stringify(refreshed)))
-    setRoutesConfig(refreshed) // 👈 update aussi le context
-
-    showSuccess("Configuration sauvegardée")
-  } catch (err) {
-    addToast(err.message)
-  } finally {
-    setSaving(false)
+      showSuccess("Configuration sauvegardée")
+    } catch (err) {
+      addToast(err.message)
+    } finally {
+      setSaving(false)
+    }
   }
-}
 
   // Ouvrir l'édition
   const openEdit = (route) => {
@@ -144,51 +132,51 @@ const saveConfig = async (newConfig) => {
   }
 
   // Sauvegarder l'édition
-const handleSaveEdit = async () => {
-  if (!editRoute) return
-  let newConfig = { ...config }
+  const handleSaveEdit = async () => {
+    if (!editRoute) return
+    let newConfig = { ...config }
 
-  if (Array.isArray(editRoute.path)) {
-    // édition en masse
-    editRoute.path.forEach((p) => {
-      newConfig[p] = editRoles
-    })
-  } else {
-    // édition simple
-    newConfig[editRoute.path] = editRoles
+    if (Array.isArray(editRoute.path)) {
+      // édition en masse
+      editRoute.path.forEach((p) => {
+        newConfig[p] = editRoles
+      })
+    } else {
+      // édition simple
+      newConfig[editRoute.path] = editRoles
+    }
+
+    await saveConfig(newConfig)
+    setShowEdit(false)
+    setEditRoute(null)
+    setSelectedRoutes([])
   }
-
-  await saveConfig(newConfig)
-  setShowEdit(false)
-  setEditRoute(null)
-  setSelectedRoutes([])
-}
-
-
-
-
 
   return (
     <div className="container py-4">
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <span>Éditeur des accès aux routes</span>
+          <ProtectedButton
+            actionsConfig={routesConfig}
+            currentUserRoles={currentUserRoles}
+            action="routes.editMasse"
+          >
+            <CButton
+              color="primary"
+              disabled={selectedRoutes.length === 0}
+              onClick={() => {
+                setEditRoute({ path: selectedRoutes })
+                setEditRoles([])
+                setShowEdit(true)
+              }}
+            >
+              Modifier en masse ({selectedRoutes.length})
+            </CButton>
+          </ProtectedButton>
         </CCardHeader>
 
         <CCardBody>
-          <CButton
-  color="primary"
-  disabled={selectedRoutes.length === 0}
-  onClick={() => {
-    setEditRoute({ path: selectedRoutes }) // on passe plusieurs paths
-    setEditRoles([]) // ou roles communs si tu veux
-    setShowEdit(true)
-  }}
->
-  Modifier en masse ({selectedRoutes.length})
-</CButton>
-
-          {/* Champ recherche */}
           <CFormInput
             className="mb-3"
             type="text"
@@ -197,7 +185,6 @@ const handleSaveEdit = async () => {
             onChange={(e) => setSearch(e.target.value)}
           />
 
-          {/* Tableau des routes */}
           <CTable striped hover responsive>
             <CTableHead>
               <CTableRow>
@@ -216,7 +203,7 @@ const handleSaveEdit = async () => {
                   const currentRoles = config[r.path] ?? r.roles ?? []
                   return (
                     <CTableRow key={idx}>
-                        <CTableDataCell>
+                      <CTableDataCell>
                         <CFormCheck
                           checked={selectedRoutes.includes(r.path)}
                           onChange={(e) => {
@@ -244,47 +231,49 @@ const handleSaveEdit = async () => {
                           : 'Aucun'}
                       </CTableDataCell>
                       <CTableDataCell className="text-center">
-                        <CButton
-                          size="sm"
-                          color="success"
-                          variant="ghost"
-                          onClick={() => openEdit(r)}
+                        <ProtectedButton
+                          actionsConfig={routesConfig}
+                          currentUserRoles={currentUserRoles}
+                          action="routes.edit"
                         >
-                          <CIcon icon={cilPencil} size="lg" />
-                        </CButton>
+                          <CButton
+                            size="sm"
+                            color="success"
+                            variant="ghost"
+                            onClick={() => openEdit(r)}
+                          >
+                            <CIcon icon={cilPencil} size="lg" />
+                          </CButton>
+                        </ProtectedButton>
                       </CTableDataCell>
                     </CTableRow>
                   )
                 })
               ) : (
                 <CTableRow>
-                  <CTableDataCell colSpan={4} className="text-center">
+                  <CTableDataCell colSpan={5} className="text-center">
                     Aucune route trouvée
                   </CTableDataCell>
                 </CTableRow>
               )}
             </CTableBody>
           </CTable>
+
           <div className="d-flex justify-content-center align-items-center mt-3 gap-3">
-  <CButton
-    disabled={page === 1}
-    onClick={() => setPage((p) => Math.max(p - 1, 1))}
-  >
-    Précédent
-  </CButton>
-
-  <span>
-    Page {page} / {totalPages}
-  </span>
-
-  <CButton
-    disabled={page === totalPages}
-    onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-  >
-    Suivant
-  </CButton>
-</div>
-
+            <CButton
+              disabled={page === 1}
+              onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            >
+              Précédent
+            </CButton>
+            <span>Page {page} / {totalPages}</span>
+            <CButton
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+            >
+              Suivant
+            </CButton>
+          </div>
         </CCardBody>
       </CCard>
 
@@ -308,24 +297,23 @@ const handleSaveEdit = async () => {
                 onChange={() => toggleRole(role)}
               />
             ))}
-
             <div className="d-flex gap-2 justify-content-end mt-3">
               <CButton color="secondary" variant="ghost" onClick={() => setShowEdit(false)}>
                 Annuler
               </CButton>
               <CButton color="primary" onClick={handleSaveEdit} disabled={saving}>
-  {saving ? (
-    <>
-      <span className="spinner-border spinner-border-sm me-2" />
-      Sauvegarde…
-    </>
-  ) : (
-    <>
-      <CIcon icon={cilSave} className="me-2" />
-      Enregistrer
-    </>
-  )}
-</CButton>
+                {saving ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" />
+                    Sauvegarde…
+                  </>
+                ) : (
+                  <>
+                    <CIcon icon={cilSave} className="me-2" />
+                    Enregistrer
+                  </>
+                )}
+              </CButton>
             </div>
           </div>
         </COffcanvasBody>

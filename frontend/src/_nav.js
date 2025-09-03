@@ -14,7 +14,15 @@ import {
   cilSpeedometer,
   cilStar,
   cilUser,
-  cilImagePlus
+  cilImagePlus,
+  cilSettings,
+  cilPeople,
+  cilLayers,
+  cilListRich,
+  cilList,
+  cilFile,
+  cilSpreadsheet,
+  cilFeaturedPlaylist
 
   
 } from '@coreui/icons'
@@ -24,56 +32,11 @@ import { API_ROUTES_CONFIG, API_BASE } from 'src/api'
 const _nav = [
   {
     component: CNavItem,
-    name: 'Paramétrage',
+    name: 'Dashboard',
     to: '/settings/settings',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
   },
-  {
-    component: CNavTitle,
-    name: 'Interface',
-  },
-  {
-    component: CNavItem,
-    name: 'Liste utilisateurs',
-    to: '/settings/list/users',
-    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Liste rôles',
-    to: '/settings/list/roles',
-    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Liste groupes',
-    to: '/settings/list/groupes',
-    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Documents',
-    to: '/import/documents',
-    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
-  },
-   {
-    component: CNavItem,
-    name: 'Audit',
-    to: '/settings/custom/AuditLogs',
-    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Edition route',
-    to: '/settings/editionroute',
-    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Edition permission',
-    to: '/settings/editionpermission',
-    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
-  },
+  
   
   {
     component: CNavTitle,
@@ -83,33 +46,75 @@ const _nav = [
   component: CNavItem,
   name: 'Workflow',
   to: '/wkf/Workflow',
-  icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  icon: <CIcon icon={cilSpreadsheet} customClassName="nav-icon" />,
 },
 
 {
   component: CNavItem,
   name: 'Suivi demande',
   to: '/wkf/avancementworkflow',
-  icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  icon: <CIcon icon={cilFeaturedPlaylist} customClassName="nav-icon" />,
 },
-
 {
-    component: CNavGroup,
-    name: 'Détails',
-    to: '/details',
-    icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
-    items: [
-       {
+    component: CNavTitle,
+    name: 'Formulaires',
+  },
+{
   component: CNavItem,
-  name: 'Demande de congés',
-  to: '/wkf/test',
-  icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  name: 'Formulaires',
+  to: '/editionforms',
+  icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
 },
-      
+{
+    component: CNavTitle,
+    name: 'Admin',
+  },
+  {
+    component: CNavGroup,
+    name: 'Paramétrage',
+    to: '/parametrages',
+    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    items: [
+      {
+    component: CNavItem,
+    name: 'Utilisateurs',
+    to: '/settings/list/users',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Rôles',
+    to: '/settings/list/roles',
+    icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Groupes',
+    to: '/settings/list/groupes',
+    icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Routes',
+    to: '/settings/routes',
+    icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Actions',
+    to: '/settings/actions',
+    icon: <CIcon icon={cilList} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Audit',
+    to: '/settings/audit',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  },
      
     ],
   },
-
+  
  {
     component: CNavTitle,
     name: 'Personnalisation',
@@ -125,6 +130,12 @@ const _nav = [
     name: 'Logo',
     to: '/settings/custom/themelogo',
     icon: <CIcon icon={cilImagePlus} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Documents',
+    to: '/import/documents',
+    icon: <CIcon icon={cilFile} customClassName="nav-icon" />,
   }
 ]
 

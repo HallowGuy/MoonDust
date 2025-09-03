@@ -1358,6 +1358,97 @@ app.post('/api/actions-config', async (req, res) => {
   }
 })
 
+const FORMS_CONFIG_FILE = path.join(__dirname, "forms-config.json")
+
+// GET : récupérer tous les formulaires
+app.get("/api/forms", async (req, res) => {
+  try {
+    const config = await getFormsConfig()
+    res.json(config)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
+
+// Lire les formulaires
+async function getFormsConfig() {
+  try {
+    const data = await fs.readFile(FORMS_CONFIG_FILE, "utf-8")
+    return JSON.parse(data)
+  } catch (err) {
+    console.warn("⚠️ Aucun fichier forms-config.json trouvé → création vide")
+    await fs.writeFile(FORMS_CONFIG_FILE, JSON.stringify([], null, 2), "utf-8")
+    return []
+  }
+}
+
+// Sauvegarder
+async function setFormsConfig(config) {
+  await fs.writeFile(FORMS_CONFIG_FILE, JSON.stringify(config, null, 2), "utf-8")
+  console.log("💾 Forms config sauvegardée dans :", FORMS_CONFIG_FILE)
+}
+
+// GET : récupérer un formulaire par ID
+app.get("/api/forms/:id", async (req, res) => {
+  try {
+    const forms = await getFormsConfig()
+    const form = forms.find(f => f.id === req.params.id)
+    if (!form) return res.status(404).json({ error: "Formulaire non trouvé" })
+    res.json(form)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// POST : créer un nouveau formulaire
+app.post("/api/forms", async (req, res) => {
+  try {
+    const forms = await getFormsConfig()
+    const newForm = {
+      id: req.body.id,
+      name: req.body.name,
+      schema: req.body.schema || { display: "form", components: [] }
+    }
+    forms.push(newForm)
+    await setFormsConfig(forms)
+    res.status(201).json(newForm)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// PUT : mettre à jour un formulaire existant
+app.put("/api/forms/:id", async (req, res) => {
+  try {
+    let forms = await getFormsConfig()
+    const index = forms.findIndex(f => f.id === req.params.id)
+    if (index === -1) return res.status(404).json({ error: "Formulaire non trouvé" })
+
+    forms[index] = { ...forms[index], ...req.body }
+    await setFormsConfig(forms)
+    res.json(forms[index])
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// DELETE : supprimer un formulaire spécifique
+app.delete("/api/forms/:id", async (req, res) => {
+  try {
+    let forms = await getFormsConfig()
+    const filtered = forms.filter(f => f.id !== req.params.id)
+    if (filtered.length === forms.length) {
+      return res.status(404).json({ error: "Formulaire non trouvé" })
+    }
+    await setFormsConfig(filtered)
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 
 
 // ----------------------------------------------------
