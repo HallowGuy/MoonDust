@@ -1,0 +1,336 @@
+{
+  "/dashboard": [
+    "contribute",
+<<<<<<< HEAD:backend/routes-config.json
+    "default-roles-realm_reunion",
+    "admin"
+=======
+    "admin",
+    "default-roles-realm_reunion"
+>>>>>>> de09af57 (Actions + Routes cleaned):backend/config/config-routes.json
+  ],
+  "/settings/custom/themecolors": [
+    "read"
+  ],
+  "/settings/list/users": [
+<<<<<<< HEAD:backend/routes-config.json
+    "admin",
+    "contribute",
+    "default-roles-realm_reunion",
+    "offline_access"
+  ],
+  "/": [
+    "default-roles-realm_reunion",
+    "read"
+  ],
+  "/settings/custom/editionroute": [
+=======
+    "read",
+>>>>>>> de09af57 (Actions + Routes cleaned):backend/config/config-routes.json
+    "admin"
+  ],
+  "/import/documents": [
+    "read"
+  ],
+  "/settings/list/roles": [
+    "admin"
+  ],
+  "/settings/custom/themelogo": [
+<<<<<<< HEAD:backend/routes-config.json
+    "read"
+=======
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/settings/custom/auditlogs": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/settings/routes": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/settings/actions": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/wkf/test": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/wkf/avancementworkflow": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/wkf/workflow": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/wkf/DetailConge/detail/:id": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/pages/profil/profil": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/theme": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/theme/colors": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/theme/typography": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/accordion": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/breadcrumbs": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/cards": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/carousels": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/collapses": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/list-groups": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/navs": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/paginations": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/placeholders": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/popovers": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/progress": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/spinners": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/tabs": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/tables": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/base/tooltips": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/buttons": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/buttons/buttons": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/buttons/dropdowns": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/buttons/button-groups": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/charts": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/form-control": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/select": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/checks-radios": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/range": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/input-group": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/floating-labels": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/layout": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/validation": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/icons": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/icons/coreui-icons": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/icons/flags": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/icons/brands": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/notifications": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/notifications/alerts": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/notifications/badges": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/notifications/modals": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/notifications/toasts": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/widgets": [
+    "read",
+    "contribute",
+    "admin"
+  ],
+  "/forms/formiobuilder": [
+    "contribute",
+    "read",
+    "admin"
+  ],
+  "/settings/formiorenderer": [
+    "contribute",
+    "read",
+    "admin"
+  ],
+  "/forms/editionforms": [
+    "admin",
+    "read",
+    "contribute"
+  ],
+  "/forms/formiorenderer": [
+    "admin",
+    "read",
+    "contribute"
+  ],
+  "/forms/:id/builder": [
+    "contribute",
+    "read",
+    "admin"
+  ],
+  "/forms/:id/view": [
+    "admin",
+    "read",
+    "contribute"
+  ],
+  "/settings/audit": [
+    "read",
+    "admin"
+>>>>>>> de09af57 (Actions + Routes cleaned):backend/config/config-routes.json
+  ]
+}

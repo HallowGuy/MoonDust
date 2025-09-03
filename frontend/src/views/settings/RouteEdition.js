@@ -26,6 +26,21 @@ const RouteEdition = () => {
   const [config, setConfig] = useState({})
   const [toasts, setToasts] = useState([])
   const [availableRoles, setAvailableRoles] = useState([])
+<<<<<<< HEAD:frontend/src/views/settings/RouteEdition.js
+=======
+  const { setRoutesConfig, currentUserRoles, routesConfig, actionsConfig } = useContext(PermissionsContext)
+
+  const [saving, setSaving] = useState(false)
+
+  // Pagination
+  const [page, setPage] = useState(1)
+  const perPage = 10
+
+  const [selectedRoutes, setSelectedRoutes] = useState([])
+  const [showEdit, setShowEdit] = useState(false)
+  const [editRoute, setEditRoute] = useState(null)
+  const [editRoles, setEditRoles] = useState([])
+>>>>>>> de09af57 (Actions + Routes cleaned):frontend/src/views/settings/Routes.js
 
   // --- TOASTS
   const addToast = (message, color = 'danger') => {
@@ -94,6 +109,7 @@ const [selectedRoutes, setSelectedRoutes] = useState([])
   }, [])
 
   // Sauvegarder config dans backend
+<<<<<<< HEAD:frontend/src/views/settings/RouteEdition.js
   const saveConfig = async (newConfig) => {
     try {
       setConfig(newConfig)
@@ -107,7 +123,37 @@ const [selectedRoutes, setSelectedRoutes] = useState([])
     } catch (err) {
       addToast(err.message)
     }
+=======
+// Sauvegarder config dans backend
+const saveConfig = async (newConfig) => {
+  try {
+    setSaving(true)
+
+    const res = await fetch(API_ROUTES_CONFIG, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newConfig),
+    })
+    if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
+
+    // 👉 recharger depuis backend avec cache buster
+    const refreshed = await fetch(`${API_ROUTES_CONFIG}?t=${Date.now()}`)
+      .then(r => r.json())
+
+    setConfig(refreshed)
+
+    // ✅ bien notifier le contexte avec un *nouvel objet*
+    setRoutesConfig({ ...refreshed })
+
+    showSuccess("Configuration sauvegardée")
+  } catch (err) {
+    addToast(err.message)
+  } finally {
+    setSaving(false)
+>>>>>>> de09af57 (Actions + Routes cleaned):frontend/src/views/settings/Routes.js
   }
+}
+
 
   // Ouvrir l'édition
   const openEdit = (route) => {
@@ -158,6 +204,26 @@ const [selectedRoutes, setSelectedRoutes] = useState([])
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <span>Éditeur des accès aux routes</span>
+<<<<<<< HEAD:frontend/src/views/settings/RouteEdition.js
+=======
+          <ProtectedButton
+            actionsConfig={actionsConfig}
+            currentUserRoles={currentUserRoles}
+            action="routes.editMasse"
+          >
+            <CButton
+              color="primary"
+              disabled={selectedRoutes.length === 0}
+              onClick={() => {
+                setEditRoute({ path: selectedRoutes })
+                setEditRoles([])
+                setShowEdit(true)
+              }}
+            >
+              Modifier en masse ({selectedRoutes.length})
+            </CButton>
+          </ProtectedButton>
+>>>>>>> de09af57 (Actions + Routes cleaned):frontend/src/views/settings/Routes.js
         </CCardHeader>
 
         <CCardBody>
@@ -186,7 +252,21 @@ const [selectedRoutes, setSelectedRoutes] = useState([])
           <CTable striped hover responsive>
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell></CTableHeaderCell>
+                <CTableHeaderCell>
+      <CFormCheck
+        checked={paginated.length > 0 && selectedRoutes.length === paginated.length}
+        indeterminate={selectedRoutes.length > 0 && selectedRoutes.length < paginated.length}
+        onChange={(e) => {
+          if (e.target.checked) {
+            // tout cocher → ajouter toutes les routes de la page courante
+            setSelectedRoutes(paginated.map((r) => r.path))
+          } else {
+            // tout décocher
+            setSelectedRoutes([])
+          }
+        }}
+      />
+    </CTableHeaderCell>
                 <CTableHeaderCell>Nom</CTableHeaderCell>
                 <CTableHeaderCell>Chemin</CTableHeaderCell>
                 <CTableHeaderCell>Rôles</CTableHeaderCell>
@@ -229,11 +309,18 @@ const [selectedRoutes, setSelectedRoutes] = useState([])
                           : 'Aucun'}
                       </CTableDataCell>
                       <CTableDataCell className="text-center">
+<<<<<<< HEAD:frontend/src/views/settings/RouteEdition.js
                         <CButton
                           size="sm"
                           color="success"
                           variant="ghost"
                           onClick={() => openEdit(r)}
+=======
+                        <ProtectedButton
+                          actionsConfig={actionsConfig}
+                          currentUserRoles={currentUserRoles}
+                          action="routes.edit"
+>>>>>>> de09af57 (Actions + Routes cleaned):frontend/src/views/settings/Routes.js
                         >
                           <CIcon icon={cilPencil} size="lg" />
                         </CButton>

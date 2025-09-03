@@ -186,7 +186,7 @@ const openSubGroups = async (groupe) => {
           <CFormInput
             className="mb-3"
             type="text"
-            placeholder="Rechercher par nom ou description…"
+            placeholder="Rechercher par groupe"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -194,17 +194,24 @@ const openSubGroups = async (groupe) => {
           <CTable striped hover responsive>
             <CTableHead>
               <CTableRow className="align-middle">
+<<<<<<< HEAD
                 <CTableHeaderCell>Nom</CTableHeaderCell>
                 <CTableHeaderCell>Détails</CTableHeaderCell>
                 <CTableHeaderCell style={{textAlign: 'center' }}>
                   Actions
                 </CTableHeaderCell>
+=======
+                <CTableHeaderCell style={{ width: '50%' }}>Nom</CTableHeaderCell>
+                <CTableHeaderCell style={{ textAlign: 'center',width: '30%' }}>Détails</CTableHeaderCell>
+                <CTableHeaderCell style={{ textAlign: 'center', width: '20%' }}>Actions</CTableHeaderCell>
+>>>>>>> de09af57 (Actions + Routes cleaned)
               </CTableRow>
             </CTableHead>
             <CTableBody>
               {filtered.length ? (
                 filtered.map((g) => (
                   <CTableRow key={g.id}>
+<<<<<<< HEAD
                     <CTableDataCell className="align-middle">{g.name}</CTableDataCell>
                     <CTableDataCell className="align-middle"><CButton size="sm" color="info" variant="ghost" onClick={() => openUsers(g)}>
                         <CIcon icon={cilUser} size="lg" /> Utilisateurs
@@ -233,6 +240,48 @@ const openSubGroups = async (groupe) => {
   }}
 />
 
+=======
+                    <CTableDataCell className="align-middle" style={{ width: '50%' }}>{g.name}</CTableDataCell>
+                    <CTableDataCell className="align-middle" style={{ textAlign: 'center',width: '30%' }}>
+                      <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="group.viewUsers">
+                        <CButton size="sm" color="info" variant="ghost" onClick={() => openUsers(g)}>
+                          <CIcon icon={cilUser} size="lg" /> Utilisateurs
+                        </CButton>
+                      </ProtectedButton>
+                      <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="group.viewSubGroups">
+                        <CButton size="sm" color="warning" variant="ghost" onClick={() => openSubGroups(g)}>
+                          <CIcon icon={cilLayers} size="lg" /> Sous-groupes
+                        </CButton>
+                      </ProtectedButton>
+                    </CTableDataCell>
+                    <CTableDataCell className="text-center align-middle" style={{ width: '20%' }}>
+                      <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="group.edit">
+                        <CButton size="sm" color="success" variant="ghost" onClick={() => openEdit(g)}>
+                          <CIcon icon={cilPencil} size="lg" />
+                        </CButton>
+                      </ProtectedButton>
+                      <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="group.delete">
+                        <ConfirmDeleteModal
+                          title="Supprimer le groupe"
+                          message="Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est irréversible."
+                          trigger={
+                            <CButton size="sm" color="danger" variant="ghost">
+                              <CIcon icon={cilTrash} size="lg" />
+                            </CButton>
+                          }
+                          onConfirm={async () => {
+                            try {
+                              const res = await fetch(`${API_GROUPES}/${g.id}`, { method: "DELETE" })
+                              if (!res.ok) throw new Error("Suppression impossible")
+                              setGroupes((prev) => prev.filter((group) => group.id !== g.id))
+                              showSuccess("✅ Groupe supprimé")
+                            } catch (e) {
+                              showError(e.message || "Erreur lors de la suppression")
+                            }
+                          }}
+                        />
+                      </ProtectedButton>
+>>>>>>> de09af57 (Actions + Routes cleaned)
                     </CTableDataCell>
                   </CTableRow>
                 ))

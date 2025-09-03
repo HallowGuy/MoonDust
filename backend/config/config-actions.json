@@ -1,0 +1,111 @@
+{
+  "user.edit": {
+    "roles": [
+      "master",
+      "uma_authorization",
+      "contribute",
+      "admin"
+    ],
+    "thematique": "Utilisateurs"
+  },
+  "user.delete": {
+    "roles": [
+      "admin",
+      "master"
+    ],
+    "thematique": "Utilisateurs"
+  },
+  "user.new": {
+    "roles": [
+      "uma_authorization",
+      "admin"
+    ],
+    "thematique": "Utilisateurs"
+  },
+  "role.edit": {
+    "roles": [
+      "master",
+      "uma_authorization",
+      "contribute"
+    ],
+    "thematique": "Rôles"
+  },
+  "role.delete": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "role.new": {
+    "roles": [
+      "uma_authorization",
+      "master",
+      "contribute"
+    ],
+    "thematique": "Rôles"
+  },
+  "role.viewUsers": {
+    "roles": [
+      "uma_authorization",
+      "master",
+      "contribute",
+      "read",
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "group.edit": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Groupes"
+  },
+  "group.delete": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Groupes"
+  },
+  "group.new": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Groupes"
+  },
+  "group.viewUsers": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Groupes"
+  },
+  "group.viewSubGroups": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Groupes"
+  },
+  "actions.edit": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Configuration"
+  },
+  "actions.editMasse": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Configuration"
+  },
+  "routes.edit": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Autre"
+  },
+  "routes.editMasse": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Autre"
+  }
+}

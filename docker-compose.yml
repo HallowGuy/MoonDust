@@ -18,7 +18,14 @@ services:
       - .env
     volumes:
       - ./backend/uploads:/usr/src/app/uploads
+<<<<<<< HEAD
       - ./backend/routes-config.json:/usr/src/app/routes-config.json
+=======
+      - ./backend/config/config-routes.json:/usr/src/app/config/config-routes.json
+      - ./backend/config/config-actions.json:/usr/src/app/config/config-actions.json
+      - ./backend/forms-config.json:/usr/src/app/forms-config.json
+
+>>>>>>> de09af57 (Actions + Routes cleaned)
     depends_on:
       - db
     healthcheck:
