@@ -1,10 +1,8 @@
 {
   "user.edit": [
-    "admin",
-    "contribute",
     "master",
     "uma_authorization",
-    "read"
+    "contribute"
   ],
   "user.delete": [
     "admin",
@@ -13,8 +11,8 @@
     "contribute"
   ],
   "user.new": [
-    "admin",
     "uma_authorization",
-    "master"
+    "master",
+    "contribute"
   ]
 }

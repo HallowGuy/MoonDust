@@ -7,6 +7,7 @@
   "/": [
     "read",
     "contribute",
+    "offline_access",
     "admin"
   ],
   "/dashboard": [
@@ -30,14 +31,14 @@
     "admin"
   ],
   "/settings/list/roles": [
+    "admin",
     "read",
-    "contribute",
-    "admin"
+    "contribute"
   ],
   "/settings/list/groupes": [
+    "admin",
     "read",
-    "contribute",
-    "admin"
+    "contribute"
   ],
   "/settings/custom/themecolors": [
     "read",
