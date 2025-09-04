@@ -4,7 +4,9 @@ import {
   CRow, CCol, CFormInput, CBadge,
   CButton, CToaster, CToast, CToastBody, CSpinner
 } from '@coreui/react'
-import { API_BASE, API_USERS } from 'src/api'
+import { API_USERS, CLIENT_ID } from 'src/api'
+import { rolesFromToken, decodeJwt } from '@/lib/jwt'
+import { isTokenExpired } from '@/lib/http'
 
 // couleurs pour rôles
 const ROLE_COLORS = {
@@ -41,40 +43,43 @@ const Profil = () => {
     Authorization: `Bearer ${localStorage.getItem('access_token')}`,
   })
 
-  // charger infos utilisateur connecté
+  // charger infos utilisateur connecté (depuis le JWT) + rôles (depuis le JWT)
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("access_token")
-        const payload = JSON.parse(atob(token.split('.')[1]))
-
-        // infos de base (du token)
-        const userObj = {
-          id: payload.sub,
-          username: payload.preferred_username,
-          email: payload.email,
-          firstName: payload.given_name,
-          lastName: payload.family_name,
-        }
-        setUser(userObj)
-        setFirstName(userObj.firstName || '')
-        setLastName(userObj.lastName || '')
-        setEmail(userObj.email || '')
-
-        // rôles
-        const res = await fetch(`${API_BASE}/me/roles`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!res.ok) throw new Error("Impossible de charger les rôles")
-        const data = await res.json()
-        setRoles(data.roles || [])
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token || isTokenExpired(token)) {
+        localStorage.removeItem('access_token')
+        window.location.replace('/login')
+        return
       }
+
+      const payload = decodeJwt(token)
+      if (!payload) {
+        setError('Token invalide')
+        return
+      }
+
+      // infos de base depuis le token
+      const userObj = {
+        id: payload.sub,
+        username: payload.preferred_username,
+        email: payload.email,
+        firstName: payload.given_name,
+        lastName: payload.family_name,
+      }
+      setUser(userObj)
+      setFirstName(userObj.firstName || '')
+      setLastName(userObj.lastName || '')
+      setEmail(userObj.email || '')
+
+      // ✅ rôles directement depuis le JWT (realm + client)
+      const r = rolesFromToken(token, CLIENT_ID) // déjà en lowercase + uniques
+      setRoles(r)
+    } catch (err) {
+      setError(err.message || 'Erreur de lecture du token')
+    } finally {
+      setLoading(false)
     }
-    fetchData()
   }, [])
 
   const handleSave = async () => {
@@ -86,7 +91,6 @@ const Profil = () => {
         email,
         username: user.username,
       }
-
       const res = await fetch(`${API_USERS}/${user.id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
@@ -128,18 +132,10 @@ const Profil = () => {
 
           <CRow className="mb-3">
             <CCol md={6}>
-              <CFormInput
-                label="Nom d’utilisateur"
-                value={user?.username || ''}
-                readOnly
-              />
+              <CFormInput label="Nom d’utilisateur" value={user?.username || ''} readOnly />
             </CCol>
             <CCol md={6}>
-              <CFormInput
-                label="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <CFormInput label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </CCol>
           </CRow>
 
@@ -151,7 +147,7 @@ const Profil = () => {
                   ? roles.map((role) => (
                       <CBadge
                         key={role}
-                        color={ROLE_COLORS[role] || 'secondary'}
+                        color={ROLE_COLORS[role.toLowerCase()] || 'secondary'}
                         className="me-2"
                       >
                         {role}

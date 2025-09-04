@@ -1,10 +1,7 @@
 {
   "user.edit": {
     "roles": [
-      "master",
-      "uma_authorization",
-      "contribute",
-      "admin"
+      "uma_authorization"
     ],
     "thematique": "Utilisateurs"
   },
