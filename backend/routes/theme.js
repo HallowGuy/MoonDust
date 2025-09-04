@@ -1,179 +1,73 @@
+// backend/routes/theme.js
 import express from "express";
-import path from "path";
-import fssync from "fs";
 import multer from "multer";
+import path, { dirname } from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
+import fsp from "fs/promises";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const router = express.Router();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
-const themesPath = path.join(__dirname, "../themes.json");
-let themes = JSON.parse(fssync.readFileSync(themesPath, "utf8"));
+const themesPath = path.join(__dirname, "..", "themes.json");
+if (!fs.existsSync(themesPath)) {
+  await fsp.writeFile(themesPath, JSON.stringify({ default: {} }, null, 2), "utf8");
+}
+let themes = JSON.parse(fs.readFileSync(themesPath, "utf8"));
 let currentTheme = "default";
 
+// --- logo upload (always theme-logo.svg)
+const logosDir = path.join(__dirname, "..", "uploads", "logo");
+await fsp.mkdir(logosDir, { recursive: true });
 const storageLogo = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, "../uploads/logo")),
-  filename: (req, file, cb) => cb(null, "theme-logo.svg"),
+  destination: (_req, _file, cb) => cb(null, logosDir),
+  filename: (_req, _file, cb) => cb(null, "theme-logo.svg"),
 });
 const uploadLogo = multer({ storage: storageLogo });
 
-/**
- * @swagger
- * tags:
- *   name: Theme
- *   description: Gestion du thème et personnalisation
- */
-
-router.use("/uploads/logo", express.static(path.join(__dirname, "../uploads/logo")));
-
-/**
- * @swagger
- * /api/theme/logo:
- *   get:
- *     summary: Récupérer le logo actuel
- *     tags: [Theme]
- *     responses:
- *       200:
- *         description: Logo en SVG
- *       404:
- *         description: Aucun logo défini
- */
+// GET /api/theme/logo
 router.get("/logo", (req, res) => {
-  const logoPath = path.join(__dirname, "../uploads/logo/theme-logo.svg");
-  if (!fssync.existsSync(logoPath)) return res.status(404).json({ error: "Pas de logo" });
+  const logoPath = path.join(logosDir, "theme-logo.svg");
+  if (!fs.existsSync(logoPath)) return res.status(404).send("Logo introuvable");
   res.sendFile(logoPath);
 });
 
-/**
- * @swagger
- * /api/theme/logo:
- *   post:
- *     summary: Mettre à jour le logo
- *     tags: [Theme]
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               file:
- *                 type: string
- *                 format: binary
- *     responses:
- *       200:
- *         description: Logo mis à jour
- */
-router.post("/logo", uploadLogo.single("file"), (req, res) => {
-  res.json({ ok: true, message: "Logo mis à jour", url: `/api/theme/logo?t=${Date.now()}` });
+// POST /api/theme/logo
+router.post("/logo", uploadLogo.single("file"), (_req, res) => {
+  res.json({ ok: true, url: `/api/theme/logo?t=${Date.now()}` });
 });
 
-/**
- * @swagger
- * /api/theme/list:
- *   get:
- *     summary: Lister tous les thèmes disponibles
- *     tags: [Theme]
- *     responses:
- *       200:
- *         description: Liste des thèmes
- */
-router.get("/list", (req, res) => res.json(Object.keys(themes)));
+// GET /api/theme/list
+router.get("/list", (_req, res) => res.json(Object.keys(themes)));
 
-/**
- * @swagger
- * /api/theme/current:
- *   get:
- *     summary: Récupérer le thème courant
- *     tags: [Theme]
- *     responses:
- *       200:
- *         description: Thème courant
- */
-router.get("/current", (req, res) => res.json({ name: currentTheme, colors: themes[currentTheme] }));
+// GET /api/theme/current
+router.get("/current", (_req, res) => res.json({ current: currentTheme }));
 
-/**
- * @swagger
- * /api/theme/current:
- *   put:
- *     summary: Changer le thème courant
- *     tags: [Theme]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name: { type: string }
- *     responses:
- *       200:
- *         description: Thème mis à jour
- *       400:
- *         description: Thème inconnu
- */
+// PUT /api/theme/current  { name }
 router.put("/current", (req, res) => {
   const { name } = req.body;
-  if (!themes[name]) return res.status(400).json({ error: "Thème inconnu" });
+  if (!themes[name]) return res.status(404).json({ error: "Thème inconnu" });
   currentTheme = name;
+  res.json({ current: currentTheme });
+});
+
+// GET /api/theme/:name
+router.get("/:name", (req, res) => {
+  const t = themes[req.params.name];
+  if (!t) return res.status(404).json({ error: "Thème introuvable" });
+  res.json(t);
+});
+
+// PUT /api/theme/colors
+router.put("/colors", (req, res) => {
+  themes[currentTheme] = req.body || {};
+  fs.writeFileSync(themesPath, JSON.stringify(themes, null, 2), "utf8");
   res.json({ ok: true, theme: themes[currentTheme] });
 });
 
-/**
- * @swagger
- * /api/theme/{name}:
- *   get:
- *     summary: Récupérer un thème par son nom
- *     tags: [Theme]
- *     parameters:
- *       - in: path
- *         name: name
- *         required: true
- *         schema: { type: string }
- *     responses:
- *       200:
- *         description: Thème trouvé
- *       404:
- *         description: Thème introuvable
- */
-router.get("/:name", (req, res) => {
-  if (!themes[req.params.name]) return res.status(404).json({ error: "Introuvable" });
-  res.json(themes[req.params.name]);
-});
-
-/**
- * @swagger
- * /api/theme/colors:
- *   put:
- *     summary: Modifier les couleurs du thème courant
- *     tags: [Theme]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *     responses:
- *       200:
- *         description: Couleurs mises à jour
- */
-router.put("/colors", (req, res) => {
-  themes[currentTheme] = req.body;
-  fssync.writeFileSync(themesPath, JSON.stringify(themes, null, 2), "utf8");
-  res.json({ ok: true, theme: req.body });
-});
-
-/**
- * @swagger
- * /api/theme/colors:
- *   get:
- *     summary: Récupérer les couleurs du thème courant
- *     tags: [Theme]
- *     responses:
- *       200:
- *         description: Couleurs actuelles
- */
-router.get("/colors", (req, res) => res.json(themes[currentTheme]));
+// GET /api/theme/colors
+router.get("/colors", (_req, res) => res.json(themes[currentTheme]));
 
 export default router;

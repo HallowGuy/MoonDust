@@ -11,15 +11,17 @@ const Callback = () => {
 
     if (!code || !verifier) {
       console.error('❌ Code ou PKCE verifier manquant')
+      window.location.href = '/login'
       return
     }
 
     if (!REALM || !CLIENT_ID) {
-      console.error('Missing REALM or CLIENT_ID', { REALM, CLIENT_ID })
+      console.error('❌ REALM ou CLIENT_ID manquant', { REALM, CLIENT_ID })
+      window.location.href = '/login'
       return
     }
+
     const tokenUrl = safeBuildUrl(`/realms/${REALM}/protocol/openid-connect/token`, KC_URL)
-    if (!tokenUrl) return
     const redirectUri = `${window.location.origin}/callback`
 
     fetch(tokenUrl, {
@@ -33,17 +35,30 @@ const Callback = () => {
         code_verifier: verifier,
       }),
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          const txt = await res.text()
+          throw new Error(txt || `Erreur HTTP ${res.status}`)
+        }
+        return res.json()
+      })
       .then((data) => {
         if (data.access_token) {
           localStorage.setItem('access_token', data.access_token)
-          localStorage.setItem('refresh_token', data.refresh_token)
+          if (data.refresh_token) {
+            localStorage.setItem('refresh_token', data.refresh_token)
+          }
+          sessionStorage.removeItem('pkce_verifier')
           window.location.href = '/' // redirection après login
         } else {
           console.error('❌ Impossible de récupérer le token', data)
+          window.location.href = '/login'
         }
       })
-      .catch((err) => console.error('❌ Erreur Callback Keycloak', err))
+      .catch((err) => {
+        console.error('❌ Erreur Callback Keycloak', err)
+        window.location.href = '/login'
+      })
   }, [])
 
   return (

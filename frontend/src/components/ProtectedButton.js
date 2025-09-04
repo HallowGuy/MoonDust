@@ -1,34 +1,39 @@
-// ProtectedButton.js
+// src/components/ProtectedButton.js
 import React from "react"
+import { rolesFromToken } from "../lib/jwt"   // adapte si alias
+import { CLIENT_ID } from "../api"
+
+const norm = (arr = []) =>
+  arr
+    .map((r) => String(r).toLowerCase())
+    .filter(Boolean)
+    .filter((r) => r !== "uma_authorization")
 
 const ProtectedButton = ({ actionsConfig, currentUserRoles, action, children }) => {
-  if (!actionsConfig || !currentUserRoles) {
-    console.log("❌ Missing actionsConfig or currentUserRoles")
-    return null
-  }
+  if (!actionsConfig || !action) return null
 
   const actionConf = actionsConfig[action]
-  let allowedRoles = []
+  const allowedRoles = Array.isArray(actionConf)
+    ? actionConf
+    : actionConf && Array.isArray(actionConf.roles)
+      ? actionConf.roles
+      : []
 
-  if (Array.isArray(actionConf)) {
-    allowedRoles = actionConf
-  } else if (actionConf && Array.isArray(actionConf.roles)) {
-    allowedRoles = actionConf.roles
-  }
+  // Fallback : si le contexte est vide, on lit les rôles dans le JWT
+  const token = localStorage.getItem("access_token")
+  const roles =
+    currentUserRoles && currentUserRoles.length
+      ? currentUserRoles
+      : rolesFromToken(token, CLIENT_ID)
 
-  console.log("🔎 ProtectedButton check", {
-    action,
-    actionConf,
-    allowedRoles,
-    currentUserRoles,
-  })
+  const allowedN = norm(allowedRoles)
+  const userN = norm(roles)
 
-  const hasAccess = currentUserRoles.some((role) => allowedRoles.includes(role))
+  // Debug utile
+  console.debug("ProtectedButton check", { action, actionConf, allowedRoles: allowedN, currentUserRoles: userN })
 
-  console.log(`➡️ Action "${action}" => accès ${hasAccess ? "✅ AUTORISÉ" : "⛔ REFUSÉ"}`)
-
-  if (!hasAccess) return null
-  return <>{children}</>
+  const hasAccess = userN.some((r) => allowedN.includes(r))
+  return hasAccess ? <>{children}</> : null
 }
 
 export default ProtectedButton
