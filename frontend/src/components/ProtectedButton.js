@@ -30,7 +30,7 @@ const ProtectedButton = ({ actionsConfig, currentUserRoles, action, children }) 
   const userN = norm(roles)
 
   // Debug utile
-  console.debug("ProtectedButton check", { action, actionConf, allowedRoles: allowedN, currentUserRoles: userN })
+  //console.debug("ProtectedButton check", { action, actionConf, allowedRoles: allowedN, currentUserRoles: userN })
 
   const hasAccess = userN.some((r) => allowedN.includes(r))
   return hasAccess ? <>{children}</> : null

@@ -1,8 +1,9 @@
 {
   "user.edit": {
     "roles": [
-      "uma_authorization",
-      "admin"
+      "read",
+      "admin",
+      "superadmin"
     ],
     "thematique": "Utilisateurs"
   },

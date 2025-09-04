@@ -51,9 +51,7 @@
     "admin"
   ],
   "/settings/custom/auditlogs": [
-    "read",
-    "contribute",
-    "admin"
+    "read"
   ],
   "/settings/routes": [
     "read",
