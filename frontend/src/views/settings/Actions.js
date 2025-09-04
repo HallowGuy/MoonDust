@@ -3,7 +3,7 @@ import {
   CCard, CCardHeader, CCardBody, CFormInput, CButton,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
   COffcanvas, COffcanvasHeader, COffcanvasBody,
-  CToaster, CToast, CToastBody, CFormCheck, CBadge,
+  CToaster, CToast, CToastBody, CFormCheck, CBadge,CFormSelect
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilSave } from '@coreui/icons'
@@ -53,9 +53,11 @@ const filtered = allActions.filter((a) => {
 
 
   const [page, setPage] = useState(1)
-  const perPage = 10
+  const [perPage, setPerPage] = useState(10)
+
   const paginated = filtered.slice((page - 1) * perPage, page * perPage)
-  const totalPages = Math.ceil(filtered.length / perPage)
+const totalPages = Math.ceil(filtered.length / perPage)
+
   const [selectedActions, setSelectedActions] = useState([])
 
   const [showEdit, setShowEdit] = useState(false)
@@ -274,7 +276,23 @@ const filtered = allActions.filter((a) => {
               )}
             </CTableBody>
           </CTable>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+  <span>Résultats : {filtered.length}</span>
 
+  <CFormSelect
+    value={perPage}
+    style={{ width: '120px' }}
+    onChange={(e) => {
+      setPerPage(Number(e.target.value))
+      setPage(1) // on repart à la première page
+    }}
+    options={[
+      { label: '10 / page', value: 10 },
+      { label: '20 / page', value: 20 },
+      { label: '30 / page', value: 30 },
+    ]}
+  />
+</div>
           <div className="d-flex justify-content-center align-items-center mt-3 gap-3">
             <CButton disabled={page === 1} onClick={() => setPage((p) => Math.max(p - 1, 1))}>
               Précédent
@@ -310,7 +328,7 @@ const filtered = allActions.filter((a) => {
                 onChange={() => toggleRole(role)}
               />
             ))}
-
+            
             <div className="d-flex gap-2 justify-content-end mt-3">
               <CButton color="secondary" variant="ghost" onClick={() => setShowEdit(false)}>
                 Annuler
