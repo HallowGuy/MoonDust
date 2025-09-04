@@ -144,18 +144,24 @@ const Users = () => {
 
       // --- UPDATE ROLES ---
       if (userId) {
-        // supprimer puis réassigner les rôles
-        await fetch(`${API_USERS}/${userId}/roles`, {
-          method: 'DELETE',
-          headers: getAuthHeaders(),
-        })
+        const existingRoles = await fetchUserRoles(userId)
 
+        // Supprimer les rôles actuels
+        if (existingRoles.length > 0) {
+          await fetch(`${API_USERS}/${userId}/roles`, {
+            method: 'DELETE',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(existingRoles), // tableau direct attendu par le backend
+          })
+        }
+
+        // Ajouter les rôles sélectionnés
         const selectedRoles = roles.filter((r) => userRoles.includes(r.name))
         if (selectedRoles.length > 0) {
           await fetch(`${API_USERS}/${userId}/roles`, {
             method: 'POST',
             headers: getAuthHeaders(),
-            body: JSON.stringify({ roles: selectedRoles }),
+            body: JSON.stringify(selectedRoles), // tableau direct attendu par le backend
           })
         }
 

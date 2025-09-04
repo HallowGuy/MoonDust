@@ -140,7 +140,7 @@ router.get("/me/roles", async (req, res) => {
 // POST /api/users/:id/roles (assigne/remplace)
 router.post("/:id/roles", async (req, res) => {
   try {
-    const roles = req.body.roles;
+    const roles = req.body;
     if (!Array.isArray(roles)) return res.status(400).json({ error: "roles (array) requis" });
     const token = await getAdminToken();
     const r = await fetch(`${KEYCLOAK_URL}/admin/realms/${REALM}/users/${req.params.id}/role-mappings/realm`, {
@@ -159,7 +159,7 @@ router.post("/:id/roles", async (req, res) => {
 // DELETE /api/users/:id/roles (retire plusieurs)
 router.delete("/:id/roles", async (req, res) => {
   try {
-    const roles = req.body.roles;
+    const roles = req.body;
     if (!Array.isArray(roles) || roles.length === 0) {
       return res.status(400).json({ error: "roles (array) requis" });
     }
