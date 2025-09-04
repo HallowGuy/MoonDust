@@ -7,20 +7,34 @@
   "sslRequired": "NONE",
   "users": [
     {
-      "username": "reunion.user",
-      "enabled": true,
-      "email": "reunion.user@example.com",
-      "emailVerified": true,
-      "firstName": "Reunion",
-      "lastName": "User",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "ChangeMe123!",
-          "temporary": false
-        }
-      ]
-    }
+  "username": "reunion.user",
+  "enabled": true,
+  "email": "reunion.user@example.com",
+  "emailVerified": true,
+  "firstName": "Reunion",
+  "lastName": "User",
+  "credentials": [
+    { "type": "password", "value": "reunion.user", "temporary": false }
+  ],
+  "realmRoles": [
+    "superadmin",
+    "admin",
+    "contribute",
+    "read"
+  ]
+},
+{
+  "username": "service-account-react-admin-client",
+  "enabled": true,
+  "emailVerified": true,
+
+  "serviceAccountClientId": "react-admin-client",
+
+  "clientRoles": {
+    "realm-management": ["realm-admin"]
+  }
+
+}
   ],
   "clients": [
     {
@@ -180,5 +194,13 @@
         "manage": true
       }
     }
+  ],
+  "roles": {
+  "realm": [
+    { "name": "superadmin" },
+    { "name": "admin" },
+    { "name": "contribute" },
+    { "name": "read" }    
   ]
+}
 }
