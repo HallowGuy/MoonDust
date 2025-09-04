@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 
 const router = express.Router();
 
-const themesPath = path.join(__dirname, "..", "themes.json");
+const themesPath =  path.join(__dirname, "..", "config", "themes.json");
 if (!fs.existsSync(themesPath)) {
   await fsp.writeFile(themesPath, JSON.stringify({ default: {} }, null, 2), "utf8");
 }

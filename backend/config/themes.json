@@ -1,6 +1,6 @@
 {
   "default": {
-    "primary": "#1a45a1",
+    "primary": "#19387b",
     "secondary": "#64748b",
     "success": "#28c461",
     "danger": "#d32f2f",
@@ -8,7 +8,7 @@
     "info": "#10afca"
   },
   "office": {
-    "primary": "#2b579a",
+    "primary": "#639b2c",
     "secondary": "#7f7f7f",
     "success": "#107c10",
     "danger": "#a80000",
