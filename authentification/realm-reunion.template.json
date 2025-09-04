@@ -28,7 +28,7 @@
   "enabled": true,
   "emailVerified": true,
 
-  "serviceAccountClientId": "react-admin-client",
+  "serviceAccountClientId": "${CLIENT_ID}",
 
   "clientRoles": {
     "realm-management": ["realm-admin"]
@@ -38,21 +38,21 @@
   ],
   "clients": [
     {
-      "clientId": "react-app",
-      "name": "react-app",
+      "clientId": "${FRONT_CLIENT_ID}",
+      "name": "${FRONT_CLIENT_ID}",
       "description": "",
-      "rootUrl": "http://localhost:3002",
-      "adminUrl": "http://localhost:3002",
-      "baseUrl": "http://localhost:3002/*",
+      "rootUrl": "${URL_CLIENT}",
+      "adminUrl": "${URL_CLIENT}",
+      "baseUrl": "${URL_CLIENT_FULL}",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "http://localhost:3002/*"
+        "${URL_CLIENT_FULL}"
       ],
       "webOrigins": [
-        "http://localhost:3002"
+        "${URL_CLIENT}"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -66,7 +66,7 @@
       "protocol": "openid-connect",
       "attributes": {
         "oidc.ciba.grant.enabled": "false",
-        "post.logout.redirect.uris": "http://localhost:3002/*",
+        "post.logout.redirect.uris": "${URL_CLIENT_FULL}",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -94,8 +94,8 @@
       }
     },
     {
-      "clientId": "react-admin-client",
-      "name": "react-admin-client",
+      "clientId": "${CLIENT_ID}",
+      "name": "${CLIENT_ID}",
       "description": "",
       "rootUrl": "",
       "adminUrl": "",
@@ -104,7 +104,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "lNlGJ37whxZAO1j27wSOPzodvgMJiIsw",
+      "secret": "${CLIENT_SECRET}",
       "redirectUris": [
         "/*"
       ],

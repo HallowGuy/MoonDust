@@ -169,6 +169,8 @@ services:
       - ./authentification:/opt/keycloak/data/import:ro
     ports:
       - "${KEYCLOAK_PORT_HOST}:${KEYCLOAK_PORT_CONTAINER}"
+    env_file:
+      - ./.env
     depends_on:
       - db
     restart: unless-stopped

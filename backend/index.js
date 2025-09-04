@@ -14,10 +14,12 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+const origins = [process.env.VITE_URL, process.env.ADMIN_URL].filter(Boolean);
+const backend = process.env.BACKEND_URL
 
 // --- middlewares
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:5173", "http://localhost:3002"],
+  origin: origins,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
@@ -37,7 +39,7 @@ const swaggerSpec = swaggerJSDoc({
   definition: {
     openapi: "3.0.0",
     info: { title: "API MoonDust", version: "1.0.0", description: "Docs Swagger" },
-    servers: [{ url: `http://localhost:${PORT}` }],
+    servers: [{ url: `${backend}${PORT}` }],
   },
   apis: ["./routes/*.js"],
 });
@@ -80,4 +82,4 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: "Erreur serveur" });
 });
 
-app.listen(PORT, () => console.log(`✅ API ready on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`✅ API ready on ${backend}${PORT}`));
