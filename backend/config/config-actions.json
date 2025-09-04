@@ -1,14 +1,15 @@
 {
   "user.edit": {
     "roles": [
-      "uma_authorization"
+      "uma_authorization",
+      "admin"
     ],
     "thematique": "Utilisateurs"
   },
   "user.delete": {
     "roles": [
       "admin",
-      "master"
+      "superadmin"
     ],
     "thematique": "Utilisateurs"
   },
@@ -21,7 +22,7 @@
   },
   "role.edit": {
     "roles": [
-      "master",
+      "superadmin",
       "uma_authorization",
       "contribute"
     ],
@@ -36,7 +37,7 @@
   "role.new": {
     "roles": [
       "uma_authorization",
-      "master",
+      "superadmin",
       "contribute"
     ],
     "thematique": "Rôles"
@@ -44,7 +45,7 @@
   "role.viewUsers": {
     "roles": [
       "uma_authorization",
-      "master",
+      "superadmin",
       "contribute",
       "read",
       "admin"
