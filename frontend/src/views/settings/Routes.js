@@ -3,14 +3,13 @@ import {
   CCard, CCardHeader, CCardBody, CFormInput, CButton,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
   COffcanvas, COffcanvasHeader, COffcanvasBody,
-  CToaster, CToast, CToastBody, CFormCheck, CBadge,CFormSelect
+  CToaster, CToast, CToastBody, CFormCheck, CBadge, CFormSelect
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilSave } from '@coreui/icons'
 import routes from '../../routes'
 import { PermissionsContext } from "src/context/PermissionsContext"
 import ProtectedButton from "src/components/ProtectedButton"
-
 import { API_ROLES, API_ROUTES_CONFIG } from 'src/api'
 
 // 🔹 Couleurs associées aux rôles (optionnel)
@@ -26,14 +25,13 @@ const RouteEdition = () => {
   const [config, setConfig] = useState({})
   const [toasts, setToasts] = useState([])
   const [availableRoles, setAvailableRoles] = useState([])
-  const { setRoutesConfig, currentUserRoles, routesConfig, actionsConfig } = useContext(PermissionsContext)
+  const { setRoutesConfig, currentUserRoles, actionsConfig } = useContext(PermissionsContext)
 
   const [saving, setSaving] = useState(false)
 
   // Pagination
- const [perPage, setPerPage] = useState(10)
-const [page, setPage] = useState(1)
-
+  const [perPage, setPerPage] = useState(10)
+  const [page, setPage] = useState(1)
 
   const [selectedRoutes, setSelectedRoutes] = useState([])
   const [showEdit, setShowEdit] = useState(false)
@@ -47,15 +45,6 @@ const [page, setPage] = useState(1)
   }
   const showSuccess = (msg) => addToast(msg, 'success')
   const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id))
-
-  // Filtrage
-  const filtered = routes.filter(
-    (r) =>
-      r.name?.toLowerCase().includes(search.toLowerCase()) ||
-      r.path?.toLowerCase().includes(search.toLowerCase())
-  )
-  const paginated = filtered.slice((page - 1) * perPage, page * perPage)
-  const totalPages = Math.ceil(filtered.length / perPage)
 
   // Charger config depuis backend
   useEffect(() => {
@@ -91,35 +80,43 @@ const [page, setPage] = useState(1)
   }, [])
 
   // Sauvegarder config dans backend
-// Sauvegarder config dans backend
-const saveConfig = async (newConfig) => {
-  try {
-    setSaving(true)
+  const saveConfig = async (newConfig) => {
+    try {
+      setSaving(true)
+      const res = await fetch(API_ROUTES_CONFIG, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newConfig),
+      })
+      if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
 
-    const res = await fetch(API_ROUTES_CONFIG, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newConfig),
-    })
-    if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
-
-    // 👉 recharger depuis backend avec cache buster
-    const refreshed = await fetch(`${API_ROUTES_CONFIG}?t=${Date.now()}`)
-      .then(r => r.json())
-
-    setConfig(refreshed)
-
-    // ✅ bien notifier le contexte avec un *nouvel objet*
-    setRoutesConfig({ ...refreshed })
-
-    showSuccess("Configuration sauvegardée")
-  } catch (err) {
-    addToast(err.message)
-  } finally {
-    setSaving(false)
+      // 👉 recharger depuis backend avec cache buster
+      const refreshed = await fetch(`${API_ROUTES_CONFIG}?t=${Date.now()}`).then(r => r.json())
+      setConfig(refreshed)
+      setRoutesConfig({ ...refreshed })
+      showSuccess("Configuration sauvegardée")
+    } catch (err) {
+      addToast(err.message)
+    } finally {
+      setSaving(false)
+    }
   }
-}
 
+  // Fusionner routes frontend + backend
+  const allRoutes = Object.keys(config).map(path => ({
+  path,
+  name: path, // pas de "name" dans le JSON → on prend le path comme libellé
+  roles: config[path] ?? []
+}))
+
+  // Filtrage + pagination
+  const filtered = allRoutes.filter(
+  (r) =>
+    r.name.toLowerCase().includes(search.toLowerCase()) ||
+    r.path.toLowerCase().includes(search.toLowerCase())
+)
+  const paginated = filtered.slice((page - 1) * perPage, page * perPage)
+  const totalPages = Math.ceil(filtered.length / perPage)
 
   // Ouvrir l'édition
   const openEdit = (route) => {
@@ -142,12 +139,10 @@ const saveConfig = async (newConfig) => {
     let newConfig = { ...config }
 
     if (Array.isArray(editRoute.path)) {
-      // édition en masse
       editRoute.path.forEach((p) => {
         newConfig[p] = editRoles
       })
     } else {
-      // édition simple
       newConfig[editRoute.path] = editRoles
     }
 
@@ -194,20 +189,18 @@ const saveConfig = async (newConfig) => {
             <CTableHead>
               <CTableRow>
                 <CTableHeaderCell>
-      <CFormCheck
-        checked={paginated.length > 0 && selectedRoutes.length === paginated.length}
-        indeterminate={selectedRoutes.length > 0 && selectedRoutes.length < paginated.length}
-        onChange={(e) => {
-          if (e.target.checked) {
-            // tout cocher → ajouter toutes les routes de la page courante
-            setSelectedRoutes(paginated.map((r) => r.path))
-          } else {
-            // tout décocher
-            setSelectedRoutes([])
-          }
-        }}
-      />
-    </CTableHeaderCell>
+                  <CFormCheck
+                    checked={paginated.length > 0 && selectedRoutes.length === paginated.length}
+                    indeterminate={selectedRoutes.length > 0 && selectedRoutes.length < paginated.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedRoutes(paginated.map((r) => r.path))
+                      } else {
+                        setSelectedRoutes([])
+                      }
+                    }}
+                  />
+                </CTableHeaderCell>
                 <CTableHeaderCell>Nom</CTableHeaderCell>
                 <CTableHeaderCell>Chemin</CTableHeaderCell>
                 <CTableHeaderCell>Rôles</CTableHeaderCell>
@@ -218,56 +211,53 @@ const saveConfig = async (newConfig) => {
             </CTableHead>
             <CTableBody>
               {filtered.length ? (
-                paginated.map((r, idx) => {
-                  const currentRoles = config[r.path] ?? r.roles ?? []
-                  return (
-                    <CTableRow key={idx}>
-                      <CTableDataCell>
-                        <CFormCheck
-                          checked={selectedRoutes.includes(r.path)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedRoutes((prev) => [...prev, r.path])
-                            } else {
-                              setSelectedRoutes((prev) => prev.filter((p) => p !== r.path))
-                            }
-                          }}
-                        />
-                      </CTableDataCell>
-                      <CTableDataCell>{r.name}</CTableDataCell>
-                      <CTableDataCell>{r.path}</CTableDataCell>
-                      <CTableDataCell>
-                        {currentRoles.length
-                          ? currentRoles.map((role) => (
-                              <CBadge
-                                key={role}
-                                color={ROLE_COLORS[role] || 'secondary'}
-                                className="me-1"
-                              >
-                                {role}
-                              </CBadge>
-                            ))
-                          : 'Aucun'}
-                      </CTableDataCell>
-                      <CTableDataCell className="text-center">
-                        <ProtectedButton
-                          actionsConfig={actionsConfig}
-                          currentUserRoles={currentUserRoles}
-                          action="routes.edit"
+                paginated.map((r, idx) => (
+                  <CTableRow key={idx}>
+                    <CTableDataCell>
+                      <CFormCheck
+                        checked={selectedRoutes.includes(r.path)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedRoutes((prev) => [...prev, r.path])
+                          } else {
+                            setSelectedRoutes((prev) => prev.filter((p) => p !== r.path))
+                          }
+                        }}
+                      />
+                    </CTableDataCell>
+                    <CTableDataCell>{r.name}</CTableDataCell>
+                    <CTableDataCell>{r.path}</CTableDataCell>
+                    <CTableDataCell>
+                      {r.roles.length
+                        ? r.roles.map((role) => (
+                            <CBadge
+                              key={role}
+                              color={ROLE_COLORS[role] || 'secondary'}
+                              className="me-1"
+                            >
+                              {role}
+                            </CBadge>
+                          ))
+                        : 'Aucun'}
+                    </CTableDataCell>
+                    <CTableDataCell className="text-center">
+                      <ProtectedButton
+                        actionsConfig={actionsConfig}
+                        currentUserRoles={currentUserRoles}
+                        action="routes.edit"
+                      >
+                        <CButton
+                          size="sm"
+                          color="success"
+                          variant="ghost"
+                          onClick={() => openEdit(r)}
                         >
-                          <CButton
-                            size="sm"
-                            color="success"
-                            variant="ghost"
-                            onClick={() => openEdit(r)}
-                          >
-                            <CIcon icon={cilPencil} size="lg" />
-                          </CButton>
-                        </ProtectedButton>
-                      </CTableDataCell>
-                    </CTableRow>
-                  )
-                })
+                          <CIcon icon={cilPencil} size="lg" />
+                        </CButton>
+                      </ProtectedButton>
+                    </CTableDataCell>
+                  </CTableRow>
+                ))
               ) : (
                 <CTableRow>
                   <CTableDataCell colSpan={5} className="text-center">
@@ -277,23 +267,24 @@ const saveConfig = async (newConfig) => {
               )}
             </CTableBody>
           </CTable>
+
           <div className="d-flex justify-content-between align-items-center mb-3">
-                <span>Résultats : {filtered.length}</span>
-              
-                <CFormSelect
-                  value={perPage}
-                  style={{ width: '120px' }}
-                  onChange={(e) => {
-                    setPerPage(Number(e.target.value))
-                    setPage(1) // on repart à la première page
-                  }}
-                  options={[
-                    { label: '10 / page', value: 10 },
-                    { label: '20 / page', value: 20 },
-                    { label: '30 / page', value: 30 },
-                  ]}
-                />
-              </div>
+            <span>Résultats : {filtered.length}</span>
+            <CFormSelect
+              value={perPage}
+              style={{ width: '120px' }}
+              onChange={(e) => {
+                setPerPage(Number(e.target.value))
+                setPage(1)
+              }}
+              options={[
+                { label: '10 / page', value: 10 },
+                { label: '20 / page', value: 20 },
+                { label: '30 / page', value: 30 },
+              ]}
+            />
+          </div>
+
           <div className="d-flex justify-content-center align-items-center mt-3 gap-3">
             <CButton
               disabled={page === 1}
@@ -309,7 +300,6 @@ const saveConfig = async (newConfig) => {
               Suivant
             </CButton>
           </div>
-          
         </CCardBody>
       </CCard>
 

@@ -5,19 +5,23 @@
   "registrationAllowed": false,
   "resetPasswordAllowed": true,
   "sslRequired": "NONE",
-
   "users": [
     {
       "username": "metropole.user",
       "enabled": true,
       "email": "metropole.user@example.com",
       "emailVerified": true,
-      "firstName": "Metro",
+      "firstName": "metropole",
       "lastName": "User",
       "credentials": [
-        { "type": "password", "value": "ChangeMe123!", "temporary": false }
+        { "type": "password", "value": "metropole.user", "temporary": false }
       ],
-      "realmRoles": ["superadmin", "admin", "contribute", "read"]
+      "realmRoles": [
+        "superadmin",
+        "admin",
+        "contribute",
+        "read"
+      ]
     },
     {
       "username": "service-account-react-admin-client",
@@ -29,7 +33,6 @@
       }
     }
   ],
-
   "clients": [
     {
       "clientId": "react-app",
@@ -42,8 +45,12 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "redirectUris": ["http://localhost:3002/*"],
-      "webOrigins": ["http://localhost:3002"],
+      "redirectUris": [
+        "http://localhost:3002/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3002"
+      ],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -64,9 +71,24 @@
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
-      "defaultClientScopes": ["web-origins", "acr", "profile", "roles", "email"],
-      "optionalClientScopes": ["address", "phone", "offline_access", "microprofile-jwt"],
-      "access": { "view": true, "configure": true, "manage": true }
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ],
+      "access": {
+        "view": true,
+        "configure": true,
+        "manage": true
+      }
     },
     {
       "clientId": "react-admin-client",
@@ -80,8 +102,12 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "lNlGJ37whxZAO1j27wSOPzodvgMJiIsw",
-      "redirectUris": ["/*"],
-      "webOrigins": ["/*"],
+      "redirectUris": [
+        "/*"
+      ],
+      "webOrigins": [
+        "/*"
+      ],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -146,12 +172,26 @@
           }
         }
       ],
-      "defaultClientScopes": ["web-origins", "acr", "profile", "roles", "email"],
-      "optionalClientScopes": ["address", "phone", "offline_access", "microprofile-jwt"],
-      "access": { "view": true, "configure": true, "manage": true }
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ],
+      "access": {
+        "view": true,
+        "configure": true,
+        "manage": true
+      }
     }
   ],
-
   "roles": {
     "realm": [
       { "name": "superadmin" },

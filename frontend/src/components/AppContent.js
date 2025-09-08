@@ -12,7 +12,7 @@ const AppContent = () => {
         {routes.map((route, idx) => {
           const Element = route.element
           if (!Element) return null
-
+          
           return (
             <Route
               key={idx}

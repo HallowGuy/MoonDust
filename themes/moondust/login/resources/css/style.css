@@ -1,0 +1,181 @@
+/* === Fond global === */
+body {
+  background: #0f172a; /* fond sombre */
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center; /* centre horizontal */
+  align-items: center;     /* centre vertical */
+}
+/* === Conteneur global centré === */
+#kc-container-wrapper {
+  display: flex;
+  justify-content: center;   /* centrage horizontal */
+  align-items: center;       /* centrage vertical */
+  min-height: 100vh;
+}
+header {
+    text-align: center;
+}
+/* === Carte centrale === */
+#kc-content {
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  display: flex;
+  overflow: hidden;
+  width: 100%;              /* largeur fixe pour rester bien centré */
+  max-width: 95%;
+  margin: auto;              /* centrage sécurité */
+}
+
+/* === Colonne connexion === */
+#kc-form-wrapper {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#kc-form-wrapper h1,
+#kc-form-wrapper h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+/* === Champs === */
+#kc-form-login input[type="text"],
+#kc-form-login input[type="password"] {
+  width: 100%;
+  padding: 0.9rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+#kc-form-login input:focus {
+  outline: none;
+  border-color: #1e40af; /* bleu foncé */
+}
+
+/* === Bouton connexion === */
+#kc-login {
+  width: 100%;
+  background: #1e40af;
+  border: none;
+  color: #fff;
+  padding: 0.9rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#kc-login:hover {
+  background: #2563eb; /* bleu plus clair */
+}
+
+/* === Colonne inscription === */
+#kc-content .signup-side {
+  flex: 1;
+  background: #1e40af;
+  color: #fff;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+#kc-content .signup-side h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+#kc-content .signup-side a {
+  background: #fff;
+  color: #1e40af;
+  padding: 0.9rem 1.2rem;
+  border-radius: 8px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+#kc-content .signup-side a:hover {
+  background: #e5e7eb;
+}
+
+/* === Logo === */
+#kc-header {
+  text-align: center;
+}
+
+#kc-header img {
+  max-height: 70px;
+  margin-bottom: 1rem;
+}
+/* Harmoniser largeur des inputs et bouton */
+#kc-form-login input[type="text"],
+#kc-form-login input[type="password"],
+#kc-form-buttons #kc-login {
+  width: 100%;
+  box-sizing: border-box; /* prend en compte padding et border */
+}
+
+/* Ajustement bouton */
+
+
+div#kc-username {
+    margin-bottom: 20px;
+}
+#kc-header-wrapper {
+  display: none; /* cache "REALM_REUNION" */
+}
+
+a#reset-login {
+    color: #fff;
+}
+
+#kc-header::before {
+  content: "";
+  display: block;
+  width: 300px;
+  height: 120px;
+  margin: 0 auto  auto;
+  background: url("../img/logo moondust v1.png") no-repeat center/contain;
+}
+
+
+
+
+/* Texte quand le mot de passe est masqué */
+[data-password-toggle]::before {
+  content: "Voir";
+}
+
+/* Texte quand le mot de passe est affiché */
+[data-password-toggle][aria-label="Hide password"]::before {
+  content: "Cacher";
+}
+
+
+
+#kc-login:hover {
+  background: #2563eb;
+}
+
+.alert-info.pf-m-info {
+    padding-top: 0.9em;
+    text-align: center;
+}

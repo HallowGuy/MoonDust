@@ -1,4 +1,3 @@
-// backend/index.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -6,17 +5,36 @@ import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
+import { createServer } from "http";        // ⚡ pour HTTP server
+import { Server } from "socket.io";         // ⚡ pour socket.io
+import { syncKeycloakUsers } from "./utils/keycloak.js";
+
+import messaging from "./messaging.js";     // ⚡ module de messagerie
 
 // --- setup chemins / env
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+console.log("🔧 KEYCLOAK_URL =", process.env.KEYCLOAK_URL)
+console.log("🔧 REALM =", process.env.REALM)
+console.log("🔧 FRONT_CLIENT_ID =", process.env.FRONT_CLIENT_ID)
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 const origins = [process.env.VITE_URL, process.env.ADMIN_URL].filter(Boolean);
-const backend = process.env.BACKEND_URL
+const backend = process.env.BACKEND_URL;
 
+// ⚡ Créer un serveur HTTP basé sur Express
+const server = createServer(app);
+
+// ⚡ Brancher Socket.IO sur le serveur HTTP
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:3002", "http://localhost:5173"], // ⚡ ton front React
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+})
 // --- middlewares
 app.use(cors({
   origin: origins,
@@ -39,7 +57,7 @@ const swaggerSpec = swaggerJSDoc({
   definition: {
     openapi: "3.0.0",
     info: { title: "API MoonDust", version: "1.0.0", description: "Docs Swagger" },
-    servers: [{ url: `${backend}${PORT}` }],
+    servers: [{ url: `${backend}${PORT}` }],  // ex: http://localhost:5001
   },
   apis: ["./routes/*.js"],
 });
@@ -60,7 +78,10 @@ import congesRouter from "./routes/conges.js";
 import themeRouter from "./routes/theme.js";
 import configRouter from "./routes/config.js";
 import auditRouter from "./routes/audit.js";
- import meRouter from "./routes/me.js";
+import meRouter from "./routes/me.js";
+import messagesRouter from "./routes/messages.js"; // ⚡ ajout
+import conversationsRouter from "./routes/conversations.js";
+import keycloakUsersRouter from "./routes/keycloakUsers.js";
 
 app.use("/api", systemRouter);            // /api/realm
 app.use("/api/hello", helloRouter);       // /api/hello
@@ -73,8 +94,11 @@ app.use("/api/theme", themeRouter);
 app.use("/api", configRouter);            // /api/routes-config, /api/actions-config, /api/forms
 app.use("/api/audit", auditRouter);
 app.use("/api/me", meRouter);
+app.use("/api/messages", messagesRouter); // ⚡ ajout
+app.use("/api/conversations", conversationsRouter);
+app.use("/api/keycloak-users", keycloakUsersRouter);
 
-// 404 & erreur générique
+// --- 404 & erreur générique
 app.use((_req, res) => res.status(404).json({ error: "Route introuvable" }));
 // eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
@@ -82,4 +106,12 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: "Erreur serveur" });
 });
 
-app.listen(PORT, () => console.log(`✅ API ready on ${backend}${PORT}`));
+// --- socket.io messaging
+messaging(io);
+
+(async () => {
+  await syncKeycloakUsers(); // synchro au démarrage
+})();
+
+// ⚡ Lancement serveur HTTP + socket.io
+server.listen(PORT, () => console.log(`✅ API ready on ${backend}${PORT}`));

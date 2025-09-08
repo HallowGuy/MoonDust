@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import {
@@ -34,6 +34,40 @@ const AppHeader = () => {
 
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.sidebarShow)
+
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // récupérer le token
+  const token = localStorage.getItem("access_token")
+
+  const getAuthHeaders = () => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  })
+
+  // Charger les conversations et compter les non lus
+  const fetchUnread = async () => {
+    if (!token) return
+    try {
+      const res = await fetch("http://localhost:5001/api/conversations/mine", {
+        headers: getAuthHeaders(),
+      })
+      const data = await res.json()
+      if (Array.isArray(data)) {
+        const total = data.reduce((sum, conv) => sum + (conv.unread_count || 0), 0)
+        setUnreadCount(total)
+      }
+    } catch (err) {
+      console.error("❌ Erreur fetch unread:", err)
+    }
+  }
+
+  useEffect(() => {
+    fetchUnread()
+    // optionnel : refresh toutes les 10s
+    const interval = setInterval(fetchUnread, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     document.addEventListener('scroll', () => {
@@ -221,9 +255,15 @@ const AppHeader = () => {
             </CNavLink>
           </CNavItem>
           <CNavItem>
-            <CNavLink href="#">
-              <CIcon icon={cilEnvelopeOpen} size="lg" />
-            </CNavLink>
+            <CNavLink href="/conversations" className="position-relative me-3">
+  <CIcon icon={cilEnvelopeOpen} size="lg" />
+  {unreadCount > 0 && (
+    <span className="position-absolute top-20 start-100 translate-middle badge rounded-pill bg-danger">
+      {unreadCount}
+    </span>
+  )}
+</CNavLink>
+
           </CNavItem>
         </CHeaderNav>
         <CHeaderNav>

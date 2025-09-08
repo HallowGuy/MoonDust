@@ -46,9 +46,9 @@
     "admin"
   ],
   "/settings/custom/themelogo": [
+    "admin",
     "read",
-    "contribute",
-    "admin"
+    "superadmin"
   ],
   "/settings/custom/auditlogs": [
     "read"
@@ -336,5 +336,23 @@
   "/settings/audit": [
     "read",
     "admin"
+  ],
+  "/chat/:conversationId": [
+    "admin",
+    "read",
+    "contribute",
+    "superadmin"
+  ],
+  "/new-conversation": [
+    "admin",
+    "read",
+    "contribute",
+    "superadmin"
+  ],
+  "/conversations": [
+    "admin",
+    "read",
+    "contribute",
+    "superadmin"
   ]
 }

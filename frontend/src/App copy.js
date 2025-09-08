@@ -1,6 +1,6 @@
 // src/App.js
 import React, { useEffect, useState } from "react"
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom"
+import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { useSelector } from "react-redux"
 
 import "./scss/style.scss"
@@ -11,65 +11,36 @@ import "./style/formio-overrides.scss"
 
 import ProtectedRoute from "./components/ProtectedRoute"
 import { API_THEME, API_ACTIONS_CONFIG, API_ROUTES_CONFIG, CLIENT_ID } from "./api"
-import { rolesFromToken, decodeJwt } from "./lib/http"
+import { rolesFromToken } from "./lib/jwt"
 import { PermissionsContext } from "./context/PermissionsContext"
 
-// imports directs
+// imports directs (pas de lazy pendant le debug)
 import DefaultLayout from "./layout/DefaultLayout"
-import Page404 from "./views/pages/page404/Page404"
-import Page500 from "./views/pages/page500/Page500"
-import Unauthorized from "./views/pages/unauthorized/Unauthorized"
 import Login from "./views/pages/login/Login"
 import Register from "./views/pages/register/Register"
 import Callback from "./views/pages/login/Callback"
+import Page404 from "./views/pages/page404/Page404"
+import Page500 from "./views/pages/page500/Page500"
+import Unauthorized from "./views/pages/unauthorized/Unauthorized"
 
 function App() {
+  // garde si tu utilises vraiment le thème ailleurs
   useSelector((s) => s.theme)
 
   const [actionsConfig, setActionsConfig] = useState({})
   const [routesConfig, setRoutesConfig] = useState({})
-  const [currentUserRoles, setCurrentUserRoles] = useState(
-    rolesFromToken(localStorage.getItem("access_token"), CLIENT_ID)
-  )
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  // Vérifie le token dans le localStorage au démarrage
-  // Vérifie le token dans le localStorage au démarrage
-useEffect(() => {
-  const token = localStorage.getItem("access_token")
-  if (token) {
-    const payload = decodeJwt(token)
-    if (payload && payload.exp * 1000 > Date.now()) {
-      setIsAuthenticated(true)
-      setCurrentUserRoles(rolesFromToken(token, CLIENT_ID))
+  // ✅ rôles init depuis le JWT (pas d'appel réseau)
+  const initialRoles = rolesFromToken(localStorage.getItem("access_token"), CLIENT_ID)
+  const [currentUserRoles, setCurrentUserRoles] = useState(initialRoles)
 
-      // 🔎 Debug
-      console.log("✅ Token trouvé au démarrage :", token)
-      console.log("👤 Payload :", payload)
-      console.log("📌 Rôles utilisateur :", rolesFromToken(token, CLIENT_ID))
-    } else {
-      localStorage.removeItem("access_token")
-      setIsAuthenticated(false)
-      console.warn("⚠️ Token expiré au démarrage → suppression")
-    }
-  } else {
-    console.log("ℹ️ Aucun token trouvé au démarrage")
-  }
-}, [])
-
-
-  // ✅ écouter les changements de token (multi-onglets)
+  // ✅ si le token change (login/logout/refresh), on met à jour le contexte
   useEffect(() => {
     const onStorage = (e) => {
       if (e.key === "access_token") {
-        const token = localStorage.getItem("access_token")
-        if (token) {
-          setIsAuthenticated(true)
-          setCurrentUserRoles(rolesFromToken(token, CLIENT_ID))
-        } else {
-          setIsAuthenticated(false)
-          setCurrentUserRoles([])
-        }
+        setCurrentUserRoles(
+          rolesFromToken(localStorage.getItem("access_token"), CLIENT_ID)
+        )
       }
     }
     window.addEventListener("storage", onStorage)
@@ -128,15 +99,18 @@ useEffect(() => {
           <Route path="/404" element={<Page404 />} />
           <Route path="/500" element={<Page500 />} />
 
-          {/* Pages protégées */}
+          {/* ✅ parent avec wildcard : toutes les routes de l'app passent ici
+              - si pas loggué → ProtectedRoute renvoie /login
+              - si loggué → DefaultLayout rend tes sous-routes (sidebar, etc.)
+          */}
           <Route
-  path="/*"
-  element={
-    <ProtectedRoute>
-      <DefaultLayout />
-    </ProtectedRoute>
-  }
-/>
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <DefaultLayout />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </PermissionsContext.Provider>

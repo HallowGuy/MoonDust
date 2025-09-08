@@ -36,8 +36,18 @@ const _nav = [
     to: '/settings/settings',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
   },
-  
-  
+    {
+    component: CNavItem,
+    name: 'Conversation',
+    to: '/conversations',
+    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Kanban',
+    to: '/task/kanbanboard',
+    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+  },
   {
     component: CNavTitle,
     name: 'Workflow',

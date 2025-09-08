@@ -1,5 +1,7 @@
 import React from 'react'
 import ProtectedRoute from "./components/ProtectedRoute"
+import ConversationsWrapper from "./views/chat/ConversationsWrapper"
+import KanbanBoard from './views/task/KanbanBoard'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const Users = React.lazy(() => import('./views/settings/list/Users'))
@@ -22,6 +24,10 @@ const FormioRenderer = React.lazy(() => import('./views/forms/FormioRenderer'))
 const EditionForms = React.lazy(() => import('./views/forms/EditionForms'))
 const FormBuilderPage = React.lazy(() => import('./views/forms/FormBuilderPage'))
 const FormRenderPage = React.lazy(() => import('./views/forms/FormRenderPage'))
+const Chat = React.lazy(() => import('./views/chat'))
+const CreateConversation = React.lazy(() => import('./views/chat/CreateConversation'))
+const Conversations = React.lazy(() => import('./views/chat/Conversations'))
+const Kanbanboard = React.lazy(() => import('./views/task/KanbanBoard'))
 
 
 // Base
@@ -83,6 +89,9 @@ const routes = [
   { path: '/settings/list/groupes', name: 'Gestion des groupes', element: Groupes  },
 
   { path: '/import/documents', name: 'Gestion des documents', element: Documents  },
+  { path: '/chat/:conversationId', name: 'Conversation', element: Chat },
+  { path: '/new-conversation', name: 'Nouvelle conversation', element: CreateConversation },
+  { path: "/conversations", name: 'Mes conversations', element: Conversations },
 
   { path: '/settings/custom/themecolors', name: 'Gestion des couleurs', element: ThemeColors  },
   { path: '/settings/custom/themelogo', name: 'Gestion du logo', element: ThemeLogo  },
@@ -95,6 +104,7 @@ const routes = [
   { path: '/forms/:id/builder', name: 'Edition formulaire ', element: FormBuilderPage  },
     { path: '/forms/:id/view', name: 'Visualisation formulaire ', element: FormRenderPage  },
 
+  { path: '/task/kanbanboard', name: 'Test Workflow', element: KanbanBoard  },
 
   { path: '/wkf/test', name: 'Test Workflow', element: Test  },
   { path: '/wkf/avancementworkflow', name: 'Avancement Workflow', element: AvancementWorkflow  },

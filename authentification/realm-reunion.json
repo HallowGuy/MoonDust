@@ -7,52 +7,49 @@
   "sslRequired": "NONE",
   "users": [
     {
-  "username": "reunion.user",
-  "enabled": true,
-  "email": "reunion.user@example.com",
-  "emailVerified": true,
-  "firstName": "Reunion",
-  "lastName": "User",
-  "credentials": [
-    { "type": "password", "value": "reunion.user", "temporary": false }
-  ],
-  "realmRoles": [
-    "superadmin",
-    "admin",
-    "contribute",
-    "read"
-  ]
-},
-{
-  "username": "service-account-react-admin-client",
-  "enabled": true,
-  "emailVerified": true,
-
-  "serviceAccountClientId": "${CLIENT_ID}",
-
-  "clientRoles": {
-    "realm-management": ["realm-admin"]
-  }
-
-}
+      "username": "reunion.user",
+      "enabled": true,
+      "email": "reunion.user@example.com",
+      "emailVerified": true,
+      "firstName": "Reunion",
+      "lastName": "User",
+      "credentials": [
+        { "type": "password", "value": "reunion.user", "temporary": false }
+      ],
+      "realmRoles": [
+        "superadmin",
+        "admin",
+        "contribute",
+        "read"
+      ]
+    },
+    {
+      "username": "service-account-react-admin-client",
+      "enabled": true,
+      "emailVerified": true,
+      "serviceAccountClientId": "react-admin-client",
+      "clientRoles": {
+        "realm-management": ["realm-admin"]
+      }
+    }
   ],
   "clients": [
     {
-      "clientId": "${FRONT_CLIENT_ID}",
-      "name": "${FRONT_CLIENT_ID}",
+      "clientId": "react-app",
+      "name": "react-app",
       "description": "",
-      "rootUrl": "${URL_CLIENT}",
-      "adminUrl": "${URL_CLIENT}",
-      "baseUrl": "${URL_CLIENT_FULL}",
+      "rootUrl": "http://localhost:3002",
+      "adminUrl": "http://localhost:3002",
+      "baseUrl": "http://localhost:3002/*",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "${URL_CLIENT_FULL}"
+        "http://localhost:3002/*"
       ],
       "webOrigins": [
-        "${URL_CLIENT}"
+        "http://localhost:3002"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -66,7 +63,7 @@
       "protocol": "openid-connect",
       "attributes": {
         "oidc.ciba.grant.enabled": "false",
-        "post.logout.redirect.uris": "${URL_CLIENT_FULL}",
+        "post.logout.redirect.uris": "http://localhost:3002/*",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -94,8 +91,8 @@
       }
     },
     {
-      "clientId": "${CLIENT_ID}",
-      "name": "${CLIENT_ID}",
+      "clientId": "react-admin-client",
+      "name": "react-admin-client",
       "description": "",
       "rootUrl": "",
       "adminUrl": "",
@@ -104,7 +101,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "${CLIENT_SECRET}",
+      "secret": "lNlGJ37whxZAO1j27wSOPzodvgMJiIsw",
       "redirectUris": [
         "/*"
       ],
@@ -196,11 +193,11 @@
     }
   ],
   "roles": {
-  "realm": [
-    { "name": "superadmin" },
-    { "name": "admin" },
-    { "name": "contribute" },
-    { "name": "read" }    
-  ]
-}
+    "realm": [
+      { "name": "superadmin" },
+      { "name": "admin" },
+      { "name": "contribute" },
+      { "name": "read" }
+    ]
+  }
 }

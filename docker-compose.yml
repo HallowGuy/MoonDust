@@ -168,6 +168,7 @@ services:
       KC_HTTPS_PORT: "0"
     volumes:
       - ./authentification:/opt/keycloak/data/import:ro
+      - ./themes:/opt/keycloak/themes
     ports:
       - "${KEYCLOAK_PORT_HOST}:${KEYCLOAK_PORT_CONTAINER}"
     env_file:

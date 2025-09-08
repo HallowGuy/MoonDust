@@ -43,22 +43,25 @@ const Callback = () => {
         return res.json()
       })
       .then((data) => {
-        if (data.access_token) {
-          localStorage.setItem('access_token', data.access_token)
-          if (data.refresh_token) {
-            localStorage.setItem('refresh_token', data.refresh_token)
-          }
-          sessionStorage.removeItem('pkce_verifier')
-          window.location.href = '/' // redirection après login
-        } else {
-          console.error('❌ Impossible de récupérer le token', data)
-          window.location.href = '/login'
-        }
-      })
+  console.log("🔑 Réponse Keycloak token endpoint:", data)  // 👈 LOG ICI
+
+  if (data.access_token) {
+    localStorage.setItem('access_token', data.access_token)
+    if (data.refresh_token) {
+      localStorage.setItem('refresh_token', data.refresh_token)
+    }
+    sessionStorage.removeItem('pkce_verifier')
+    window.location.href = '/' // redirection après login
+  } else {
+    console.error('❌ Impossible de récupérer le token', data)
+    window.location.href = '/login'
+  }
+})
       .catch((err) => {
-        console.error('❌ Erreur Callback Keycloak', err)
-        window.location.href = '/login'
-      })
+  console.error("❌ Erreur Callback Keycloak", err)
+  alert("Erreur Keycloak: " + err.message)  // 👈 popup pour être sûr de voir
+  window.location.href = '/login'
+})
   }, [])
 
   return (

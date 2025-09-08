@@ -1,0 +1,6 @@
+{
+  "realm": "master",
+  "enabled": true,
+  "sslRequired": "NONE",
+  "id": "master"
+}
