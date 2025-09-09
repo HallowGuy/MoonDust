@@ -35,7 +35,28 @@ const MessengerContent = ({ isWidget = false, startMode = "list" }) => {
 
 
 // Fermer en cliquant à l’extérieur
- 
+  const customStyles = {
+  control: (base) => ({
+    ...base,
+    backgroundColor: "#2b2f3a",
+    borderColor: "#444",
+    color: "#f1f1f1",
+  }),
+  menu: (base) => ({
+    ...base,
+    backgroundColor: "#2b2f3a",
+    color: "#f1f1f1",
+  }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isFocused ? "#3b3f4a" : "#2b2f3a",
+    color: "#f1f1f1",
+  }),
+  singleValue: (base) => ({
+    ...base,
+    color: "#f1f1f1",
+  }),
+}
 
   useEffect(() => {
     if (token) {
@@ -278,6 +299,7 @@ const MessengerContent = ({ isWidget = false, startMode = "list" }) => {
               options={users.map((u) => ({ value: u.id, label: u.username }))}
               value={selectedUser}
               onChange={setSelectedUser}
+              styles={customStyles}
             />
           </div>
           <div className="d-flex gap-2">

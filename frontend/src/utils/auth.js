@@ -23,3 +23,12 @@ export async function fetchWithAuth(url, options = {}) {
     keycloak.logout();
   }
 }
+
+
+export function getAuthHeaders() {
+  const token = localStorage.getItem("token") // ou autre
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  }
+}

@@ -8,7 +8,7 @@ import swaggerJSDoc from "swagger-jsdoc";
 import { createServer } from "http";        // ⚡ pour HTTP server
 import { Server } from "socket.io";         // ⚡ pour socket.io
 import { syncKeycloakUsers } from "./utils/keycloak.js";
-import { authenticate } from "./middleware/authenticate.js";
+import { authenticate, requireRole } from "./middleware/authenticate.js";
 
 import messaging from "./messaging.js";     // ⚡ module de messagerie
 
@@ -94,29 +94,31 @@ import notesRoutes from "./routes/notes.js";
 import notificationsRoutes from "./routes/notifications.js";
 
 
-app.use("/api", systemRouter);            // /api/realm
-app.use("/api/hello", helloRouter);       // /api/hello
-app.use("/api/users", usersRouter);       // /api/users...
-app.use("/api/roles", rolesRouter);       // /api/roles...
-app.use("/api/groupes", groupesRouter);   // /api/groupes...
-app.use("/api/documents", documentsRouter);
-app.use("/api/conges", congesRouter);
-app.use("/api/theme", themeRouter);
-app.use("/api", configRouter);            // /api/routes-config, /api/actions-config, /api/forms
-app.use("/api/audit", auditRouter);
-app.use("/api/me", meRouter);
-app.use("/api/messages", messagesRouter); // ⚡ ajout
-app.use("/api/conversations", conversationsRouter);
-app.use("/api/keycloak-users", authenticate,keycloakUsersRouter);
-app.use("/api/contacts", contactsRoutes);
-app.use("/api/entreprises", entreprisesRoutes);
-app.use("/api/projets", projetsRoutes);
+app.use("/api", systemRouter);       // /api/realm → infos de config
+app.use("/api/hello", helloRouter);  // test/ping
+app.use("/api/theme", themeRouter);  // config UI
+app.use("/api", configRouter);       // routes/forms → si c'est censé être public
+
+app.use("/api/users", authenticate, requireRole("superadmin"), usersRouter);
+app.use("/api/roles", authenticate, requireRole("superadmin"), rolesRouter);
+app.use("/api/groupes", authenticate, requireRole("superadmin"), groupesRouter);
+app.use("/api/documents", authenticate, documentsRouter);
+app.use("/api/conges", authenticate, congesRouter);
+app.use("/api/audit", authenticate, auditRouter);
+app.use("/api/me", authenticate, meRouter);
+app.use("/api/messages", authenticate, messagesRouter);
+app.use("/api/conversations", authenticate, conversationsRouter);
+app.use("/api/keycloak-users", authenticate, keycloakUsersRouter);
+app.use("/api/contacts", authenticate, contactsRoutes);
+app.use("/api/entreprises", authenticate, entreprisesRoutes);
+app.use("/api/projets", authenticate, projetsRoutes);
 app.use("/api/activites", authenticate, activitesRoutes);
-app.use("/api/tags", tagsRoutes);
-app.use("/api/exports", exportsRoutes);
-app.use("/api/listes", listesRoutes);
+app.use("/api/tags", authenticate, tagsRoutes);
+app.use("/api/exports", authenticate, exportsRoutes);
+app.use("/api/listes", authenticate, listesRoutes);
 app.use("/api/notes", authenticate, notesRoutes);
 app.use("/api/notifications", authenticate, notificationsRoutes);
+
 
 
 

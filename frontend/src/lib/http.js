@@ -1,5 +1,3 @@
-// src/lib/http.js
-
 // Decode base64url → JSON
 function b64urlDecode(b64url) {
   const b64 = b64url
@@ -11,8 +9,11 @@ function b64urlDecode(b64url) {
 
 export function decodeJwt(token) {
   try {
-    return JSON.parse(b64urlDecode(token.split(".")[1]))
-  } catch {
+    const parts = token.split(".")
+    if (parts.length !== 3) return null
+    return JSON.parse(b64urlDecode(parts[1]))
+  } catch (e) {
+    console.error("❌ Erreur decodeJwt :", e)
     return null
   }
 }
@@ -20,9 +21,19 @@ export function decodeJwt(token) {
 export function isTokenExpired(token) {
   try {
     const payload = decodeJwt(token)
-    // marge de 30s pour éviter la frontière
-    return payload.exp * 1000 - 30000 < Date.now()
-  } catch {
+    if (!payload || !payload.exp) return true
+
+    const expMs = payload.exp * 1000
+    const now = Date.now()
+
+    console.log("🕑 Vérif token", {
+      exp: new Date(expMs).toISOString(),
+      now: new Date(now).toISOString(),
+    })
+
+    return expMs < now
+  } catch (e) {
+    console.error("❌ Erreur isTokenExpired :", e)
     return true
   }
 }
@@ -31,9 +42,11 @@ export function isTokenExpired(token) {
 export function rolesFromToken(token, clientId) {
   const p = decodeJwt(token)
   if (!p) return []
+
   const realm = Array.isArray(p?.realm_access?.roles) ? p.realm_access.roles : []
   const client = Array.isArray(p?.resource_access?.[clientId]?.roles)
     ? p.resource_access[clientId].roles
     : []
+
   return [...new Set([...realm, ...client].map((r) => r.toLowerCase()))]
 }

@@ -38,9 +38,8 @@ async function fetchNotifications() {
   // Marquer comme lu et rediriger
   const handleClick = async (notif) => {
     try {
-      await fetch(`${API_BASE}/notifications/${notif.id}/read`, {
+      await fetchWithAuth(`${API_BASE}/notifications/${notif.id}/read`, {
         method: "PATCH",
-        headers: getAuthHeaders(),
       })
       setNotifications((prev) =>
         prev.map((n) =>
@@ -57,9 +56,8 @@ async function fetchNotifications() {
   // Marquer comme lu sans redirection
   const markOneAsRead = async (notif) => {
     try {
-      await fetch(`${API_BASE}/notifications/${notif.id}/read`, {
+      await fetchWithAuth(`${API_BASE}/notifications/${notif.id}/read`, {
         method: "PATCH",
-        headers: getAuthHeaders(),
       })
       setNotifications((prev) =>
         prev.map((n) =>
@@ -75,9 +73,8 @@ async function fetchNotifications() {
   // Cacher une notification (supprimer côté frontend + la marquer lue en backend)
 const hideNotification = async (notif) => {
   try {
-    await fetch(`${API_BASE}/notifications/${notif.id}/hide`, {
+    await fetchWithAuth(`${API_BASE}/notifications/${notif.id}/hide`, {
       method: "PATCH",
-      headers: getAuthHeaders(),
     })
     setNotifications((prev) => prev.filter((n) => n.id !== notif.id))
     if (notif.status === "unread") {
@@ -95,9 +92,10 @@ const hideNotification = async (notif) => {
   const markAllAsRead = async (e) => {
     e.preventDefault()
     try {
-      await fetch(`${API_BASE}/notifications/mark-all-read`, {
+      await fetchWithAuth(`${API_BASE}/notifications/mark-all-read`, {
         method: "PATCH",
-        headers: getAuthHeaders(),
+          headers: { "Content-Type": "application/json" },
+
       })
       setNotifications((prev) => prev.map((n) => ({ ...n, status: "read" })))
       setUnreadCount(0)

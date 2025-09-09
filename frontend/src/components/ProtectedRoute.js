@@ -18,6 +18,8 @@ const ProtectedRoute = ({ action, children }) => {
   if (!token || isTokenExpired(token)) {
     localStorage.removeItem("access_token")
     console.log("🔑 Token invalide → redirection login")
+    console.log("🔍 Token check", { token, expired: isTokenExpired(token) })
+
     return <Navigate to="/login" replace />
   }
 

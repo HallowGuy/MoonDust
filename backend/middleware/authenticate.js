@@ -1,35 +1,28 @@
-import jwt from "jsonwebtoken";
-import { getPublicKey } from "../utils/keycloak.js";
+// middleware/authenticate.js
+import { expressjwt as jwt } from "express-jwt";
+import jwksRsa from "jwks-rsa";
 
-export async function authenticate(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader) return res.status(401).json({ error: "Missing Authorization header" });
+export const authenticate = jwt({
+  // Utilise l’URL interne pour aller chercher les clés publiques
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksUri: `${process.env.KEYCLOAK_INTERNAL_URL}/realms/${process.env.REALM}/protocol/openid-connect/certs`,
+  }),
 
-  const token = authHeader.split(" ")[1];
+  // Vérifie l’issuer attendu par le token (URL externe)
+  issuer: `${process.env.KEYCLOAK_FRONT_URL}/realms/${process.env.REALM}`,
 
-  try {
-    // ⚡ D'abord décoder sans vérifier pour récupérer le kid
-    const decodedHeader = jwt.decode(token, { complete: true });
-    if (!decodedHeader) throw new Error("Impossible de décoder le token");
-    const kid = decodedHeader.header.kid;
+  // Vérifie l’audience
+  audience: process.env.FRONT_CLIENT_ID,
 
-    const pubKey = await getPublicKey(kid);
+  algorithms: ["RS256"],
+});
 
-    const decoded = jwt.verify(token, pubKey, {
-      algorithms: ["RS256"],
-      issuer: `${process.env.KEYCLOAK_FRONT_URL}/realms/${process.env.REALM}`,
-    });
-
-    req.user = {
-      id: decoded.sub,
-      username: decoded.preferred_username,
-      email: decoded.email,
-      fullname: `${decoded.given_name || ""} ${decoded.family_name || ""}`.trim(),
-    };
-
-    next();
-  } catch (err) {
-    console.error("JWT Verify error:", err.message);
-    return res.status(401).json({ error: "Invalid token" });
+export const requireRole = (role) => (req, res, next) => {
+  if (req.auth?.realm_access?.roles?.includes(role)) {
+    return next();
   }
-}
+  return res.status(403).json({ error: "Accès refusé" });
+};
+

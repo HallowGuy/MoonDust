@@ -11,6 +11,7 @@ import { API_ROLES, API_ROLE_USERS } from 'src/api'
 import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal"
 import ProtectedButton from "../../../components/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
+import { fetchWithAuth } from "../../../utils/auth";
 
 const Roles = () => {
   const [roles, setRoles] = useState([])
@@ -47,7 +48,7 @@ const Roles = () => {
   // --- FETCH ROLES ---
   const fetchRoles = async () => {
     try {
-      const res = await fetch(API_ROLES)
+      const res = await fetchWithAuth(API_ROLES)
       if (!res.ok) throw new Error('Impossible de charger les rôles')
       const data = await res.json()
       setRoles(data)
@@ -69,7 +70,7 @@ const Roles = () => {
     setSelectedRole(roleName)
     setShowUsers(true)
     try {
-      const res = await fetch(API_ROLE_USERS(roleName))
+      const res = await fetchWithAuth(API_ROLE_USERS(roleName))
       if (!res.ok) throw new Error("Impossible de charger les utilisateurs du rôle")
       const data = await res.json()
       setUsersByRole(data)
@@ -81,7 +82,7 @@ const Roles = () => {
   const handleCreate = async () => {
     if (!createName) return showError('Nom requis')
     try {
-      const res = await fetch(API_ROLES, {
+      const res = await fetchWithAuth(API_ROLES, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: createName, description: createDescription }),
@@ -109,7 +110,7 @@ const Roles = () => {
     if (!editRole) return
     if (!editName) return showError('Nom requis')
     try {
-      const res = await fetch(`${API_ROLES}/${editRole.name}`, {
+      const res = await fetchWithAuth(`${API_ROLES}/${editRole.name}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: editName, description: editDescription }),
@@ -194,7 +195,7 @@ const Roles = () => {
                           }
                           onConfirm={async () => {
                             try {
-                              const res = await fetch(`${API_ROLES}/${r.name}`, { method: "DELETE" })
+                              const res = await fetchWithAuth(`${API_ROLES}/${r.name}`, { method: "DELETE" })
                               if (!res.ok) throw new Error("Suppression impossible")
                               setRoles((prev) => prev.filter((rr) => rr.name !== r.name))
                               showSuccess("✅ Rôle supprimé")

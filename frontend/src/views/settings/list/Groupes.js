@@ -12,6 +12,7 @@ import { API_GROUPES } from 'src/api'
 import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal"
 import ProtectedButton from "../../../components/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
+import { fetchWithAuth } from "../../../utils/auth";
 
 const Groupes = () => {
   const [groupes, setGroupes] = useState([])
@@ -52,7 +53,7 @@ const Groupes = () => {
   // --- FETCH groupes ---
   const fetchGroupes = async () => {
     try {
-      const res = await fetch(API_GROUPES)
+      const res = await fetchWithAuth(API_GROUPES)
       if (!res.ok) throw new Error('Impossible de charger les groupes')
       const data = await res.json()
       setGroupes(data)
@@ -63,7 +64,7 @@ const Groupes = () => {
 
   const fetchUsersByGroupe = async (groupId) => {
     try {
-      const res = await fetch(`${API_GROUPES}/${groupId}/users`)
+      const res = await fetchWithAuth(`${API_GROUPES}/${groupId}/users`)
       if (!res.ok) throw new Error("Impossible de charger les utilisateurs du groupe")
       return await res.json()
     } catch (e) {
@@ -74,7 +75,7 @@ const Groupes = () => {
 
   const fetchSubGroups = async (groupId) => {
     try {
-      const res = await fetch(`${API_GROUPES}/${groupId}/subgroups`)
+      const res = await fetchWithAuth(`${API_GROUPES}/${groupId}/subgroups`)
       if (!res.ok) throw new Error("Impossible de charger les sous-groupes")
       return await res.json()
     } catch (e) {
@@ -86,7 +87,7 @@ const Groupes = () => {
   const handleCreate = async () => {
     if (!createName) return showError("Nom du groupe requis")
     try {
-      const res = await fetch(API_GROUPES, {
+      const res = await fetchWithAuth(API_GROUPES, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -115,7 +116,7 @@ const Groupes = () => {
   const handleSaveEdit = async () => {
     if (!editGroup) return
     try {
-      const res = await fetch(`${API_GROUPES}/${editGroup.id}`, {
+      const res = await fetchWithAuth(`${API_GROUPES}/${editGroup.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editName }),
@@ -214,7 +215,7 @@ const Groupes = () => {
                           }
                           onConfirm={async () => {
                             try {
-                              const res = await fetch(`${API_GROUPES}/${g.id}`, { method: "DELETE" })
+                              const res = await fetchWithAuth(`${API_GROUPES}/${g.id}`, { method: "DELETE" })
                               if (!res.ok) throw new Error("Suppression impossible")
                               setGroupes((prev) => prev.filter((group) => group.id !== g.id))
                               showSuccess("✅ Groupe supprimé")

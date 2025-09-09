@@ -145,23 +145,35 @@ useEffect(() => {
       <BrowserRouter>
         <Routes>
           {/* Pages publiques */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/callback" element={<Callback />} />
-          <Route path="/unauthorized" element={<Unauthorized />} />
-          <Route path="/404" element={<Page404 />} />
-          <Route path="/500" element={<Page500 />} />
 
-          {/* Pages protégées */}
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <DefaultLayout />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+  {/* Pages publiques */}
+  <Route path="/register" element={<Register />} />
+  <Route path="/callback" element={<Callback />} />
+  <Route path="/unauthorized" element={<Unauthorized />} />
+  <Route path="/404" element={<Page404 />} />
+  <Route path="/500" element={<Page500 />} />
+    <Route
+  path="/login"
+  element={
+    isAuthenticated ? (
+      <Navigate to="/" replace />
+    ) : (
+      <Login />
+    )
+  }
+/>
+
+
+  {/* Autres pages protégées */}
+  <Route
+    path="/*"
+    element={
+      <ProtectedRoute>
+        <DefaultLayout />
+      </ProtectedRoute>
+    }
+  />
+</Routes>
 
         {/* ✅ Bouton flottant et widget */}
         <MessengerWrapper />

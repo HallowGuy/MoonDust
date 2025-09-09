@@ -13,6 +13,7 @@ import { API_USERS, API_ROLES } from 'src/api'
 import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal"
 import ProtectedButton from "../../../components/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
+import { fetchWithAuth } from "../../../utils/auth";
 
 const Users = () => {
   const [users, setUsers] = useState([])
@@ -48,7 +49,7 @@ const Users = () => {
   // ---------- FETCH DATA ----------
   const fetchUsers = async () => {
     try {
-      const res = await fetch(`${API_USERS}`, { headers: getAuthHeaders() })
+      const res = await fetchWithAuth(`${API_USERS}`, { headers: getAuthHeaders() })
       if (!res.ok) throw new Error('Impossible de charger les utilisateurs')
       const data = await res.json()
       setUsers(data)
@@ -59,7 +60,7 @@ const Users = () => {
 
   const fetchRoles = async () => {
     try {
-      const res = await fetch(`${API_ROLES}`, { headers: getAuthHeaders() })
+      const res = await fetchWithAuth(`${API_ROLES}`, { headers: getAuthHeaders() })
       if (!res.ok) throw new Error('Impossible de charger les rôles')
       const data = await res.json()
       setRoles(data)
@@ -70,7 +71,7 @@ const Users = () => {
 
   const fetchUserRoles = async (id) => {
     try {
-      const res = await fetch(`${API_USERS}/${id}/roles`, { headers: getAuthHeaders() })
+      const res = await fetchWithAuth(`${API_USERS}/${id}/roles`, { headers: getAuthHeaders() })
       if (!res.ok) return []
       return await res.json()
     } catch (e) {
@@ -123,7 +124,7 @@ const Users = () => {
 
       // --- CREATE OR UPDATE USER ---
       if (editUser) {
-        const res = await fetch(`${API_USERS}/${editUser.id}`, {
+        const res = await fetchWithAuth(`${API_USERS}/${editUser.id}`, {
           method: 'PUT',
           headers: getAuthHeaders(),
           body: JSON.stringify(payload),
@@ -131,7 +132,7 @@ const Users = () => {
         if (!res.ok) throw new Error('Mise à jour impossible')
         showSuccess('Utilisateur mis à jour')
       } else {
-        const res = await fetch(`${API_USERS}`, {
+        const res = await fetchWithAuth(`${API_USERS}`, {
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify(payload),
@@ -148,7 +149,7 @@ const Users = () => {
 
         // Supprimer les rôles actuels
         if (existingRoles.length > 0) {
-          await fetch(`${API_USERS}/${userId}/roles`, {
+          await fetchWithAuth(`${API_USERS}/${userId}/roles`, {
             method: 'DELETE',
             headers: getAuthHeaders(),
             body: JSON.stringify(existingRoles), // tableau direct attendu par le backend
@@ -158,7 +159,7 @@ const Users = () => {
         // Ajouter les rôles sélectionnés
         const selectedRoles = roles.filter((r) => userRoles.includes(r.name))
         if (selectedRoles.length > 0) {
-          await fetch(`${API_USERS}/${userId}/roles`, {
+          await fetchWithAuth(`${API_USERS}/${userId}/roles`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(selectedRoles), // tableau direct attendu par le backend
@@ -309,7 +310,7 @@ const Users = () => {
                               </CButton>
                             }
                             onConfirm={async () => {
-                              const res = await fetch(`${API_USERS}/${u.id}`, { method: "DELETE" })
+                              const res = await fetchWithAuth(`${API_USERS}/${u.id}`, { method: "DELETE" })
                               if (!res.ok) {
                                 const errorText = await res.text()
                                 throw new Error(errorText || "Suppression impossible")
