@@ -22,13 +22,14 @@
     "admin"
   ],
   "/settings/list/users": [
-    "read",
-    "admin"
+    "superadmin",
+    "admin",
+    "contribute"
   ],
   "/import/documents": [
-    "read",
-    "contribute",
-    "admin"
+    "superadmin",
+    "admin",
+    "contribute"
   ],
   "/settings/list/roles": [
     "admin",

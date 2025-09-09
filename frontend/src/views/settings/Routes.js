@@ -11,6 +11,7 @@ import routes from '../../routes'
 import { PermissionsContext } from "src/context/PermissionsContext"
 import ProtectedButton from "src/components/ProtectedButton"
 import { API_ROLES, API_ROUTES_CONFIG } from 'src/api'
+import { fetchWithAuth } from "../../utils/auth";
 
 // 🔹 Couleurs associées aux rôles (optionnel)
 const ROLE_COLORS = {
@@ -67,7 +68,7 @@ const RouteEdition = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const res = await fetch(API_ROLES)
+        const res = await fetchWithAuth(API_ROLES)
         if (!res.ok) throw new Error("Impossible de charger les rôles depuis l’API")
         const data = await res.json()
         setAvailableRoles(data.map(r => r.name)) // garder juste le nom
