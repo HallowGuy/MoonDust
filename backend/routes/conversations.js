@@ -29,9 +29,9 @@ router.post("/", async (req, res) => {
     const existing = await pool.query(
       `
       SELECT c.id
-      FROM conversations c
-      JOIN conversation_participants cp1 ON c.id = cp1.conversation_id AND cp1.user_id = $1
-      JOIN conversation_participants cp2 ON c.id = cp2.conversation_id AND cp2.user_id = $2
+      FROM demo_first.conversations c
+      JOIN demo_first.conversation_participants cp1 ON c.id = cp1.conversation_id AND cp1.user_id = $1
+      JOIN demo_first.conversation_participants cp2 ON c.id = cp2.conversation_id AND cp2.user_id = $2
       LIMIT 1
       `,
       [user1, user2]
@@ -43,11 +43,11 @@ router.post("/", async (req, res) => {
 
     // Sinon créer
     const conv = await pool.query(
-      `INSERT INTO conversations DEFAULT VALUES RETURNING *`
+      `INSERT INTO demo_first.conversations DEFAULT VALUES RETURNING *`
     );
 
     await pool.query(
-      `INSERT INTO conversation_participants (conversation_id, user_id) VALUES ($1, $2), ($1, $3)`,
+      `INSERT INTO demo_first.conversation_participants (conversation_id, user_id) VALUES ($1, $2), ($1, $3)`,
       [conv.rows[0].id, user1, user2]
     );
 
@@ -59,29 +59,52 @@ router.post("/", async (req, res) => {
 });
 
 // --- Liste des conversations de l’utilisateur connecté ---
+// --- Liste des conversations de l’utilisateur connecté ---
 router.get("/mine", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.sub;
 
     const result = await pool.query(
       `
-      SELECT c.id, c.created_at,
-             COALESCE(array_agg(ku.username), '{}') as participants,
-             COALESCE((
-  SELECT COUNT(*)
-  FROM messages m
-  WHERE m.conversation_id = c.id
-    AND m.sender_id != $1 -- ✅ exclure mes propres messages
-    AND NOT EXISTS (
-      SELECT 1 FROM message_reads mr
-      WHERE mr.message_id = m.id
-        AND mr.user_id = $1::uuid
-    )
-), 0) as unread_count
-      FROM conversations c
-      JOIN conversation_participants cp ON c.id = cp.conversation_id
-      JOIN keycloak_users ku ON cp.user_id = ku.id
-      WHERE cp.user_id = $1::uuid
+      SELECT 
+        c.id, 
+        c.created_at,
+        COALESCE(
+          json_agg(
+            json_build_object('id', ku.id, 'username', ku.username)
+          ) FILTER (WHERE ku.id IS NOT NULL),
+          '[]'
+        ) as participants,
+        COALESCE((
+          SELECT COUNT(*)
+          FROM demo_first.messages m
+          WHERE m.conversation_id = c.id
+            AND m.sender_id != $1
+            AND NOT EXISTS (
+              SELECT 1 FROM demo_first.message_reads mr
+              WHERE mr.message_id = m.id
+                AND mr.user_id = $1::uuid
+            )
+        ), 0) as unread_count,
+        (
+          SELECT row_to_json(m2)
+          FROM (
+            SELECT m.id, m.content, m.created_at, ku.username as sender_username
+            FROM demo_first.messages m
+            JOIN demo_first.keycloak_users ku ON m.sender_id = ku.id
+            WHERE m.conversation_id = c.id
+            ORDER BY m.created_at DESC
+            LIMIT 1
+          ) m2
+        ) as last_message
+      FROM demo_first.conversations c
+      JOIN demo_first.conversation_participants cp ON c.id = cp.conversation_id
+      JOIN demo_first.keycloak_users ku ON cp.user_id = ku.id
+      WHERE c.id IN (
+  SELECT conversation_id 
+  FROM demo_first.conversation_participants 
+  WHERE user_id = $1::uuid
+)
       GROUP BY c.id, c.created_at
       ORDER BY c.created_at DESC
       `,
@@ -105,8 +128,8 @@ router.get("/:id/messages", authMiddleware, async (req, res) => {
       `
       SELECT m.id, m.conversation_id, m.sender_id, m.content, m.created_at,
              ku.username as sender_username
-      FROM messages m
-      JOIN keycloak_users ku ON m.sender_id = ku.id
+      FROM demo_first.messages m
+      JOIN demo_first.keycloak_users ku ON m.sender_id = ku.id
       WHERE m.conversation_id = $1
       ORDER BY m.created_at ASC
       `,
@@ -128,10 +151,10 @@ router.post("/:id/read", authMiddleware, async (req, res) => {
     const userId = req.user.sub;
 
     await pool.query(
-      `INSERT INTO message_reads (message_id, user_id, read_at)
+      `INSERT INTO demo_first.message_reads (message_id, user_id, read_at)
 SELECT m.id, $2, NOW()
-FROM messages m
-LEFT JOIN message_reads mr
+FROM demo_first.messages m
+LEFT JOIN demo_first.message_reads mr
   ON mr.message_id = m.id AND mr.user_id = $2
 WHERE m.conversation_id = $1 AND mr.user_id IS NULL
 `,

@@ -1,6 +1,5 @@
 import React from 'react'
 import ProtectedRoute from "./components/ProtectedRoute"
-import ConversationsWrapper from "./views/chat/ConversationsWrapper"
 import KanbanBoard from './views/task/KanbanBoard'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
@@ -25,9 +24,13 @@ const EditionForms = React.lazy(() => import('./views/forms/EditionForms'))
 const FormBuilderPage = React.lazy(() => import('./views/forms/FormBuilderPage'))
 const FormRenderPage = React.lazy(() => import('./views/forms/FormRenderPage'))
 const Chat = React.lazy(() => import('./views/chat'))
-const CreateConversation = React.lazy(() => import('./views/chat/CreateConversation'))
-const Conversations = React.lazy(() => import('./views/chat/Conversations'))
 const Kanbanboard = React.lazy(() => import('./views/task/KanbanBoard'))
+const Listes = React.lazy(() => import('./views/settings/Listes'))
+const Contacts = React.lazy(() => import('./views/annuaire/Contacts'))
+const Entreprises = React.lazy(() => import('./views/annuaire/Entreprises'))
+const Projets = React.lazy(() => import('./views/annuaire/Projets'))
+const ContactsDetail = React.lazy(() => import('./views/annuaire/ContactsDetail'))
+
 
 
 // Base
@@ -83,19 +86,21 @@ const routes = [
   { path: '/', name: 'Accueil', element: Settings  },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard  },
   { path: '/settings/settings', name: 'Paramétrage', element: Settings  },
-
   { path: '/settings/list/users', name: 'Gestion des utilisateurs', element: Users  },
   { path: '/settings/list/roles', name: 'Gestion des rôles', element: Roles  },
   { path: '/settings/list/groupes', name: 'Gestion des groupes', element: Groupes  },
-
   { path: '/import/documents', name: 'Gestion des documents', element: Documents  },
-  { path: '/chat/:conversationId', name: 'Conversation', element: Chat },
-  { path: '/new-conversation', name: 'Nouvelle conversation', element: CreateConversation },
-  { path: "/conversations", name: 'Mes conversations', element: Conversations },
 
   { path: '/settings/custom/themecolors', name: 'Gestion des couleurs', element: ThemeColors  },
   { path: '/settings/custom/themelogo', name: 'Gestion du logo', element: ThemeLogo  },
   { path: '/settings/audit', name: 'Journal audit', element: Audit  },
+  { path: '/settings/listes', name: 'Edition des listes ', element: Listes  },
+    { path: '/annuaire/contacts', name: 'Liste des contacts ', element: Contacts  },
+      { path: '/annuaire/contacts/:id', name: 'Edition formulaire ', element: ContactsDetail  },
+
+    { path: '/annuaire/projets', name: 'Liste des projets ', element: Projets  },
+    { path: '/annuaire/entreprises', name: 'Liste des entreprises ', element: Entreprises  },
+
   { path: '/settings/routes', name: 'Édition des accès', element: Routes  },
   { path: '/settings/actions', name: 'Permissions', element: Actions  },
     { path: '/forms/formiobuilder', name: 'Permissions', element: FormioBuilder  },
@@ -103,17 +108,12 @@ const routes = [
   { path: '/editionforms', name: 'Edition de formulaire', element: EditionForms  },
   { path: '/forms/:id/builder', name: 'Edition formulaire ', element: FormBuilderPage  },
     { path: '/forms/:id/view', name: 'Visualisation formulaire ', element: FormRenderPage  },
-
   { path: '/task/kanbanboard', name: 'Test Workflow', element: KanbanBoard  },
-
   { path: '/wkf/test', name: 'Test Workflow', element: Test  },
   { path: '/wkf/avancementworkflow', name: 'Avancement Workflow', element: AvancementWorkflow  },
   { path: '/wkf/workflow', name: 'Liste Workflow', element: Workflow  },
   { path: '/wkf/DetailConge/detail/:id', name: 'Détail Congé', element: DetailConge  },
-
   { path: '/pages/profil/profil', name: 'Mon profil', element: Profil  },
-
-  // Base
   { path: '/base', name: 'Base', exact: true, element: Cards  },
   { path: '/base/accordion', name: 'Accordion', element: Accordion  },
   { path: '/base/breadcrumbs', name: 'Breadcrumbs', element: Breadcrumbs  },
@@ -130,17 +130,11 @@ const routes = [
   { path: '/base/tabs', name: 'Tabs', element: Tabs  },
   { path: '/base/tables', name: 'Tables', element: Tables  },
   { path: '/base/tooltips', name: 'Tooltips', element: Tooltips  },
-
-  // Buttons
   { path: '/buttons', name: 'Buttons', exact: true, element: Buttons  },
   { path: '/buttons/buttons', name: 'Buttons', element: Buttons  },
   { path: '/buttons/dropdowns', name: 'Dropdowns', element: Dropdowns  },
   { path: '/buttons/button-groups', name: 'Button Groups', element: ButtonGroups  },
-
-  // Charts
   { path: '/charts', name: 'Charts', element: Charts  },
-
-  // Forms
   { path: '/forms', name: 'Forms', exact: true, element: FormControl  },
   { path: '/forms/form-control', name: 'Form Control', element: FormControl  },
   { path: '/forms/select', name: 'Select', element: Select  },
@@ -150,21 +144,15 @@ const routes = [
   { path: '/forms/floating-labels', name: 'Floating Labels', element: FloatingLabels  },
   { path: '/forms/layout', name: 'Layout', element: Layout  },
   { path: '/forms/validation', name: 'Validation', element: Validation  },
-
-  // Icons
   { path: '/icons', name: 'Icons', exact: true, element: CoreUIIcons },
   { path: '/icons/coreui-icons', name: 'CoreUI Icons', element: CoreUIIcons  },
   { path: '/icons/flags', name: 'Flags', element: Flags  },
   { path: '/icons/brands', name: 'Brands', element: Brands },
-
-  // Notifications
   { path: '/notifications', name: 'Notifications', exact: true, element:Alerts},
   { path: '/notifications/alerts', name: 'Alerts', element: Alerts },
   { path: '/notifications/badges', name: 'Badges', element: Badges  },
   { path: '/notifications/modals', name: 'Modals', element: Modals },
   { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
-
-  // Widgets
   { path: '/widgets', name: 'Widgets', element: Widgets },
 ]
 

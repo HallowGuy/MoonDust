@@ -27,6 +27,8 @@ import {
 
 import { AppBreadcrumb } from './index'
 import { AppHeaderDropdown } from './header/index'
+import { NotificationsIcon } from "src/components/NotificationsIcon"
+import MessengerIcon from "src/components/MessengerIcon"
 
 const AppHeader = () => {
   const headerRef = useRef()
@@ -244,27 +246,9 @@ const AppHeader = () => {
      
         </CHeaderNav>
          <CHeaderNav className="ms-auto">
-          <CNavItem>
-            <CNavLink href="#">
-              <CIcon icon={cilBell} size="lg" />
-            </CNavLink>
-          </CNavItem>
-          <CNavItem>
-            <CNavLink href="#">
-              <CIcon icon={cilList} size="lg" />
-            </CNavLink>
-          </CNavItem>
-          <CNavItem>
-            <CNavLink href="/conversations" className="position-relative me-3">
-  <CIcon icon={cilEnvelopeOpen} size="lg" />
-  {unreadCount > 0 && (
-    <span className="position-absolute top-20 start-100 translate-middle badge rounded-pill bg-danger">
-      {unreadCount}
-    </span>
-  )}
-</CNavLink>
+         <NotificationsIcon />
+          <MessengerIcon />
 
-          </CNavItem>
         </CHeaderNav>
         <CHeaderNav>
           <li className="nav-item py-1">

@@ -1,6 +1,7 @@
 // Base API (backend proxy)
 export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5001/api"
 export const API_THEME_LOGO = `${API_BASE}/theme/logo`
+export const API_BACKEND = `http://localhost:5001`
 
 // ---------------------
 // Endpoints spécifiques
@@ -59,3 +60,52 @@ export const API_ACTIONS_CONFIG = `${API_BASE}/actions-config`
 // ---------- ENDPOINTS FORM CONFIG ----------
 export const API_FORM_CONFIG = `${API_BASE}/forms`
 
+// ---------- ENDPOINTS ACTIVITÉS ----------
+export const API_ACTIVITES = `${API_BASE}/activites`
+export const API_ACTIVITE_DETAIL = (id) => `${API_ACTIVITES}/${id}`
+
+// ---------- ENDPOINTS CONTACTS ----------
+export const API_CONTACTS = `${API_BASE}/contacts`
+export const API_CONTACT_DETAIL = (id) => `${API_CONTACTS}/${id}`
+
+// ---------- ENDPOINTS ENTREPRISES ----------
+export const API_ENTREPRISES = `${API_BASE}/entreprises`
+export const API_ENTREPRISE_DETAIL = (id) => `${API_ENTREPRISES}/${id}`
+
+// ---------- ENDPOINTS EXPORTS ----------
+export const API_EXPORTS = `${API_BASE}/exports`
+export const API_EXPORT_DETAIL = (id) => `${API_EXPORTS}/${id}`
+
+// ---------- ENDPOINTS PROJETS ----------
+export const API_PROJETS = `${API_BASE}/projets`
+export const API_PROJET_DETAIL = (id) => `${API_PROJETS}/${id}`
+
+// ---------- ENDPOINTS TAGS ----------
+export const API_TAGS = `${API_BASE}/tags`
+export const API_TAG_DETAIL = (id) => `${API_TAGS}/${id}`
+
+// ---------- ENDPOINTS LISTES ----------
+export const API_LISTES = `${API_BASE}/listes`
+export const API_LISTE_DETAIL = (id) => `${API_LISTES}/${id}`
+
+// Récupérer toutes les valeurs d’un type
+export const API_LISTES_BY_TYPE = (type) => `${API_LISTES}/${type}`
+
+// Récupérer les sous-enfants d’un parent pour un type donné
+export const API_LISTES_CHILDREN = (type, parentId) => `${API_LISTES}/${type}/${parentId}`
+
+export const API_NOTES = `${API_BASE}/notes`
+export const API_NOTES_BY_CONTACT = (contactId) => `${API_NOTES}/${contactId}`
+export const API_MY_NOTIFICATIONS = `${API_NOTES}/notifications/me`
+
+export const API_CONVERSATIONS = `${API_BASE}/conversations`
+
+export const API_CONVERSATION = (id) => `${API_CONVERSATIONS}/${id}`
+
+// Messages d'une conversation
+export const API_CONVERSATION_MESSAGES = (id) =>
+  `${API_CONVERSATIONS}/${id}/messages`
+
+// Marquer comme lu
+export const API_CONVERSATION_READ = (id) =>
+  `${API_CONVERSATIONS}/${id}/read`

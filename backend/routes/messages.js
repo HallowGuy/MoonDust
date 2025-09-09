@@ -12,7 +12,7 @@ router.get("/:conversationId", async (req, res) => {
   try {
     const { conversationId } = req.params;
     const result = await pool.query(
-      `SELECT * FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC LIMIT 50`,
+      `SELECT * FROM demo_first.messages WHERE conversation_id = $1 ORDER BY created_at ASC LIMIT 50`,
       [conversationId]
     );
     res.json(result.rows);
@@ -27,7 +27,7 @@ router.post("/", async (req, res) => {
   try {
     const { conversationId, senderId, content } = req.body;
     const result = await pool.query(
-      `INSERT INTO messages (conversation_id, sender_id, content) 
+      `INSERT INTO demo_first.messages (conversation_id, sender_id, content) 
        VALUES ($1, $2, $3) RETURNING *`,
       [conversationId, senderId, content]
     );

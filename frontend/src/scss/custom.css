@@ -1,0 +1,45 @@
+/* Supprimer les marges par défaut de TipTap */
+.ProseMirror p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Optionnel : styling comme un input Bootstrap/CoreUI */
+.tiptap-editor {
+  border: 1px solid #444;
+  border-radius: 6px;
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+}
+.tiptap.ProseMirror p {
+    height: 40px;
+}
+.tiptap-editor .ProseMirror {
+  flex: 1;
+  outline: none;
+}
+/* Appliquer un style cohérent aux <select> en dark mode */
+body[data-coreui-theme=dark] select,
+body[data-coreui-theme=dark] .form-select {
+  background-color: #2b2f3a;  /* fond sombre */
+  color: #f1f1f1;             /* texte clair */
+  border: 1px solid #444;     /* bordure plus discrète */
+}
+
+body[data-coreui-theme=dark] select option,
+body[data-coreui-theme=dark] .form-select option {
+  background-color: #2b2f3a;  /* fond sombre aussi pour le menu déroulant */
+  color: #f1f1f1;
+}
+body[data-coreui-theme=dark] select,
+body[data-coreui-theme=dark] .form-select {
+  background-color: #2b2f3a !important;
+  color: #f1f1f1 !important;
+  border: 1px solid #444 !important;
+}
+body[data-coreui-theme=dark] select option,
+body[data-coreui-theme=dark] .form-select option {
+  color: #111 !important;   /* texte foncé pour rester lisible sur fond clair */
+}

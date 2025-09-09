@@ -71,7 +71,7 @@ export default function messaging(io) {
 
       try {
         const result = await pool.query(
-          `INSERT INTO messages (conversation_id, sender_id, content)
+          `INSERT INTO demo_first.messages (conversation_id, sender_id, content)
            VALUES ($1, $2, $3) RETURNING *`,
           [convId, socket.user.sub, content]
         )

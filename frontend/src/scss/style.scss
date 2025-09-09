@@ -24,6 +24,7 @@ $brand-dark:     #0f172a;
 );
 @use "@coreui/chartjs/scss/coreui-chartjs";
 @use "vendors/simplebar";
+@import "./custom";
 
 
 
@@ -87,4 +88,41 @@ body {
   .footer {
     --cui-footer-bg: var(--cui-body-bg);
   }
+}
+
+/* Control (le champ) */
+.react-select__control {
+  background-color: #2b2b2b !important;
+  border-color: #444 !important;
+  color: #fff !important;
+}
+
+/* Menu (la dropdown list) */
+.react-select__menu {
+  background-color: #2b2b2b !important;
+  color: #fff !important;
+}
+
+/* Option */
+.react-select__option {
+  background-color: #2b2b2b !important;
+  color: #fff !important;
+}
+.react-select__option--is-focused {
+  background-color: #444 !important;
+  color: #fff !important;
+}
+
+/* Valeur sélectionnée */
+.react-select__single-value {
+  color: #fff !important;
+}
+
+/* Multi-value (tags) */
+.react-select__multi-value {
+  background-color: #444 !important;
+  color: #fff !important;
+}
+.react-select__multi-value__label {
+  color: #fff !important;
 }

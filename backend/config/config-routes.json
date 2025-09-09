@@ -337,6 +337,10 @@
     "read",
     "admin"
   ],
+  "/settings/listes": [
+    "read",
+    "admin"
+  ],
   "/chat/:conversationId": [
     "admin",
     "read",
@@ -350,6 +354,30 @@
     "superadmin"
   ],
   "/conversations": [
+    "admin",
+    "read",
+    "contribute",
+    "superadmin"
+  ],
+  "/annuaire/contacts": [
+    "admin",
+    "read",
+    "contribute",
+    "superadmin"
+  ],
+  "/annuaire/contacts/:id": [
+    "admin",
+    "read",
+    "contribute",
+    "superadmin"
+  ],
+  "/annuaire/projets": [
+    "admin",
+    "read",
+    "contribute",
+    "superadmin"
+  ],
+  "/annuaire/entreprises": [
     "admin",
     "read",
     "contribute",

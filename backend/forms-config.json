@@ -32,7 +32,38 @@
     "name": "ezaezae",
     "schema": {
       "display": "form",
-      "components": []
+      "components": [
+        {
+          "label": "Civilité",
+          "widget": "choicesjs",
+          "placeholder": "Sélectionnez une civilité",
+          "tableView": true,
+          "dataSrc": "custom",
+          "defaultValue": "Mr",
+          "data": {
+            "custom": "var url = 'http://localhost:5001/api/listes/Genre';\nvar headers = { 'Content-Type': 'application/json' };\nvar _token = (typeof window !== 'undefined' && window.localStorage) ? localStorage.getItem('access_token') : '';\nif (_token) headers.Authorization = 'Bearer ' + _token;\nreturn fetch(url, { headers }).then(r => r.ok ? r.json() : []).then(arr => Array.isArray(arr) ? arr : []);"
+          },
+          "valueProperty": "valeur",
+          "template": "{{ item.valeur }}",
+          "clearOnRefresh": true,
+          "searchEnabled": false,
+          "validate": {
+            "required": true
+          },
+          "validateWhenHidden": false,
+          "key": "civilite",
+          "type": "select",
+          "input": true
+        },
+        {
+          "type": "button",
+          "label": "Submit",
+          "key": "submit",
+          "disableOnInvalid": true,
+          "input": true,
+          "tableView": false
+        }
+      ]
     }
   },
   {

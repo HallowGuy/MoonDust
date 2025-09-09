@@ -8,6 +8,7 @@ import swaggerJSDoc from "swagger-jsdoc";
 import { createServer } from "http";        // ⚡ pour HTTP server
 import { Server } from "socket.io";         // ⚡ pour socket.io
 import { syncKeycloakUsers } from "./utils/keycloak.js";
+import { authenticate } from "./middleware/authenticate.js";
 
 import messaging from "./messaging.js";     // ⚡ module de messagerie
 
@@ -38,7 +39,7 @@ const io = new Server(server, {
 // --- middlewares
 app.use(cors({
   origin: origins,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(express.json({ limit: "10mb" }));
@@ -82,6 +83,16 @@ import meRouter from "./routes/me.js";
 import messagesRouter from "./routes/messages.js"; // ⚡ ajout
 import conversationsRouter from "./routes/conversations.js";
 import keycloakUsersRouter from "./routes/keycloakUsers.js";
+import contactsRoutes from "./routes/contacts.js";
+import entreprisesRoutes from "./routes/entreprises.js";
+import projetsRoutes from "./routes/projets.js";
+import activitesRoutes from "./routes/activites.js";
+import tagsRoutes from "./routes/tags.js";
+import exportsRoutes from "./routes/exports.js";
+import listesRoutes from "./routes/listes.js";
+import notesRoutes from "./routes/notes.js";
+import notificationsRoutes from "./routes/notifications.js";
+
 
 app.use("/api", systemRouter);            // /api/realm
 app.use("/api/hello", helloRouter);       // /api/hello
@@ -96,7 +107,18 @@ app.use("/api/audit", auditRouter);
 app.use("/api/me", meRouter);
 app.use("/api/messages", messagesRouter); // ⚡ ajout
 app.use("/api/conversations", conversationsRouter);
-app.use("/api/keycloak-users", keycloakUsersRouter);
+app.use("/api/keycloak-users", authenticate,keycloakUsersRouter);
+app.use("/api/contacts", contactsRoutes);
+app.use("/api/entreprises", entreprisesRoutes);
+app.use("/api/projets", projetsRoutes);
+app.use("/api/activites", authenticate, activitesRoutes);
+app.use("/api/tags", tagsRoutes);
+app.use("/api/exports", exportsRoutes);
+app.use("/api/listes", listesRoutes);
+app.use("/api/notes", authenticate, notesRoutes);
+app.use("/api/notifications", authenticate, notificationsRoutes);
+
+
 
 // --- 404 & erreur générique
 app.use((_req, res) => res.status(404).json({ error: "Route introuvable" }));

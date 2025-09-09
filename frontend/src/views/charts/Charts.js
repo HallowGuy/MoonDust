@@ -9,6 +9,7 @@ import {
   CChartRadar,
 } from '@coreui/react-chartjs'
 import { DocsLink } from 'src/components'
+import FormWrapper from "src/components/FormWrapper"
 
 const Charts = () => {
   const random = () => Math.round(Math.random() * 100)
@@ -22,6 +23,8 @@ const Charts = () => {
             Bar Chart <DocsLink name="chart" />
           </CCardHeader>
           <CCardBody>
+                  <FormWrapper formId="toto" />
+
             <CChartBar
               data={{
                 labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],

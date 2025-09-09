@@ -102,21 +102,21 @@ const RouteEdition = () => {
     }
   }
 
-  // Fusionner routes frontend + backend
-  const allRoutes = Object.keys(config).map(path => ({
+ // Filtrage basé uniquement sur la config backend
+const allRoutes = Object.keys(config).map(path => ({
   path,
   name: path, // pas de "name" dans le JSON → on prend le path comme libellé
   roles: config[path] ?? []
 }))
 
-  // Filtrage + pagination
-  const filtered = allRoutes.filter(
+const filtered = allRoutes.filter(
   (r) =>
     r.name.toLowerCase().includes(search.toLowerCase()) ||
     r.path.toLowerCase().includes(search.toLowerCase())
 )
-  const paginated = filtered.slice((page - 1) * perPage, page * perPage)
-  const totalPages = Math.ceil(filtered.length / perPage)
+
+const paginated = filtered.slice((page - 1) * perPage, page * perPage)
+const totalPages = Math.ceil(filtered.length / perPage)
 
   // Ouvrir l'édition
   const openEdit = (route) => {

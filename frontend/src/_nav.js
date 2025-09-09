@@ -36,18 +36,32 @@ const _nav = [
     to: '/settings/settings',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
   },
-    {
+  {
+    component: CNavTitle,
+    name: 'Annuaire',
+  },
+  
+      {
     component: CNavItem,
-    name: 'Conversation',
-    to: '/conversations',
-    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+    name: 'Contacts',
+    to: '/annuaire/contacts',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
-    name: 'Kanban',
-    to: '/task/kanbanboard',
-    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+    name: 'Entreprises',
+    to: '/annuaire/entreprises',
+    icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
   },
+  {
+    component: CNavItem,
+    name: 'Projets',
+    to: '/annuaire/projets',
+    icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
+  }
+      
+    ,
+    
   {
     component: CNavTitle,
     name: 'Workflow',
@@ -99,10 +113,25 @@ const _nav = [
   },
   {
     component: CNavItem,
+    name: 'Listes',
+    to: '/settings/listes',
+    icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
     name: 'Groupes',
     to: '/settings/list/groupes',
     icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
+  },     
+    ],
   },
+  {
+    component: CNavGroup,
+    name: 'Sécurité',
+    to: '/securite',
+    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    items: [
+      
   {
     component: CNavItem,
     name: 'Routes',
@@ -124,7 +153,6 @@ const _nav = [
      
     ],
   },
-  
  {
     component: CNavTitle,
     name: 'Personnalisation',

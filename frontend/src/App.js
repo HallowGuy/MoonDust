@@ -1,18 +1,29 @@
 // src/App.js
 import React, { useEffect, useState } from "react"
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom"
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom"
 import { useSelector } from "react-redux"
 
 import "./scss/style.scss"
 import "./scss/examples.scss"
+import './scss/custom.css';
 import "./formio-setup"
 import "formiojs/dist/formio.full.min.css"
 import "./style/formio-overrides.scss"
+import { CButton } from "@coreui/react"
+import CIcon from "@coreui/icons-react"
+import { cilChatBubble } from "@coreui/icons"
+import keycloak from "./keycloak.js";
 
 import ProtectedRoute from "./components/ProtectedRoute"
 import { API_THEME, API_ACTIONS_CONFIG, API_ROUTES_CONFIG, CLIENT_ID } from "./api"
 import { rolesFromToken, decodeJwt } from "./lib/http"
 import { PermissionsContext } from "./context/PermissionsContext"
+import MessengerWidget from "./views/widgets/WidgetMessenger"
+import { useMessenger } from "src/context/MessengerContext"
+import WidgetMessenger from "src/views/widgets/WidgetMessenger"
+import { MessengerProvider } from "src/context/MessengerContext"
+import FloatingMessengerButton from "src/components/FloatingMessengerButton"
+
 
 // imports directs
 import DefaultLayout from "./layout/DefaultLayout"
@@ -23,6 +34,18 @@ import Login from "./views/pages/login/Login"
 import Register from "./views/pages/register/Register"
 import Callback from "./views/pages/login/Callback"
 
+
+function MessengerWrapper() {
+  const location = useLocation()
+  const hiddenRoutes = ["/login", "/register", "/callback"]
+
+  // Vérifie si on est dans une route cachée
+  if (hiddenRoutes.includes(location.pathname)) {
+    return null
+  }
+
+  return <FloatingMessengerButton />
+}
 function App() {
   useSelector((s) => s.theme)
 
@@ -109,15 +132,16 @@ useEffect(() => {
 
   return (
     <PermissionsContext.Provider
-      value={{
-        actionsConfig,
-        setActionsConfig,
-        routesConfig,
-        setRoutesConfig,
-        currentUserRoles,
-        setCurrentUserRoles,
-      }}
-    >
+    value={{
+      actionsConfig,
+      setActionsConfig,
+      routesConfig,
+      setRoutesConfig,
+      currentUserRoles,
+      setCurrentUserRoles,
+    }}
+  >
+    <MessengerProvider>
       <BrowserRouter>
         <Routes>
           {/* Pages publiques */}
@@ -130,17 +154,22 @@ useEffect(() => {
 
           {/* Pages protégées */}
           <Route
-  path="/*"
-  element={
-    <ProtectedRoute>
-      <DefaultLayout />
-    </ProtectedRoute>
-  }
-/>
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <DefaultLayout />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
+
+        {/* ✅ Bouton flottant et widget */}
+        <MessengerWrapper />
+        <WidgetMessenger />
       </BrowserRouter>
-    </PermissionsContext.Provider>
-  )
+    </MessengerProvider>
+  </PermissionsContext.Provider>
+)
 }
 
 export default App

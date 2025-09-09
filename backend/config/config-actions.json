@@ -106,5 +106,65 @@
       "admin"
     ],
     "thematique": "Autre"
+  },
+  "liste.edit": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Listes"
+  },
+  "liste.new": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Listes"
+  },
+  "liste.delete": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Listes"
+  },
+  "contact.edit": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Listes"
+  },
+  "contact.new": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Listes"
+  },
+  "contact.delete": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Listes"
+  },
+  "contact.view": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Listes"
+  },
+  "entreprise.edit": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Listes"
+  },
+  "entreprise.new": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Listes"
+  },
+  "entreprise.delete": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Listes"
   }
 }
