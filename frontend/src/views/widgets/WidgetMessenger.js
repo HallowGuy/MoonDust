@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react"
-import MessengerContent from "../../components/MessengerContent"
+import MessengerContent from "../../components/messenger/MessengerContent.js"
 import { useMessenger } from "src/context/MessengerContext"
 
 const WidgetMessenger = () => {

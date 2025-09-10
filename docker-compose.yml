@@ -21,7 +21,8 @@ services:
       - ./backend/config/config-routes.json:/usr/src/app/config/config-routes.json
       - ./backend/config/themes.json:/usr/src/app/config/themes.json
       - ./backend/config/config-actions.json:/usr/src/app/config/config-actions.json
-      - ./backend/forms-config.json:/usr/src/app/forms-config.json
+      - ./backend/forms:/usr/src/app/forms
+
 
     depends_on:
       - db

@@ -14,16 +14,18 @@ router.get("/my", authenticate, async (req, res) => {
 
     const result = await pool.query(
       `SELECT n.id, n.note_id, n.status, n.created_at,
-              no.contact_id,
-              c.nom AS contact_nom, c.prenom AS contact_prenom,
-              ku.username AS from_user
-       FROM demo_first.notifications n
-       JOIN demo_first.notes no ON no.id = n.note_id
-       JOIN demo_first.contacts c ON c.id = no.contact_id
-       JOIN demo_first.keycloak_users ku ON ku.id = no.utilisateur_id
-       WHERE n.user_id=$1 AND n.status != 'hidden'
-       ORDER BY n.created_at DESC
-       LIMIT 20`,
+       no.contact_id,
+       c.form_data->>'nom' AS contact_nom,
+       c.form_data->>'prenom' AS contact_prenom,
+       ku.username AS from_user
+FROM demo_first.notifications n
+JOIN demo_first.notes no ON no.id = n.note_id
+JOIN demo_first.contacts c ON c.id = no.contact_id
+JOIN demo_first.keycloak_users ku ON ku.id = no.utilisateur_id
+WHERE n.user_id=$1 AND n.status != 'hidden'
+ORDER BY n.created_at DESC
+LIMIT 20
+`,
       [userId]
     );
 

@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { FormBuilder } from "formiojs"
 import "formiojs/dist/formio.full.min.css"
+import { patchSubmitButtons } from "src/utils/formio"
 
 import {
   CButton,
@@ -16,7 +17,7 @@ import {
 import CIcon from "@coreui/icons-react"
 import { cilSave } from "@coreui/icons"
 import { API_FORM_CONFIG } from "src/api"
-import ConfirmCancelModal from "src/components/ConfirmCancelModal"
+import ConfirmCancelModal from "src/components/confirmations/ConfirmCancelModal"
 
 const FormBuilderPage = () => {
   const { id } = useParams()
@@ -80,7 +81,7 @@ const FormBuilderPage = () => {
     if (!builderInstance.current) return
 
     try {
-      const schema = builderInstance.current.instance.schema
+const schema = patchSubmitButtons(builderInstance.current.instance.schema)
 
       const res = await fetch(`${API_FORM_CONFIG}/${id}`, {
         method: "PUT",

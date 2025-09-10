@@ -1,9 +1,9 @@
 import React, { useContext } from "react"
 import { Navigate, useLocation } from "react-router-dom"
-import { PermissionsContext } from "../context/PermissionsContext"
-import { isTokenExpired } from "../lib/http"
-import { rolesFromToken } from "../lib/jwt"
-import { CLIENT_ID } from "../api"
+import { PermissionsContext } from "../../context/PermissionsContext"
+import { isTokenExpired } from "../../lib/http"
+import { rolesFromToken } from "../../lib/jwt"
+import { CLIENT_ID } from "../../api"
 
 const norm = (arr = []) =>
   arr

@@ -20,26 +20,25 @@
   flex: 1;
   outline: none;
 }
-/* Appliquer un style cohérent aux <select> en dark mode */
-body[data-coreui-theme=dark] select,
-body[data-coreui-theme=dark] .form-select {
-  background-color: #2b2f3a;  /* fond sombre */
-  color: #f1f1f1;             /* texte clair */
-  border: 1px solid #444;     /* bordure plus discrète */
+
+[data-coreui-theme="dark"] .formio-component-select .choices__inner {
+  background-color: #2b2f3a !important;
+  border-color: #444 !important;
+  color: #f1f1f1 !important;
 }
 
-body[data-coreui-theme=dark] select option,
-body[data-coreui-theme=dark] .form-select option {
-  background-color: #2b2f3a;  /* fond sombre aussi pour le menu déroulant */
-  color: #f1f1f1;
-}
-body[data-coreui-theme=dark] select,
-body[data-coreui-theme=dark] .form-select {
+[data-coreui-theme="dark"] .formio-component-select .choices__list--dropdown {
   background-color: #2b2f3a !important;
   color: #f1f1f1 !important;
-  border: 1px solid #444 !important;
 }
-body[data-coreui-theme=dark] select option,
-body[data-coreui-theme=dark] .form-select option {
-  color: #111 !important;   /* texte foncé pour rester lisible sur fond clair */
+
+[data-coreui-theme="dark"] .formio-component-select .choices__item {
+  color: #f1f1f1 !important;
 }
+
+[data-coreui-theme="dark"] .formio-component-select .choices__item.is-highlighted {
+  background-color: #3b3f4a !important;
+}
+
+
+

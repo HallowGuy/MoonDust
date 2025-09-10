@@ -3,115 +3,151 @@ import pool from "../db.js";
 
 const router = express.Router();
 
-// Liste de tous les contacts (avec nom de l'entreprise)
+// ========================
+// GET /contacts (liste)
+// ========================
 router.get("/", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT c.*, e.nom AS entreprise_nom
+      SELECT 
+        c.id,
+        c.entreprise_id,
+        c.created_at,
+        c.last_interaction,
+        c.form_data,
+        c.form_data->>'prenom' AS prenom,
+        c.form_data->>'nom' AS nom,
+        c.form_data->>'email' AS email,
+        c.form_data->>'telephone' AS telephone,
+        c.form_data->>'poste' AS poste,
+        e.nom AS entreprise_nom
       FROM demo_first.contacts c
       LEFT JOIN demo_first.entreprises e ON c.entreprise_id = e.id
       ORDER BY c.created_at DESC
     `);
     res.json(result.rows);
   } catch (err) {
-    console.error("Erreur SQL GET /contacts:", err);
+    console.error("❌ Erreur SQL GET /contacts:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Un seul contact
+// ========================
+// GET /contacts/:id
+// ========================
 router.get("/:id", async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT c.*, e.nom AS entreprise_nom
+      `SELECT 
+         c.id,
+         c.entreprise_id,
+         c.created_at,
+         c.last_interaction,
+         c.form_data,
+         c.form_data->>'prenom' AS prenom,
+         c.form_data->>'nom' AS nom,
+         c.form_data->>'email' AS email,
+         c.form_data->>'telephone' AS telephone,
+         c.form_data->>'poste' AS poste,
+         e.nom AS entreprise_nom
        FROM demo_first.contacts c
        LEFT JOIN demo_first.entreprises e ON c.entreprise_id = e.id
        WHERE c.id = $1`,
       [req.params.id]
     );
-    if (result.rows.length === 0)
+
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: "Contact non trouvé" });
+    }
+
     res.json(result.rows[0]);
   } catch (err) {
-    console.error("Erreur SQL GET /contacts/:id:", err);
+    console.error("❌ Erreur SQL GET /contacts/:id:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Création
+// ========================
+// POST /contacts (création)
+// ========================
 router.post("/", async (req, res) => {
   try {
-    const {
-      entreprise_id, prenom, nom, email, telephone, poste,
-      civilite, mobile, adresse, ville, pays,
-      tags, source, statut, notes, last_interaction
-    } = req.body;
+    const { entreprise_id, last_interaction, form_data } = req.body;
+
+    // ⚡ Nettoyage du JSON (on vire submit si présent)
+    let cleanFormData = { ...form_data };
+    delete cleanFormData.submit;
 
     const result = await pool.query(
       `INSERT INTO demo_first.contacts 
-        (entreprise_id, prenom, nom, email, telephone, poste,
-         civilite, mobile, adresse, ville, pays,
-         tags, source, statut, notes, last_interaction)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+        (entreprise_id, last_interaction, form_data)
+       VALUES ($1, $2, $3)
        RETURNING *`,
       [
-        entreprise_id, prenom, nom, email, telephone, poste,
-        civilite, mobile, adresse, ville, pays,
-        tags, source, statut, notes, last_interaction
+        entreprise_id || null,
+        last_interaction || null,
+        JSON.stringify(cleanFormData || {}),
       ]
     );
+
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error("Erreur SQL POST /contacts:", err);
+    console.error("❌ Erreur SQL POST /contacts:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Modification
+// ========================
+// PUT /contacts/:id (modif)
+// ========================
 router.put("/:id", async (req, res) => {
   try {
-    const {
-      entreprise_id, prenom, nom, email, telephone, poste,
-      civilite, mobile, adresse, ville, pays,
-      tags, source, statut, notes, last_interaction
-    } = req.body;
+    const { entreprise_id, last_interaction, form_data } = req.body;
+
+    let cleanFormData = { ...form_data };
+    delete cleanFormData.submit;
 
     const result = await pool.query(
       `UPDATE demo_first.contacts
-       SET entreprise_id=$1, prenom=$2, nom=$3, email=$4, telephone=$5, poste=$6,
-           civilite=$7, mobile=$8, adresse=$9, ville=$10, pays=$11,
-           tags=$12, source=$13, statut=$14, notes=$15, last_interaction=$16
-       WHERE id=$17 RETURNING *`,
+       SET entreprise_id=$1,
+           last_interaction=$2,
+           form_data=$3
+       WHERE id=$4
+       RETURNING *`,
       [
-        entreprise_id, prenom, nom, email, telephone, poste,
-        civilite, mobile, adresse, ville, pays,
-        tags, source, statut, notes, last_interaction,
-        req.params.id
+        entreprise_id || null,
+        last_interaction || null,
+        JSON.stringify(cleanFormData || {}),
+        req.params.id,
       ]
     );
 
-    if (result.rows.length === 0)
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: "Contact non trouvé" });
+    }
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error("Erreur SQL PUT /contacts/:id:", err);
+    console.error("❌ Erreur SQL PUT /contacts/:id:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Suppression
+// ========================
+// DELETE /contacts/:id
+// ========================
 router.delete("/:id", async (req, res) => {
   try {
     const result = await pool.query(
       "DELETE FROM demo_first.contacts WHERE id=$1 RETURNING *",
       [req.params.id]
     );
-    if (result.rows.length === 0)
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: "Contact non trouvé" });
+    }
     res.json({ message: "Contact supprimé" });
   } catch (err) {
-    console.error("Erreur SQL DELETE /contacts/:id:", err);
+    console.error("❌ Erreur SQL DELETE /contacts/:id:", err);
     res.status(500).json({ error: err.message });
   }
 });

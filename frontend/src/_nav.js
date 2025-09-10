@@ -86,7 +86,7 @@ const _nav = [
 {
   component: CNavItem,
   name: 'Formulaires',
-  to: '/editionforms',
+  to: '/forms',
   icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
 },
 {

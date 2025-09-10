@@ -121,7 +121,7 @@ const ThemeColors = () => {
     <div className="container py-4">
       <CCard className="shadow-lg">
         <CCardHeader>
-          <h2 className="mb-0">Gestion des couleurs du thème</h2>
+          <span>Gestion des couleurs du thème</span>
         </CCardHeader>
         <CCardBody>
           {/* Sélecteur de thème */}

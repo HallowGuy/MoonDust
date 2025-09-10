@@ -56,11 +56,35 @@
           "input": true
         },
         {
-          "type": "button",
-          "label": "Submit",
+          "label": "Prénom",
+          "applyMaskOn": "change",
+          "tableView": true,
+          "validateWhenHidden": false,
+          "key": "prenom",
+          "type": "textfield",
+          "input": true
+        },
+        {
+          "label": "Number",
+          "applyMaskOn": "change",
+          "mask": false,
+          "tableView": false,
+          "delimiter": false,
+          "requireDecimal": false,
+          "inputFormat": "plain",
+          "truncateMultipleSpaces": false,
+          "validateWhenHidden": false,
+          "key": "number",
+          "type": "number",
+          "input": true
+        },
+        {
+          "label": "Envoyer",
           "key": "submit",
-          "disableOnInvalid": true,
+          "type": "button",
           "input": true,
+          "action": "event",
+          "event": "customSubmit",
           "tableView": false
         }
       ]
@@ -124,6 +148,33 @@
           "type": "button",
           "input": true,
           "saveOnEnter": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "formdynamique",
+    "name": "formdynamique",
+    "schema": {
+      "display": "form",
+      "components": [
+        {
+          "label": "Text Field",
+          "applyMaskOn": "change",
+          "tableView": true,
+          "validateWhenHidden": false,
+          "key": "textField",
+          "type": "textfield",
+          "input": true
+        },
+        {
+          "label": "Submit",
+          "showValidations": false,
+          "disableOnInvalid": true,
+          "tableView": false,
+          "key": "submit",
+          "type": "button",
+          "input": true
         }
       ]
     }

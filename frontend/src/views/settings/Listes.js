@@ -8,7 +8,7 @@ import {
 } from "@coreui/react"
 import CIcon from "@coreui/icons-react"
 import { cilPencil, cilTrash, cilPlus } from "@coreui/icons"
-import ConfirmDeleteModal from "../../components/ConfirmDeleteModal"
+import ConfirmDeleteModal from "../../components/confirmations/ConfirmDeleteModal"
 import { API_LISTES, API_LISTES_BY_TYPE, API_LISTES_CHILDREN } from "src/api"
 
 const Listes = () => {

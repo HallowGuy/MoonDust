@@ -5,6 +5,7 @@ import CIcon from "@coreui/icons-react"
 import { cilChatBubble } from "@coreui/icons"
 import { useMessenger } from "src/context/MessengerContext"
 import { API_CONVERSATIONS } from "src/api"
+import { fetchWithAuth } from "../../utils/auth";
 
 const MessengerIcon = () => {
   const { openMessenger } = useMessenger()
@@ -20,7 +21,7 @@ const MessengerIcon = () => {
   const fetchUnread = async () => {
     if (!token) return
     try {
-      const res = await fetch(`${API_CONVERSATIONS}/mine`, {
+      const res = await fetchWithAuth(`${API_CONVERSATIONS}/mine`, {
         headers: getAuthHeaders(),
       })
       const data = await res.json()
@@ -50,7 +51,7 @@ const MessengerIcon = () => {
         }}
         style={{ cursor: "pointer", background: "none", border: "none" }}
       >
-        <CIcon icon={cilChatBubble} size="lg" />
+        <CIcon icon={cilChatBubble} size="xl" />
         {unreadCount > 0 && (
           <span className="position-absolute top-20 start-100 translate-middle badge rounded-pill bg-danger" style={{ minWidth: "auto" }}>
             {unreadCount}

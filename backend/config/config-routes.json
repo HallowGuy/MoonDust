@@ -314,7 +314,7 @@
     "read",
     "admin"
   ],
-  "/forms/editionforms": [
+  "/forms/forms": [
     "admin",
     "read",
     "contribute"

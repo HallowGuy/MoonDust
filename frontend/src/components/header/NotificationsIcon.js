@@ -10,7 +10,7 @@ import {
 import CIcon from "@coreui/icons-react"
 import { cilBell, cilCheckCircle, cilX } from "@coreui/icons"
 import { API_BASE } from "src/api"
-import { fetchWithAuth } from "../utils/auth";
+import { fetchWithAuth } from "../../utils/auth";
 
 export const NotificationsIcon = () => {
   const [notifications, setNotifications] = useState([])
@@ -118,7 +118,7 @@ const hideNotification = async (notif) => {
     <CDropdown variant="nav-item" autoClose="outside" className="me-2">
 
       <CDropdownToggle color="link" caret={false} className="position-relative">
-        <CIcon icon={cilBell} size="lg" />
+        <CIcon icon={cilBell} size="xl" />
         {unreadCount > 0 && (
           <span className="position-absolute top-20 start-100 translate-middle badge rounded-pill bg-danger" style={{ minWidth: "auto" }}>
             {unreadCount}

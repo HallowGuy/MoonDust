@@ -9,7 +9,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilSettings, cilSearch } from '@coreui/icons'
-import ConfirmDeleteModal from 'src/components/ConfirmDeleteModal'
+import ConfirmDeleteModal from 'src/components/confirmations/ConfirmDeleteModal'
 import { API_FORM_CONFIG } from 'src/api'
 import FormioBuilder from './FormioBuilder'
 import FormioRenderer from "./FormioRenderer"
@@ -166,7 +166,7 @@ const openViewer = (f) => {
             onChange={(e) => setSearch(e.target.value)}
           />
 
-          <CTable striped hover responsive>
+          <CTable striped hover responsive className="align-middle">
             <CTableHead>
               <CTableRow>
                 <CTableHeaderCell>ID</CTableHeaderCell>

@@ -1,7 +1,7 @@
 // src/components/ProtectedButton.js
 import React from "react"
-import { rolesFromToken } from "../lib/jwt"   // adapte si alias
-import { CLIENT_ID } from "../api"
+import { rolesFromToken } from "../../lib/jwt"   // adapte si alias
+import { CLIENT_ID } from "../../api"
 
 const norm = (arr = []) =>
   arr

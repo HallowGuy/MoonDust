@@ -41,33 +41,32 @@ const AppHeaderDropdown = () => {
 
   return (
     <CDropdown variant="nav-item">
-      <CDropdownToggle
-        placement="bottom-end"
-        className="py-0 pe-0 d-flex align-items-center gap-2"
-        caret={false}
-      >
-        <CAvatar src={avatar8} size="md" />
-        <span className="mb-0">{username}</span>
-      </CDropdownToggle>
+  <CDropdownToggle
+    placement="bottom-end"
+    caret={false}
+    className="py-0 pe-0 d-flex align-items-center gap-2"
+  >
+    <span className="d-flex align-items-center" style={{ lineHeight: "2.4" }}>
+{username}</span>
+  </CDropdownToggle>
 
-      <CDropdownMenu className="pt-0" placement="bottom-end">
-        <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">
-          Compte
-        </CDropdownHeader>
+  <CDropdownMenu className="pt-0" placement="bottom-end">
+    <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">
+      Compte
+    </CDropdownHeader>
 
-        {/* Profil */}
-        <CDropdownItem href="/pages/profil/Profil">
-          <CIcon icon={cilUser} className="me-2" />
-          Profil
-        </CDropdownItem>
+    <CDropdownItem href="/pages/profil/Profil">
+      <CIcon icon={cilUser} className="me-2" />
+      Profil
+    </CDropdownItem>
 
-        {/* Déconnexion */}
-        <CDropdownItem onClick={handleLogout}>
-          <CIcon icon={cilLockLocked} className="me-2" />
-          Déconnexion
-        </CDropdownItem>
-      </CDropdownMenu>
-    </CDropdown>
+    <CDropdownItem onClick={handleLogout}>
+      <CIcon icon={cilLockLocked} className="me-2" />
+      Déconnexion
+    </CDropdownItem>
+  </CDropdownMenu>
+</CDropdown>
+
   )
 }
 

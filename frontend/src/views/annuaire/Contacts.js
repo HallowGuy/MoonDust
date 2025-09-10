@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react'
+import React, { useEffect, useState, useContext, useMemo } from 'react'
 import {
   CCard, CCardHeader, CCardBody,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
@@ -8,31 +8,23 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { Link } from 'react-router-dom'
-
-import { cilPencil, cilTrash, cilPlus, cilEnvelopeClosed,cilSearch } from '@coreui/icons'
-import ConfirmDeleteModal from "../../components/ConfirmDeleteModal"
-import ProtectedButton from "../../components/ProtectedButton"
-import { PermissionsContext } from '/src/context/PermissionsContext'
-import { API_CONTACTS, API_ENTREPRISES } from 'src/api'
-import Select from 'react-select'
+import { cilTrash, cilPlus, cilEnvelopeClosed, cilSearch } from '@coreui/icons'
+import ConfirmDeleteModal from "src/components/confirmations/ConfirmDeleteModal"
+import ProtectedButton from "src/components/protected/ProtectedButton"
+import { PermissionsContext } from 'src/context/PermissionsContext'
+import { API_CONTACTS, API_ENTREPRISES, API_FORM_CONFIG } from 'src/api'
+import { fetchWithAuth } from 'src/utils/auth'
+import FormioRenderer from 'src/views/forms/FormioRenderer'
 
 const Contacts = () => {
   const [contacts, setContacts] = useState([])
   const [entreprises, setEntreprises] = useState([])
   const [visible, setVisible] = useState(false)
-
-  // form state
   const [editContact, setEditContact] = useState(null)
-  const [prenom, setPrenom] = useState('')
-  const [nom, setNom] = useState('')
-  const [email, setEmail] = useState('')
-  const [telephone, setTelephone] = useState('')
-  const [poste, setPoste] = useState('')
-  const [entrepriseId, setEntrepriseId] = useState(null)
+  const [form, setForm] = useState(null)
 
   const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
 
-  
   // ---------- TOASTS ----------
   const [toasts, setToasts] = useState([])
   const addToast = (message, color = 'danger') => {
@@ -42,78 +34,87 @@ const Contacts = () => {
   const showError = (msg) => addToast(msg, 'danger')
   const showSuccess = (msg) => addToast(msg, 'success')
   const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id))
-
-  const getAuthHeaders = () => ({
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-  })
-
-  // ---------- FETCH DATA ----------
+  const toText = (v) => (v == null ? "" : String(v)) // safe pour toLowerCase
+const fdOf = (c) => c?.form_data || {}
+  // ---------- FETCH ----------
   const fetchContacts = async () => {
     try {
-      const res = await fetch(`${API_CONTACTS}`, { headers: getAuthHeaders() })
+      const res = await fetchWithAuth(`${API_CONTACTS}`)
       if (!res.ok) throw new Error('Impossible de charger les contacts')
-      const data = await res.json()
-      setContacts(data)
-    } catch (e) {
-      showError(e.message || 'Erreur lors du chargement des contacts')
-    }
+      setContacts(await res.json())
+    } catch (e) { showError(e.message) }
   }
 
   const fetchEntreprises = async () => {
     try {
-      const res = await fetch(`${API_ENTREPRISES}`, { headers: getAuthHeaders() })
+      const res = await fetchWithAuth(`${API_ENTREPRISES}`)
       if (!res.ok) throw new Error('Impossible de charger les entreprises')
-      const data = await res.json()
-      setEntreprises(data)
-    } catch (e) {
-      showError(e.message || 'Erreur lors du chargement des entreprises')
-    }
+      setEntreprises(await res.json())
+    } catch (e) { showError(e.message) }
+  }
+  const entreprisesMap = useMemo(
+  () => Object.fromEntries(entreprises.map(e => [e.id, e.nom])),
+  [entreprises]
+)
+  const fetchForm = async () => {
+    try {
+      // ⚠️ utilise l'id de ton formulaire contact (ici "toto")
+      const res = await fetchWithAuth(`${API_FORM_CONFIG}/contact`)
+      if (!res.ok) throw new Error('Form contact introuvable')
+      setForm(await res.json())
+    } catch (e) { showError(e.message) }
   }
 
   useEffect(() => {
     fetchContacts()
     fetchEntreprises()
+    fetchForm()
   }, [])
 
   // ---------- OPEN SIDEBAR ----------
   const openOffcanvas = (contact = null) => {
-    if (contact) {
-      setEditContact(contact)
-      setPrenom(contact.prenom || '')
-      setNom(contact.nom || '')
-      setEmail(contact.email || '')
-      setTelephone(contact.telephone || '')
-      setPoste(contact.poste || '')
-      setEntrepriseId(contact.entreprise_id || null)
-    } else {
-      setEditContact(null)
-      setPrenom('')
-      setNom('')
-      setEmail('')
-      setTelephone('')
-      setPoste('')
-      setEntrepriseId(null)
-    }
+    setEditContact(contact) // null = nouveau
     setVisible(true)
   }
 
-  const handleSave = async () => {
-    const payload = { prenom, nom, email, telephone, poste, entreprise_id: entrepriseId }
+  // ---------- SAVE from Formio ----------
+  const saveFromFormio = async (data) => {
+    // data = JSON brut { prenom?, nom?, email?, telephone?, poste?, entreprise_id?, ... }
+    const clean = { ...data }
+    delete clean.submit
+
+    // Colonnes "fixes" connues (si présentes dans le JSON)
+    const fixed = {
+      entreprise_id: clean.entreprise_id ?? (editContact?.entreprise_id ?? null),
+      prenom:        clean.prenom        ?? (editContact?.prenom ?? null),
+      nom:           clean.nom           ?? (editContact?.nom ?? null),
+      email:         clean.email         ?? (editContact?.email ?? null),
+      telephone:     clean.telephone     ?? (editContact?.telephone ?? null),
+      poste:         clean.poste         ?? (editContact?.poste ?? null),
+      civilite:      clean.civilite      ?? (editContact?.civilite ?? null),
+      adresse:       clean.adresse       ?? (editContact?.adresse ?? null),
+      ville:         clean.ville         ?? (editContact?.ville ?? null),
+      pays:          clean.pays          ?? (editContact?.pays ?? null),
+      tags:          clean.tags          ?? (editContact?.tags ?? null),
+      source:        clean.source        ?? (editContact?.source ?? null),
+      statut:        clean.statut        ?? (editContact?.statut ?? null),
+      notes:         clean.notes         ?? (editContact?.notes ?? null),
+    }
+
     try {
       if (editContact) {
-        const res = await fetch(`${API_CONTACTS}/${editContact.id}`, {
+        const res = await fetchWithAuth(`${API_CONTACTS}/${editContact.id}`, {
           method: 'PUT',
-          headers: getAuthHeaders(),
-          body: JSON.stringify(payload),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...editContact, ...fixed, form_data: clean }),
         })
         if (!res.ok) throw new Error('Mise à jour impossible')
         showSuccess('Contact mis à jour')
       } else {
-        const res = await fetch(`${API_CONTACTS}`, {
+        const res = await fetchWithAuth(`${API_CONTACTS}`, {
           method: 'POST',
-          headers: getAuthHeaders(),
-          body: JSON.stringify(payload),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...fixed, form_data: clean }),
         })
         if (!res.ok) throw new Error('Création impossible')
         showSuccess('Contact créé')
@@ -128,19 +129,19 @@ const Contacts = () => {
   // ---------- SEARCH ----------
   const [search, setSearch] = useState('')
   const filteredContacts = contacts.filter((c) => {
-    const term = search.toLowerCase()
-    return (
-      c.prenom?.toLowerCase().includes(term) ||
-      c.nom?.toLowerCase().includes(term) ||
-      c.email?.toLowerCase().includes(term) ||
-      c.telephone?.toLowerCase().includes(term) ||
-      c.poste?.toLowerCase().includes(term) ||
-      c.entreprise_nom?.toLowerCase().includes(term)
-    )
-  })
+  const fd = fdOf(c)
+  const term = search.toLowerCase()
+  return (
+    toText(fd.prenom).toLowerCase().includes(term) ||
+    toText(fd.nom).toLowerCase().includes(term) ||
+    toText(fd.email).toLowerCase().includes(term) ||
+    toText(fd.telephone).toLowerCase().includes(term) ||
+    toText(fd.poste).toLowerCase().includes(term) ||
+    toText(fd.entreprise).toLowerCase().includes(term) ||
+    toText(entreprisesMap[c.entreprise_id]).toLowerCase().includes(term)
+  )
+})
 
-  // Options pour react-select
-  const entrepriseOptions = entreprises.map(e => ({ value: e.id, label: e.nom }))
 
   return (
     <div className="container py-4">
@@ -153,8 +154,8 @@ const Contacts = () => {
             </CButton>
           </ProtectedButton>
         </CCardHeader>
+
         <CCardBody>
-          {/* Champ recherche */}
           <CFormInput
             className="mb-3"
             placeholder="Rechercher…"
@@ -174,141 +175,83 @@ const Contacts = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {filteredContacts.length ? (
-                filteredContacts.map((c) => (
+              {filteredContacts.length ? filteredContacts.map((c) => {
+  const fd = fdOf(c)
+  const entrepriseNom = c.entreprise_id
+    ? (entreprisesMap[c.entreprise_id] || fd.entreprise || "-")
+    : (fd.entreprise || "-")
+
+  return (
                   <CTableRow key={c.id}>
-                    <CTableDataCell>{`${c.prenom || ''} ${c.nom || ''}`}</CTableDataCell>
-                    <CTableDataCell>{c.email}</CTableDataCell>
-                    <CTableDataCell>{c.telephone}</CTableDataCell>
-                    <CTableDataCell>{c.poste}</CTableDataCell>
-                    <CTableDataCell>{c.entreprise_id ? (
-    <Link to={`/entreprises/${c.entreprise_id}`} className="text-primary fw-bold">
-      {c.entreprise_nom || "Entreprise"}
-    </Link>
-  ) : (
-    "-"
-  )}</CTableDataCell>
+                    <CTableDataCell>{`${fd.prenom || ""} ${fd.nom || ""}`}</CTableDataCell>
+      <CTableDataCell>{fd.email || "-"}</CTableDataCell>
+      <CTableDataCell>{fd.telephone || "-"}</CTableDataCell>
+      <CTableDataCell>{fd.poste || "-"}</CTableDataCell>
+                    <CTableDataCell>
+                      {c.entreprise_id ? (
+                        <Link to={`/entreprises/${c.entreprise_id}`} className="text-primary fw-bold">
+                          {c.entreprise_nom || 'Entreprise'}
+                        </Link>
+                      ) : ('-')}
+                    </CTableDataCell>
                     <CTableDataCell style={{ textAlign: 'center' }}>
-                        <ProtectedButton
-                        action="contact.view"
-                        actionsConfig={actionsConfig}
-                        currentUserRoles={currentUserRoles}
-                      >
+                      <ProtectedButton action="contact.view" actionsConfig={actionsConfig} currentUserRoles={currentUserRoles}>
                         <Link to={`/annuaire/contacts/${c.id}`}>
-  <CButton size="sm" className="me-2" color="success" variant="ghost"><CIcon icon={cilSearch} size="lg" /></CButton>
-</Link>
+                          <CButton size="sm" className="me-2" color="success" variant="ghost">
+                            <CIcon icon={cilSearch} size="lg" />
+                          </CButton>
+                        </Link>
                       </ProtectedButton>
-                        <CButton size="sm" color="info" className="me-2" variant="ghost" onClick={() => window.location.href = `mailto:${c.email}`} >
-    <CIcon icon={cilEnvelopeClosed} size="lg" /> 
-      </CButton>
-                      
-                      <ProtectedButton
-                        action="contact.delete"
-                        actionsConfig={actionsConfig}
-                        currentUserRoles={currentUserRoles}
-                      >
+
+                      <CButton size="sm" color="info" className="me-2" variant="ghost"
+                        onClick={() => window.location.href = `mailto:${c.email}`}>
+                        <CIcon icon={cilEnvelopeClosed} size="lg" />
+                      </CButton>
+
+                      <ProtectedButton action="contact.delete" actionsConfig={actionsConfig} currentUserRoles={currentUserRoles}>
                         <ConfirmDeleteModal
                           title="Supprimer le contact"
                           message="Êtes-vous sûr de vouloir supprimer ce contact ? Cette action est irréversible."
-                          trigger={
-                            <CButton size="sm" color="danger" variant="ghost">
-                              <CIcon icon={cilTrash} size="lg" />
-                            </CButton>
-                          }
+                          trigger={<CButton size="sm" color="danger" variant="ghost"><CIcon icon={cilTrash} size="lg" /></CButton>}
                           onConfirm={async () => {
                             const res = await fetch(`${API_CONTACTS}/${c.id}`, { method: "DELETE" })
-                            if (!res.ok) {
-                              const errorText = await res.text()
-                              throw new Error(errorText || "Suppression impossible")
-                            }
-                            setContacts((prev) => prev.filter((contact) => contact.id !== c.id))
+                            if (!res.ok) throw new Error(await res.text() || "Suppression impossible")
+                            setContacts(prev => prev.filter(x => x.id !== c.id))
                             showSuccess("Contact supprimé")
                           }}
                         />
                       </ProtectedButton>
                     </CTableDataCell>
                   </CTableRow>
-                ))
-              ) : (
-                <CTableRow>
-                  <CTableDataCell colSpan={6} className="text-center">
-                    Aucun contact trouvé
-                  </CTableDataCell>
-                </CTableRow>
-              )}
+                )
+}) : (
+  <CTableRow>
+    <CTableDataCell colSpan={6} className="text-center">Aucun contact trouvé</CTableDataCell>
+  </CTableRow>
+)}
+
             </CTableBody>
           </CTable>
         </CCardBody>
       </CCard>
 
-      {/* OFFCANVAS FORM */}
+      {/* OFFCANVAS = Formio */}
       <COffcanvas placement="end" visible={visible} onHide={() => setVisible(false)} style={{ width: "33%" }}>
         <COffcanvasHeader>
           <h5>{editContact ? 'Éditer contact' : 'Nouveau contact'}</h5>
         </COffcanvasHeader>
         <COffcanvasBody>
-          <div className="d-flex flex-column gap-3">
-            <div className="row">
-              <div className="col-md-6">
-                <CFormInput
-                  label="Prénom"
-                  value={prenom}
-                  onChange={(e) => setPrenom(e.target.value)}
-                />
-              </div>
-              <div className="col-md-6">
-                <CFormInput
-                  label="Nom"
-                  value={nom}
-                  onChange={(e) => setNom(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="row mt-3">
-              <div className="col-md-6">
-                <CFormInput
-                  label="Email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="col-md-6">
-                <CFormInput
-                  label="Téléphone"
-                  value={telephone}
-                  onChange={(e) => setTelephone(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="row mt-3">
-              <div className="col-12">
-                <CFormInput
-                  label="Poste"
-                  value={poste}
-                  onChange={(e) => setPoste(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="row mt-3">
-              <div className="col-12">
-                <label className="form-label">Entreprise</label>
-                <Select
-                  options={entrepriseOptions}
-                  value={entrepriseOptions.find(opt => opt.value === entrepriseId) || null}
-                  onChange={(opt) => setEntrepriseId(opt?.value || null)}
-                  placeholder="Sélectionner une entreprise"
-                />
-              </div>
-            </div>
-
-            <div className="d-flex gap-2 justify-content-end mt-3">
-              <CButton color="secondary" variant="ghost" onClick={() => setVisible(false)}>Annuler</CButton>
-              <CButton color="primary" onClick={handleSave}>Enregistrer</CButton>
-            </div>
+          {!form ? (
+            <p>Chargement du formulaire…</p>
+          ) : (
+            <FormioRenderer
+              form={form}
+              submission={editContact?.form_data || {}}
+              onSave={saveFromFormio}
+            />
+          )}
+          <div className="text-end mt-3">
+            <CButton color="secondary" variant="ghost" onClick={() => setVisible(false)}>Fermer</CButton>
           </div>
         </COffcanvasBody>
       </COffcanvas>
@@ -316,14 +259,7 @@ const Contacts = () => {
       {/* TOASTER */}
       <CToaster placement="bottom-end" className="p-3" style={{ zIndex: 9999 }}>
         {toasts.map((t) => (
-          <CToast
-            key={t.id}
-            visible
-            autohide
-            delay={3000}
-            color={t.color}
-            onClose={() => removeToast(t.id)}
-          >
+          <CToast key={t.id} visible autohide delay={3000} color={t.color} onClose={() => removeToast(t.id)}>
             <CToastBody className="text-white">{t.message}</CToastBody>
           </CToast>
         ))}

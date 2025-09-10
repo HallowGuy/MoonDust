@@ -9,7 +9,7 @@ import CIcon from '@coreui/icons-react'
 import { cilPencil, cilSave } from '@coreui/icons'
 
 import { API_ROLES, API_ACTIONS_CONFIG } from 'src/api'
-import ProtectedButton from "/src/components/ProtectedButton"
+import ProtectedButton from "/src/components/protected/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
 
 const ROLE_COLORS = {

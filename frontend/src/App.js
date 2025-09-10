@@ -14,7 +14,7 @@ import CIcon from "@coreui/icons-react"
 import { cilChatBubble } from "@coreui/icons"
 import keycloak from "./keycloak.js";
 
-import ProtectedRoute from "./components/ProtectedRoute"
+import ProtectedRoute from "./components/protected/ProtectedRoute"
 import { API_THEME, API_ACTIONS_CONFIG, API_ROUTES_CONFIG, CLIENT_ID } from "./api"
 import { rolesFromToken, decodeJwt } from "./lib/http"
 import { PermissionsContext } from "./context/PermissionsContext"
@@ -22,7 +22,7 @@ import MessengerWidget from "./views/widgets/WidgetMessenger"
 import { useMessenger } from "src/context/MessengerContext"
 import WidgetMessenger from "src/views/widgets/WidgetMessenger"
 import { MessengerProvider } from "src/context/MessengerContext"
-import FloatingMessengerButton from "src/components/FloatingMessengerButton"
+import FloatingMessengerButton from "src/components/messenger/FloatingMessengerButton"
 
 
 // imports directs

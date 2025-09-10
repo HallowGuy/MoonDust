@@ -9,8 +9,8 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilPeople } from '@coreui/icons'
 import { API_ENTREPRISES, API_CONTACTS } from 'src/api'
-import ConfirmDeleteModal from "../../components/ConfirmDeleteModal"
-import ProtectedButton from "../../components/ProtectedButton"
+import ConfirmDeleteModal from "../../components/confirmations/ConfirmDeleteModal"
+import ProtectedButton from "../../components/protected/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
 
 const Entreprises = () => {

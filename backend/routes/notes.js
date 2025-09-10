@@ -13,7 +13,7 @@ router.post("/", authenticate, async (req, res) => {
     // 1. Trouver l'id local de l'utilisateur connecté via son username
     const userRes = await pool.query(
       "SELECT id FROM demo_first.keycloak_users WHERE username=$1",
-      [req.user.preferred_username || req.user.username]
+      [req.auth.preferred_username || req.auth.username]
     )
 
     if (userRes.rows.length === 0) {
@@ -118,7 +118,7 @@ router.put("/:id", authenticate, async (req, res) => {
     }
 
     // Vérifier que l’utilisateur courant est bien le propriétaire
-    if (check.rows[0].utilisateur_id !== req.user.id) {
+    if (check.rows[0].utilisateur_id !== req.auth.id) {
       return res.status(403).json({ error: "Accès interdit" });
     }
 
@@ -163,7 +163,7 @@ WHERE n.user_id = $1
 ORDER BY n.created_at DESC
 LIMIT 20
 `,
-      [req.user.id]
+      [req.auth.id]
     );
     res.json(result.rows);
   } catch (err) {
@@ -172,13 +172,14 @@ LIMIT 20
 });
 
 // DELETE /api/notes/:id
+// DELETE /api/notes/:id
 router.delete("/:id", authenticate, async (req, res) => {
   try {
     const noteId = req.params.id;
 
-    // Vérifier que la note appartient bien à l'utilisateur courant
+    // Vérifier que la note existe
     const check = await pool.query(
-      `SELECT * FROM demo_first.notes WHERE id=$1`,
+      "SELECT * FROM demo_first.notes WHERE id=$1",
       [noteId]
     );
 
@@ -186,12 +187,24 @@ router.delete("/:id", authenticate, async (req, res) => {
       return res.status(404).json({ error: "Note introuvable" });
     }
 
-    // ⚠️ Important : vérifier l'appartenance
-    if (check.rows[0].utilisateur_id !== req.user.id) {
+    // Récupérer l'id local de l'utilisateur connecté
+    const userRes = await pool.query(
+      "SELECT id FROM demo_first.keycloak_users WHERE username=$1",
+      [req.auth.preferred_username || req.auth.username]
+    );
+
+    if (userRes.rows.length === 0) {
+      return res.status(400).json({ error: "Utilisateur non trouvé en base" });
+    }
+
+    const localUserId = userRes.rows[0].id;
+
+    // Vérifier que la note appartient bien à l'utilisateur courant
+    if (check.rows[0].utilisateur_id !== localUserId) {
       return res.status(403).json({ error: "Accès interdit" });
     }
 
-    // Supprimer la note (les réponses peuvent être supprimées en cascade si FK bien configurée)
+    // Supprimer la note
     await pool.query("DELETE FROM demo_first.notes WHERE id=$1", [noteId]);
 
     res.status(204).send();
@@ -200,6 +213,7 @@ router.delete("/:id", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // POST /api/notes/:noteId/replies
 router.post("/:noteId/replies", authenticate, async (req, res) => {
@@ -210,7 +224,7 @@ router.post("/:noteId/replies", authenticate, async (req, res) => {
     // Récupérer utilisateur local
     const userRes = await pool.query(
       "SELECT id FROM demo_first.keycloak_users WHERE username=$1",
-      [req.user.preferred_username || req.user.username]
+      [req.auth.preferred_username || req.auth.username]
     );
 
     if (userRes.rows.length === 0) {
@@ -257,7 +271,7 @@ router.delete("/replies/:id", authenticate, async (req, res) => {
     }
 
     // Vérifier l'appartenance
-    if (check.rows[0].utilisateur_id !== req.user.id) {
+    if (check.rows[0].utilisateur_id !== req.auth.id) {
       return res.status(403).json({ error: "Accès interdit" });
     }
 

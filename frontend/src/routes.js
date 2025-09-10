@@ -1,5 +1,5 @@
 import React from 'react'
-import ProtectedRoute from "./components/ProtectedRoute"
+import ProtectedRoute from "./components/protected/ProtectedRoute"
 import KanbanBoard from './views/task/KanbanBoard'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
@@ -20,7 +20,7 @@ const Profil = React.lazy(() => import('./views/pages/profil/Profil'))
 const Settings = React.lazy(() => import('./views/settings/Settings'))
 const FormioBuilder = React.lazy(() => import('./views/forms/FormioBuilder'))
 const FormioRenderer = React.lazy(() => import('./views/forms/FormioRenderer'))
-const EditionForms = React.lazy(() => import('./views/forms/EditionForms'))
+const EditionForms = React.lazy(() => import('./views/forms/Forms'))
 const FormBuilderPage = React.lazy(() => import('./views/forms/FormBuilderPage'))
 const FormRenderPage = React.lazy(() => import('./views/forms/FormRenderPage'))
 const Chat = React.lazy(() => import('./views/chat'))
@@ -105,7 +105,7 @@ const routes = [
   { path: '/settings/actions', name: 'Permissions', element: Actions  },
     { path: '/forms/formiobuilder', name: 'Permissions', element: FormioBuilder  },
   { path: '/forms/formiorenderer', name: 'Affichage formulaire', element: FormioRenderer  },
-  { path: '/editionforms', name: 'Edition de formulaire', element: EditionForms  },
+  { path: '/forms', name: 'Liste des formulaires', element: EditionForms  },
   { path: '/forms/:id/builder', name: 'Edition formulaire ', element: FormBuilderPage  },
     { path: '/forms/:id/view', name: 'Visualisation formulaire ', element: FormRenderPage  },
   { path: '/task/kanbanboard', name: 'Test Workflow', element: KanbanBoard  },

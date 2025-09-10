@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react"
 import { FormBuilder } from "formiojs"
 import "formiojs/dist/formio.full.min.css"
+import { patchSubmitButtons } from "src/utils/formio"
 
 const FormioBuilder = ({ form, onSave }) => {
   const builderRef = useRef(null)
@@ -27,7 +28,10 @@ const FormioBuilder = ({ form, onSave }) => {
       )
 
       builder.on("change", () => {
-        if (onSave) onSave(builder.schema)
+        if (onSave) {
+    const schema = patchSubmitButtons(builder.schema)
+    onSave(schema)
+  }
       })
 
       builderInstance.current = builder
@@ -54,8 +58,9 @@ const FormioBuilder = ({ form, onSave }) => {
           className="btn btn-primary"
           onClick={() => {
             if (onSave && builderInstance.current) {
-              onSave(builderInstance.current.schema)
-            }
+  const schema = patchSubmitButtons(builderInstance.current.schema)
+  onSave(schema)
+}
           }}
         >
           Enregistrer

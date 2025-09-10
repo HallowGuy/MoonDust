@@ -63,7 +63,7 @@ const ThemeLogo = () => {
     <div className="container py-4">
       <CCard className="shadow-lg">
         <CCardHeader>
-          <h2 className="mb-0">Gestion du logo</h2>
+          <span>Gestion du logo</span>
         </CCardHeader>
         <CCardBody>
           {logoUrl && (

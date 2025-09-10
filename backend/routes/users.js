@@ -4,6 +4,7 @@ import fetch from "node-fetch";
 import jwt from "jsonwebtoken";
 import { getAdminToken, KEYCLOAK_URL, REALM } from "../utils/keycloak.js";
 
+
 const router = express.Router();
 
 // GET /api/users
@@ -176,5 +177,39 @@ router.delete("/:id/roles", async (req, res) => {
     res.status(204).send();
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+
+// POST /api/users/:id/send-initial-email
+router.post("/:id/send-initial-email", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const token = await getAdminToken();
+
+    // Appel API Keycloak pour envoyer l’email
+    const r = await fetch(
+      `${KEYCLOAK_URL}/admin/realms/${REALM}/users/${userId}/execute-actions-email`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        // Keycloak va envoyer un mail avec ce type d’action
+        body: JSON.stringify(["UPDATE_PASSWORD"]),
+      }
+    );
+
+    if (!r.ok) {
+      const t = await r.text();
+      throw new Error(`Keycloak ${r.status}: ${t}`);
+    }
+
+    res.json({ message: "Email d’initialisation envoyé par Keycloak" });
+  } catch (err) {
+    console.error("❌ Erreur envoi email init:", err);
+    res.status(500).json({ error: "Impossible d’envoyer l’email d’initialisation" });
+  }
+});
+
 
 export default router;

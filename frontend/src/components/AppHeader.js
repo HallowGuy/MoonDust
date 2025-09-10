@@ -24,104 +24,29 @@ import {
   cilMoon,
   cilSun,cilPuzzle,cilCursor,cilNotes,cilChartPie,cilStar,cilCalculator,cilDescription,cilDrop,cilPencil,cilSearch
 } from '@coreui/icons'
+import AppSidebar from "./AppSidebar"
 
 import { AppBreadcrumb } from './index'
 import { AppHeaderDropdown } from './header/index'
-import { NotificationsIcon } from "src/components/NotificationsIcon"
-import MessengerIcon from "src/components/MessengerIcon"
+import { NotificationsIcon } from "./header/NotificationsIcon"
+import MessengerIcon from "./header/MessengerIcon"
 import { PermissionsContext } from 'src/context/PermissionsContext'
 import { buildNav } from 'src/_nav'
 import _nav from 'src/_nav'
 import { flattenNav } from 'src/utils/navUtils'
+import { fetchWithAuth } from "../utils/auth";
+import { API_CONVERSATIONS } from "src/api"
+import SearchMenu from "./header/SearchMenu"
 
 const AppHeader = () => {
-const navigate = useNavigate()
 const headerRef = useRef()
-const [showSearch, setShowSearch] = useState(false)
-const [query, setQuery] = useState("")
-const [results, setResults] = useState([])
- const { routesConfig, currentUserRoles } = useContext(PermissionsContext)
-
-  // ✅ Construit le menu autorisé pour cet user
-  const allowedNav = buildNav(routesConfig, currentUserRoles || [])
-  const navItems = flattenNav(allowedNav)
-
- const handleInput = (e) => {
-    const value = e.target.value
-    setQuery(value)
-    if (value.length > 1) {
-      const filtered = navItems.filter((item) =>
-        item.name.toLowerCase().includes(value.toLowerCase())
-      )
-      setResults(filtered)
-    } else {
-      setResults([])
-    }
-  }
-
-  const handleSelect = (to) => {
-    setQuery("")
-    setResults([])
-    setShowSearch(false)
-    navigate(to)
-  }
-
-  const handleSearch = (e) => {
-    e.preventDefault()
-    if (results.length > 0) {
-      handleSelect(results[0].to)
-    }
-  }
-
-
-
 
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+    const sidebarShow = useSelector((state) => state.sidebarShow) // ✅ correction
 
   const dispatch = useDispatch()
-  const sidebarShow = useSelector((state) => state.sidebarShow)
 
-  const [unreadCount, setUnreadCount] = useState(0)
   
-  // récupérer le token
-  const token = localStorage.getItem("access_token")
-
-  const getAuthHeaders = () => ({
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  })
-
-  // Charger les conversations et compter les non lus
-  const fetchUnread = async () => {
-    if (!token) return
-    try {
-      const res = await fetch("http://localhost:5001/api/conversations/mine", {
-        headers: getAuthHeaders(),
-      })
-      const data = await res.json()
-      if (Array.isArray(data)) {
-        const total = data.reduce((sum, conv) => sum + (conv.unread_count || 0), 0)
-        setUnreadCount(total)
-      }
-    } catch (err) {
-      console.error("❌ Erreur fetch unread:", err)
-    }
-  }
-  
-
-  useEffect(() => {
-    fetchUnread()
-    // optionnel : refresh toutes les 10s
-    const interval = setInterval(fetchUnread, 10000)
-    return () => clearInterval(interval)
-  }, [])
-
-  useEffect(() => {
-    document.addEventListener('scroll', () => {
-      headerRef.current &&
-        headerRef.current.classList.toggle('shadow-sm', document.documentElement.scrollTop > 0)
-    })
-  }, [])
 
   return (
     <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
@@ -291,42 +216,7 @@ const [results, setResults] = useState([])
      
         </CHeaderNav>
          <CHeaderNav className="ms-auto">
-           <li className="nav-item d-flex align-items-center position-relative">
-    <CIcon
-      icon={cilSearch}
-      size="lg"
-      role="button"
-      className="me-3"
-      onClick={() => setShowSearch(!showSearch)}
-    />
-    {showSearch && (
-      <div className="position-absolute top-100 end-0 bg-white shadow p-2 rounded" style={{ minWidth: "220px", zIndex: 1050 }}>
-        <form onSubmit={handleSearch}>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Rechercher un menu..."
-            value={query}
-            onChange={handleInput}
-          />
-        </form>
-        {results.length > 0 && (
-          <ul className="list-group mt-2">
-            {results.map((item, idx) => (
-              <li
-                key={idx}
-                className="list-group-item list-group-item-action"
-                role="button"
-                onClick={() => handleSelect(item.to)}
-              >
-                {item.name}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    )}
-  </li>
+           <SearchMenu />
          <NotificationsIcon />
           <MessengerIcon />
 

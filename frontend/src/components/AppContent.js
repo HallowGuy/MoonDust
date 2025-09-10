@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { CSpinner } from '@coreui/react'
 
 import routes from '../routes'
-import PrivateRoute from './PrivateRoute'
+import PrivateRoute from './protected/PrivateRoute'
 
 const AppContent = () => {
   return (

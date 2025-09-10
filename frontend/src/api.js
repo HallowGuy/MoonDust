@@ -109,3 +109,6 @@ export const API_CONVERSATION_MESSAGES = (id) =>
 // Marquer comme lu
 export const API_CONVERSATION_READ = (id) =>
   `${API_CONVERSATIONS}/${id}/read`
+
+export const API_SUBMISSIONS = `${API_BASE}/submissions`
+export const API_SUBMISSIONS_BY_FORM = (formId) => `${API_SUBMISSIONS}/${formId}`

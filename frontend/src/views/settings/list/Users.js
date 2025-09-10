@@ -7,11 +7,11 @@ import {
   CToaster, CToast, CToastBody
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash, cilPlus, cilCheckCircle, cilXCircle } from '@coreui/icons'
+import { cilPencil, cilTrash, cilPlus, cilCheckCircle, cilXCircle, cilSend } from '@coreui/icons'
 import Select from 'react-select'
 import { API_USERS, API_ROLES } from 'src/api'
-import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal"
-import ProtectedButton from "../../../components/ProtectedButton"
+import ConfirmDeleteModal from "../../../components/confirmations/ConfirmDeleteModal"
+import ProtectedButton from "../../../components/protected/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
 import { fetchWithAuth } from "../../../utils/auth";
 
@@ -276,6 +276,36 @@ const Users = () => {
                       )}
                     </CTableDataCell>
                     <CTableDataCell style={{ textAlign: 'center' }}>
+                    <ProtectedButton
+  action="user.sendInitMail"
+  actionsConfig={actionsConfig}
+  currentUserRoles={currentUserRoles}
+>
+  <CButton
+    size="sm"
+    color="info"
+    className="me-2"
+    variant="ghost"
+    onClick={async () => {
+      try {
+        const res = await fetchWithAuth(`${API_USERS}/${u.id}/send-initial-email`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+        })
+        if (!res.ok) {
+          const errText = await res.text()
+          throw new Error(errText || "Impossible d’envoyer l’email")
+        }
+        showSuccess("Email d’initialisation envoyé (Keycloak)")
+      } catch (e) {
+        showError(e.message)
+      }
+    }}
+  >
+    <CIcon icon={cilSend} size="lg" />
+  </CButton>
+</ProtectedButton>
+
                       <ProtectedButton
                         action="user.edit"
                         actionsConfig={actionsConfig}

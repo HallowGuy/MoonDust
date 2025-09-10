@@ -9,7 +9,7 @@ import CIcon from '@coreui/icons-react'
 import { cilPencil, cilSave } from '@coreui/icons'
 import routes from '../../routes'
 import { PermissionsContext } from "src/context/PermissionsContext"
-import ProtectedButton from "src/components/ProtectedButton"
+import ProtectedButton from "src/components/protected/ProtectedButton"
 import { API_ROLES, API_ROUTES_CONFIG } from 'src/api'
 import { fetchWithAuth } from "../../utils/auth";
 
