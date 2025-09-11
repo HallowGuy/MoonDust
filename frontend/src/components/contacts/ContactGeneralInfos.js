@@ -1,7 +1,7 @@
 // src/views/contacts/ContactDetail.js
 import React, { useEffect, useState, useContext } from "react"
 import { useParams } from "react-router-dom"
-import { API_CONTACTS, API_FORM_CONFIG } from "src/api"
+import { API_CONTACTS, API_FORM_DETAIL } from "src/api"
 import { fetchWithAuth } from "src/utils/auth"
 import ProtectedFormio from "src/components/protected/ProtectedFormio"
 import { PermissionsContext } from "/src/context/PermissionsContext"
@@ -34,12 +34,21 @@ const ContactDetail = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [resForm, resContact] = await Promise.all([
-          fetchWithAuth(`${API_FORM_CONFIG}/contact`),
-          fetchWithAuth(`${API_CONTACTS}/${id}`),
-        ])
-        const [formJson, contactJson] = await Promise.all([resForm.json(), resContact.json()])
-        setForm(formJson)
+        
+       // ⚡ charge le schéma publié du form "contact"
+       const [resForm, resContact] = await Promise.all([
+         fetchWithAuth(API_FORM_DETAIL('contact')),
+         fetchWithAuth(`${API_CONTACTS}/${id}`),
+       ])
+       const [meta, contactJson] = await Promise.all([resForm.json(), resContact.json()])
+       // meta = { id, name, current_version, current_schema }
+       if (!meta?.current_schema) {
+         console.error("Aucune version publiée pour 'contact'")
+       }
+       setForm({ id: meta.id, name: meta.name, schema: meta.current_schema || { display:"form", components:[] } })
+         
+
+
         setContact(contactJson)
       } catch (e) {
         console.error("❌ Erreur fetch ContactDetail:", e)
@@ -66,24 +75,24 @@ const ContactDetail = () => {
           //mobile: { roles: ["admin", "manager"] },
           //tags:   { actions: ["contact.update", "tags.edit"] },
         }}
-  form={form}
-  submission={contact.form_data || {}}
-        onSave={async (data) => {
-          try {
-            const res = await fetchWithAuth(`${API_CONTACTS}/${id}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ ...contact, form_data: data }),
-            })
-            if (!res.ok) throw new Error("Erreur API")
-            const updated = await res.json()
-            setContact(updated)
-            showSuccess("Contact mis à jour")  
-          } catch (err) {
-            console.error("❌ Erreur update Contact:", err)
-            showError("Erreur enregistrement")
-          }
-        }}
+  form={form}                                   // { id, name, schema }
+  submission={{ data: contact.form_data || {} }}// ⚡ pré-rempli
+  onSave={async (data) => {
+    try {
+      const res = await fetchWithAuth(`${API_CONTACTS}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...contact, form_data: data }),
+      })
+      if (!res.ok) throw new Error("Erreur API")
+      const updated = await res.json()
+      setContact(updated)
+      showSuccess("Contact mis à jour")
+    } catch (err) {
+      console.error(err)
+      showError("Erreur enregistrement")
+    }
+  }}
       />
       {/* TOASTER */}
             <CToaster placement="bottom-end" className="p-3" style={{ zIndex: 9999 }}>

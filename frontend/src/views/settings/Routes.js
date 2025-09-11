@@ -157,7 +157,7 @@ const totalPages = Math.ceil(filtered.length / perPage)
     <div className="container py-4">
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
-          <span>Éditeur des accès aux routes</span>
+          <span>Édition des accès aux routes</span>
           <ProtectedButton
             actionsConfig={actionsConfig}
             currentUserRoles={currentUserRoles}
@@ -249,6 +249,7 @@ const totalPages = Math.ceil(filtered.length / perPage)
                       >
                         <CButton
                           size="sm"
+                          className="me-2" 
                           color="success"
                           variant="ghost"
                           onClick={() => openEdit(r)}
@@ -309,7 +310,7 @@ const totalPages = Math.ceil(filtered.length / perPage)
         placement="end"
         visible={showEdit}
         onHide={() => setShowEdit(false)}
-        style={{ width: '33%' }}
+        style={{ width: '20%' }}
       >
         <COffcanvasHeader>
           <h5 className="mb-0">Éditer : {editRoute?.name}</h5>
@@ -336,7 +337,6 @@ const totalPages = Math.ceil(filtered.length / perPage)
                   </>
                 ) : (
                   <>
-                    <CIcon icon={cilSave} className="me-2" />
                     Enregistrer
                   </>
                 )}

@@ -257,6 +257,7 @@ const totalPages = Math.ceil(filtered.length / perPage)
                         >
                           <CButton
                             size="sm"
+                            className="me-2" 
                             color="success"
                             variant="ghost"
                             onClick={() => openEdit(a)}
@@ -309,7 +310,7 @@ const totalPages = Math.ceil(filtered.length / perPage)
       </CCard>
 
       {/* Sidebar édition */}
-      <COffcanvas placement="end" visible={showEdit} onHide={() => setShowEdit(false)} style={{ width: '33%' }}>
+      <COffcanvas placement="end" visible={showEdit} onHide={() => setShowEdit(false)} style={{ width: '20%' }}>
         <COffcanvasHeader>
           <h5 className="mb-0">Éditer : {Array.isArray(editAction) ? "Plusieurs actions" : editAction}</h5>
         </COffcanvasHeader>
@@ -342,8 +343,7 @@ const totalPages = Math.ceil(filtered.length / perPage)
                   </>
                 ) : (
                   <>
-                    <CIcon icon={cilSave} className="me-2" />
-                    Enregistrer
+                                        Enregistrer
                   </>
                 )}
               </CButton>

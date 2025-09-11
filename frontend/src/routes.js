@@ -1,14 +1,10 @@
 import React from 'react'
 import ProtectedRoute from "./components/protected/ProtectedRoute"
-import KanbanBoard from './views/task/KanbanBoard'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const Users = React.lazy(() => import('./views/settings/list/Users'))
-const Roles = React.lazy(() => import('./views/settings/list/Roles'))
-const Groupes = React.lazy(() => import('./views/settings/list/Groupes'))
-const Documents = React.lazy(() => import('./views/import/Documents'))
-const ThemeColors = React.lazy(() => import('./views/settings/custom/ThemeColors'))
-const ThemeLogo = React.lazy(() => import('./views/settings/custom/ThemeLogo'))
+const Users = React.lazy(() => import('./views/settings/Users'))
+const Roles = React.lazy(() => import('./views/settings/Roles'))
+const Groupes = React.lazy(() => import('./views/settings/Groupes'))
 const Audit = React.lazy(() => import('./views/settings/Audit'))
 const Test = React.lazy(() => import('./views/wkf/Test'))
 const AvancementWorkflow = React.lazy(() => import('./views/wkf/AvancementWorkflow'))
@@ -24,12 +20,12 @@ const EditionForms = React.lazy(() => import('./views/forms/Forms'))
 const FormBuilderPage = React.lazy(() => import('./views/forms/FormBuilderPage'))
 const FormRenderPage = React.lazy(() => import('./views/forms/FormRenderPage'))
 const Chat = React.lazy(() => import('./views/chat'))
-const Kanbanboard = React.lazy(() => import('./views/task/KanbanBoard'))
 const Listes = React.lazy(() => import('./views/settings/Listes'))
 const Contacts = React.lazy(() => import('./views/annuaire/Contacts'))
 const Entreprises = React.lazy(() => import('./views/annuaire/Entreprises'))
 const Projets = React.lazy(() => import('./views/annuaire/Projets'))
 const ContactsDetail = React.lazy(() => import('./views/annuaire/ContactsDetail'))
+const Personnalisation = React.lazy(() => import('./views/settings/Personnalisation'))
 
 
 
@@ -86,13 +82,12 @@ const routes = [
   { path: '/', name: 'Accueil', element: Settings  },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard  },
   { path: '/settings/settings', name: 'Paramétrage', element: Settings  },
-  { path: '/settings/list/users', name: 'Gestion des utilisateurs', element: Users  },
-  { path: '/settings/list/roles', name: 'Gestion des rôles', element: Roles  },
-  { path: '/settings/list/groupes', name: 'Gestion des groupes', element: Groupes  },
-  { path: '/import/documents', name: 'Gestion des documents', element: Documents  },
+  { path: '/settings/users', name: 'Gestion des utilisateurs', element: Users  },
+  { path: '/settings/roles', name: 'Gestion des rôles', element: Roles  },
+  { path: '/settings/groupes', name: 'Gestion des groupes', element: Groupes  },
+  { path: '/settings/personnalisation', name: 'Personnalisation', element: Personnalisation  },
 
-  { path: '/settings/custom/themecolors', name: 'Gestion des couleurs', element: ThemeColors  },
-  { path: '/settings/custom/themelogo', name: 'Gestion du logo', element: ThemeLogo  },
+
   { path: '/settings/audit', name: 'Journal audit', element: Audit  },
   { path: '/settings/listes', name: 'Edition des listes ', element: Listes  },
     { path: '/annuaire/contacts', name: 'Liste des contacts ', element: Contacts  },
@@ -108,7 +103,6 @@ const routes = [
   { path: '/forms', name: 'Liste des formulaires', element: EditionForms  },
   { path: '/forms/:id/builder', name: 'Edition formulaire ', element: FormBuilderPage  },
     { path: '/forms/:id/view', name: 'Visualisation formulaire ', element: FormRenderPage  },
-  { path: '/task/kanbanboard', name: 'Test Workflow', element: KanbanBoard  },
   { path: '/wkf/test', name: 'Test Workflow', element: Test  },
   { path: '/wkf/avancementworkflow', name: 'Avancement Workflow', element: AvancementWorkflow  },
   { path: '/wkf/workflow', name: 'Liste Workflow', element: Workflow  },

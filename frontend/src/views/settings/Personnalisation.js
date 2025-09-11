@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import {
-  CToaster,
-  CToast,
-  CToastBody,
   CCard,
   CCardHeader,
   CCardBody,
-  CButton
+  CButton,
+  CToaster,
+  CToast,
+  CToastBody,
 } from '@coreui/react'
 
 import { API_BASE } from 'src/api'
@@ -25,26 +25,32 @@ function hexToRgb(hex) {
 // Appliquer un thème au DOM
 function applyTheme(colors) {
   const root = document.documentElement
-  Object.entries(colors).forEach(([key, value]) => {
+  Object.entries(colors || {}).forEach(([key, value]) => {
     root.style.setProperty(`--bs-${key}`, value)
     root.style.setProperty(`--cui-${key}`, value)
     root.style.setProperty(`--cui-${key}-rgb`, hexToRgb(value))
   })
-  if (colors.primary) {
+  if (colors && colors.primary) {
     root.style.setProperty('--cui-link-color', colors.primary)
     root.style.setProperty('--cui-link-color-rgb', hexToRgb(colors.primary))
   }
 }
 
-const ThemeColors = () => {
+const Personnalisation = () => {
+  // ----- ÉTAT COULEURS / THÈMES -----
   const [themes, setThemes] = useState([])
   const [currentTheme, setCurrentTheme] = useState('default')
   const [colors, setColors] = useState({})
 
-  // --- TOASTS
+  // ----- ÉTAT LOGO -----
+  const [logoUrl, setLogoUrl] = useState(null)
+  const [file, setFile] = useState(null)
+  const [uploading, setUploading] = useState(false)
+
+  // ----- TOASTS GLOBAUX -----
   const [toasts, setToasts] = useState([])
   const addToast = (message, color = 'danger') => {
-    const id = Date.now()
+    const id = Date.now() + Math.random()
     setToasts((prev) => [...prev, { id, message, color }])
   }
   const showError = (msg) => addToast(msg, 'danger')
@@ -54,28 +60,32 @@ const ThemeColors = () => {
   // Charger la liste des thèmes
   useEffect(() => {
     fetch(`${API}/theme/list`)
-      .then(res => res.json())
-      .then(data => setThemes(data))
+      .then((res) => res.json())
+      .then((data) => setThemes(Array.isArray(data) ? data : []))
       .catch(() => showError('Erreur liste thèmes'))
   }, [])
 
   // Charger le thème courant au démarrage
   useEffect(() => {
-  fetch(`${API}/theme/current`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.name) setCurrentTheme(data.name)   // ✅ garder le nom du thème
-      if (data.colors) {
-        setColors(data.colors)
-        applyTheme(data.colors)
-      }
-    })
-    .catch(() => showError('Erreur chargement thème courant'))
-}, [])
+    fetch(`${API}/theme/current`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.name) setCurrentTheme(data.name)
+        if (data?.colors) {
+          setColors(data.colors)
+          applyTheme(data.colors)
+        }
+      })
+      .catch(() => showError('Erreur chargement thème courant'))
+  }, [])
 
+  // Charger le logo actuel (avec cache-busting)
+  useEffect(() => {
+    setLogoUrl(`${API}/theme/logo?ts=${Date.now()}`)
+  }, [])
 
   // Changer une couleur en direct
-  const handleChange = (key, value) => {
+  const handleColorChange = (key, value) => {
     const newColors = { ...colors, [key]: value }
     setColors(newColors)
     applyTheme(newColors)
@@ -87,8 +97,8 @@ const ThemeColors = () => {
     try {
       const res = await fetch(`${API}/theme/${name}`)
       const data = await res.json()
-      setColors(data)
-      applyTheme(data)
+      setColors(data || {})
+      applyTheme(data || {})
 
       // sauvegarde côté backend
       await fetch(`${API}/theme/current`, {
@@ -103,7 +113,7 @@ const ThemeColors = () => {
   }
 
   // Sauvegarder les couleurs modifiées
-  const handleSave = async () => {
+  const handleSaveColors = async () => {
     try {
       const res = await fetch(`${API}/theme/colors`, {
         method: 'PUT',
@@ -117,9 +127,88 @@ const ThemeColors = () => {
     }
   }
 
+  // Gestion du logo
+  const handleFileChange = (e) => {
+    setFile(e.target.files?.[0] ?? null)
+  }
+
+  const handleUploadLogo = async () => {
+    if (!file) {
+      showError('Sélectionnez un fichier SVG')
+      return
+    }
+
+    // Petite validation du type
+    if (file.type !== 'image/svg+xml' && !file.name.endsWith('.svg')) {
+      showError('Le fichier doit être au format SVG')
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    setUploading(true)
+    try {
+      const res = await fetch(`${API}/theme/logo`, {
+        method: 'POST',
+        body: formData,
+      })
+      if (!res.ok) throw new Error('Upload échoué')
+
+      setLogoUrl(`${API}/theme/logo?ts=${Date.now()}`) // rafraîchit l'aperçu
+      setFile(null)
+      showSuccess('Logo mis à jour')
+    } catch (err) {
+      console.error(err)
+      showError('Erreur lors de la mise à jour du logo')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   return (
     <div className="container py-4">
-      <CCard className="shadow-lg">
+
+       {/* ----- Bloc Logo ----- */}
+      <CCard className="shadow-lg mb-4">
+        <CCardHeader>
+          <span>Gestion du logo</span>
+        </CCardHeader>
+       <CCardBody>
+  <div className="row align-middle">
+    {/* Colonne gauche : affichage du logo actuel */}
+    <div className="col-md-6">
+      {logoUrl && (
+        <div className="mb-4 d-flex flex-column align-items-start">
+          <p className="mb-2">Logo actuel</p>
+          <img src={logoUrl} alt="Logo actuel" style={{ maxHeight: 40 }} />
+        </div>
+      )}
+    </div>
+
+    {/* Colonne droite : upload du logo */}
+    <div className="col-md-6">
+      <div className="mb-3">
+        <input
+          type="file"
+          accept="image/svg+xml"
+          className="form-control"
+          onChange={handleFileChange}
+        />
+      </div>
+
+      <CButton color="primary" onClick={handleUploadLogo} disabled={uploading}>
+        {uploading ? 'Envoi en cours…' : 'Mettre à jour le logo'}
+      </CButton>
+    </div>
+  </div>
+</CCardBody>
+
+      </CCard>
+
+
+      {/* ----- Bloc Couleurs / Thèmes ----- */}
+      <CCard className="shadow-lg mb-4">
         <CCardHeader>
           <span>Gestion des couleurs du thème</span>
         </CCardHeader>
@@ -128,7 +217,7 @@ const ThemeColors = () => {
           <div className="mb-4">
             <label className="form-label">Choisir un thème prédéfini</label>
             <select
-              className="form-select w-20"
+              className="form-select w-25"
               value={currentTheme}
               onChange={(e) => handleThemeChange(e.target.value)}
             >
@@ -140,7 +229,7 @@ const ThemeColors = () => {
             </select>
           </div>
 
-          {/* Editeur des couleurs */}
+          {/* Éditeur des couleurs */}
           <div className="row">
             {Object.entries(colors).map(([key, value]) => (
               <div key={key} className="col-md-4 mb-4">
@@ -149,23 +238,27 @@ const ThemeColors = () => {
                   type="color"
                   className="form-control form-control-color mb-2"
                   value={value}
-                  onChange={(e) => handleChange(key, e.target.value)}
+                  onChange={(e) => handleColorChange(key, e.target.value)}
                 />
                 <input
                   type="text"
                   className="form-control"
                   value={value}
-                  onChange={(e) => handleChange(key, e.target.value)}
+                  onChange={(e) => handleColorChange(key, e.target.value)}
                 />
               </div>
             ))}
           </div>
 
-          <CButton color="primary" onClick={handleSave}>Enregistrer</CButton>
+          <CButton color="primary" onClick={handleSaveColors}>
+            Enregistrer
+          </CButton>
         </CCardBody>
       </CCard>
 
-      {/* TOASTER */}
+     
+
+      {/* TOASTER GLOBAL */}
       <CToaster placement="bottom-end" className="p-3" style={{ zIndex: 9999 }}>
         {toasts.map((t) => (
           <CToast
@@ -184,4 +277,4 @@ const ThemeColors = () => {
   )
 }
 
-export default ThemeColors
+export default Personnalisation

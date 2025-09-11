@@ -1,23 +1,18 @@
-import React, { useEffect, useRef } from "react"
-import { FormBuilder } from "formiojs"
-import "formiojs/dist/formio.full.min.css"
-import { patchSubmitButtons } from "src/utils/formio"
+import React, { useEffect, useRef } from "react";
+import { FormBuilder } from "formiojs";
+import "formiojs/dist/formio.full.min.css";
 
 const FormioBuilder = ({ form, onSave }) => {
-  const builderRef = useRef(null)
-  const builderInstance = useRef(null)
+  const builderRef = useRef(null);
+  const builderInstance = useRef(null);
 
   useEffect(() => {
-    if (!builderRef.current) return
+    if (!builderRef.current) return;
 
     try {
-      // Détruire un éventuel ancien builder
-      if (builderInstance.current) {
-        builderInstance.current.destroy()
-        builderInstance.current = null
-      }
+      builderInstance.current?.destroy?.();
+      builderInstance.current = null;
 
-      // Initialiser avec le schéma
       const builder = new FormBuilder(
         builderRef.current,
         form?.schema || { display: "form", components: [] },
@@ -25,28 +20,36 @@ const FormioBuilder = ({ form, onSave }) => {
           noDefaultSubmitButton: true,
           alwaysConfirmComponentRemoval: true,
         }
-      )
+      );
 
-      builder.on("change", () => {
-        if (onSave) {
-    const schema = patchSubmitButtons(builder.schema)
-    onSave(schema)
-  }
-      })
-
-      builderInstance.current = builder
+      builderInstance.current = builder;
     } catch (err) {
-      console.error("❌ Erreur init FormioBuilder:", err)
+      console.error("❌ Erreur init FormioBuilder:", err);
     }
 
     return () => {
-      try {
-        builderInstance.current?.destroy()
-      } catch (e) {
-        console.warn("⚠️ Cleanup builder:", e)
-      }
-    }
-  }, [form, onSave])
+      try { builderInstance.current?.destroy?.(); } catch {}
+      builderInstance.current = null;
+    };
+  }, [form]);
+
+  // 🔒 Récupération robuste du schéma actuel
+  const getSchema = () => {
+    const b = builderInstance.current;
+    if (!b) return { display: "form", components: [] };
+    // Plusieurs implémentations Formio existent; on sécurise :
+    const candidate =
+      (b.schema && Object.keys(b.schema).length ? b.schema : null) ||
+      b.instance?.schema ||
+      b.instance?.form ||
+      b.form ||
+      {};
+    return {
+      display: candidate.display || "form",
+      components: Array.isArray(candidate.components) ? candidate.components : [],
+      ...candidate
+    };
+  };
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
@@ -56,19 +59,14 @@ const FormioBuilder = ({ form, onSave }) => {
         </button>
         <button
           className="btn btn-primary"
-          onClick={() => {
-            if (onSave && builderInstance.current) {
-  const schema = patchSubmitButtons(builderInstance.current.schema)
-  onSave(schema)
-}
-          }}
+          onClick={() => onSave && onSave(getSchema())} // ✅ crée la version au click
         >
           Enregistrer
         </button>
       </div>
       <div ref={builderRef} style={{ flexGrow: 1, minHeight: "600px" }} />
     </div>
-  )
-}
+  );
+};
 
-export default FormioBuilder
+export default FormioBuilder;

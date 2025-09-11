@@ -93,6 +93,7 @@ import listesRoutes from "./routes/listes.js";
 import notesRoutes from "./routes/notes.js";
 import notificationsRoutes from "./routes/notifications.js";
 import submissionsRoutes from "./routes/submissions.js";
+import formsRoutes from "./routes/forms.js";
 
 
 app.use("/api", systemRouter);       // /api/realm → infos de config
@@ -119,7 +120,8 @@ app.use("/api/exports", authenticate, exportsRoutes);
 app.use("/api/listes", authenticate, listesRoutes);
 app.use("/api/notes", authenticate, notesRoutes);
 app.use("/api/notifications", authenticate, notificationsRoutes);
-app.use("/api/submissions", submissionsRoutes);
+//app.use("/api/submissions", submissionsRoutes);
+app.use("/api/forms", authenticate, formsRoutes);
 
 
 

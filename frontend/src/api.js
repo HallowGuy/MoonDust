@@ -112,3 +112,19 @@ export const API_CONVERSATION_READ = (id) =>
 
 export const API_SUBMISSIONS = `${API_BASE}/submissions`
 export const API_SUBMISSIONS_BY_FORM = (formId) => `${API_SUBMISSIONS}/${formId}`
+
+// === Forms versionnés ===
+export const API_FORMS = `${API_BASE}/forms`;
+export const API_FORM_DETAIL = (id) => `${API_FORMS}/${id}`;
+export const API_FORM_VERSIONS = (id) => `${API_FORMS}/${id}/versions`;
+export const API_FORM_VERSION = (id, v) => `${API_FORMS}/${id}/versions/${v}`;
+export const API_FORM_VERSION_PUBLISH = (id, v) => `${API_FORMS}/${id}/versions/${v}/publish`;
+export const API_FORM_VERSION_ARCHIVE = (id, v) => `${API_FORMS}/${id}/versions/${v}/archive`;
+export const API_FORM_VERSION_RESTORE = (id, v) => `${API_FORMS}/${id}/versions/${v}/restore`;
+
+// Suppression
+export const API_FORM_DELETE = (id) => `${API_FORMS}/${id}`;
+export const API_FORM_VERSION_DELETE = (id, v) => `${API_FORMS}/${id}/versions/${v}`;
+
+// Renommage (name only)
+export const API_FORM_RENAME = (id) => `${API_FORMS}/${id}`; // via PATCH

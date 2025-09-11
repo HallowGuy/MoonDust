@@ -4,21 +4,23 @@ import {
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
   CButton, COffcanvas, COffcanvasHeader, COffcanvasBody,
   CFormInput, CFormSwitch,
-  CToaster, CToast, CToastBody
+  CToaster, CToast, CToastBody,CFormSelect
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilCheckCircle, cilXCircle, cilSend } from '@coreui/icons'
 import Select from 'react-select'
 import { API_USERS, API_ROLES } from 'src/api'
-import ConfirmDeleteModal from "../../../components/confirmations/ConfirmDeleteModal"
-import ProtectedButton from "../../../components/protected/ProtectedButton"
+import ConfirmDeleteModal from "../../components/confirmations/ConfirmDeleteModal"
+import ProtectedButton from "../../components/protected/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
-import { fetchWithAuth } from "../../../utils/auth";
+import { fetchWithAuth } from "../../utils/auth";
 
 const Users = () => {
   const [users, setUsers] = useState([])
   const [roles, setRoles] = useState([])
   const [visible, setVisible] = useState(false)
+  const [page, setPage] = useState(1)
+const [perPage, setPerPage] = useState(10)
 
   // form state
   const [editUser, setEditUser] = useState(null)
@@ -45,6 +47,23 @@ const Users = () => {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
   })
+  const [search, setSearch] = useState('')
+
+  const filteredUsers = users.filter((u) => {
+  const term = search.toLowerCase()
+  return (
+    u.username?.toLowerCase().includes(term) ||
+    u.email?.toLowerCase().includes(term) ||
+    u.firstName?.toLowerCase().includes(term) ||
+    u.lastName?.toLowerCase().includes(term) ||
+    (u.enabled ? 'actif' : 'inactif').includes(term) ||
+    (u.roles ? u.roles.join(' ').toLowerCase() : '').includes(term)
+  )
+})
+
+const totalPages = Math.ceil(filteredUsers.length / perPage)
+const paginatedUsers = filteredUsers.slice((page - 1) * perPage, page * perPage)
+
 
   // ---------- FETCH DATA ----------
   const fetchUsers = async () => {
@@ -177,18 +196,7 @@ const Users = () => {
   }
 
   // ---------- SEARCH ----------
-  const [search, setSearch] = useState('')
-  const filteredUsers = users.filter((u) => {
-    const term = search.toLowerCase()
-    return (
-      u.username?.toLowerCase().includes(term) ||
-      u.email?.toLowerCase().includes(term) ||
-      u.firstName?.toLowerCase().includes(term) ||
-      u.lastName?.toLowerCase().includes(term) ||
-      (u.enabled ? 'actif' : 'inactif').includes(term) ||
-      (u.roles ? u.roles.join(' ').toLowerCase() : '').includes(term)
-    )
-  })
+ 
 
   // Styles dynamiques pour react-select
   const customStyles = {
@@ -235,7 +243,7 @@ const Users = () => {
     <><div className="container py-4">
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
-          <span>Utilisateurs</span>
+          <span>Édition des utilisateurs</span>
           <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="user.new">
             <CButton color="primary" onClick={() => openOffcanvas()}>
               <CIcon icon={cilPlus} className="me-2" /> Nouvel utilisateur
@@ -262,8 +270,8 @@ const Users = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {filteredUsers.length ? (
-                filteredUsers.map((u) => (
+              {paginatedUsers.length ? (
+    paginatedUsers.map((u) => (
                   <CTableRow key={u.id}>
                     <CTableDataCell>{u.username}</CTableDataCell>
                     <CTableDataCell>{u.email}</CTableDataCell>
@@ -363,6 +371,35 @@ const Users = () => {
               )}
             </CTableBody>
           </CTable>
+<div className="d-flex justify-content-between align-items-center mt-3">
+  <span>Résultats : {filteredUsers.length}</span>
+  <CFormSelect
+    value={perPage}
+    style={{ width: '120px' }}
+    onChange={(e) => {
+      setPerPage(Number(e.target.value))
+      setPage(1) // reset page
+    }}
+    options={[
+      { label: '10 / page', value: 10 },
+      { label: '20 / page', value: 20 },
+      { label: '50 / page', value: 50 },
+    ]}
+  />
+</div>
+
+<div className="d-flex justify-content-center align-items-center mt-3 gap-3">
+  <CButton disabled={page === 1} onClick={() => setPage((p) => Math.max(p - 1, 1))}>
+    Précédent
+  </CButton>
+  <span>
+    Page {page} / {totalPages || 1}
+  </span>
+  <CButton disabled={page === totalPages} onClick={() => setPage((p) => Math.min(p + 1, totalPages))}>
+    Suivant
+  </CButton>
+</div>
+
         </CCardBody>
       </CCard>
 

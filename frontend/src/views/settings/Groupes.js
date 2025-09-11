@@ -3,20 +3,22 @@ import {
   CCard, CCardHeader, CCardBody, CFormInput, CButton,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
   COffcanvas, COffcanvasHeader, COffcanvasBody,
-  CToaster, CToast, CToastBody,
+  CToaster, CToast, CToastBody,CFormSelect
 } from '@coreui/react'
 
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilUser, cilLayers } from '@coreui/icons'
 import { API_GROUPES } from 'src/api'
-import ConfirmDeleteModal from "../../../components/confirmations/ConfirmDeleteModal"
-import ProtectedButton from "../../../components/protected/ProtectedButton"
+import ConfirmDeleteModal from "../../components/confirmations/ConfirmDeleteModal"
+import ProtectedButton from "../../components/protected/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
-import { fetchWithAuth } from "../../../utils/auth";
+import { fetchWithAuth } from "../../utils/auth";
 
 const Groupes = () => {
   const [groupes, setGroupes] = useState([])
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+const [perPage, setPerPage] = useState(10)
 
   const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
 
@@ -49,6 +51,16 @@ const Groupes = () => {
   const [showSubGroups, setShowSubGroups] = useState(false)
   const [selectedParent, setSelectedParent] = useState(null)
   const [subGroups, setSubGroups] = useState([])
+
+const filtered = groupes.filter(
+  (r) =>
+    r.name?.toLowerCase().includes(search.toLowerCase()) ||
+    r.description?.toLowerCase().includes(search.toLowerCase())
+)
+
+const totalPages = Math.ceil(filtered.length / perPage)
+const paginated = filtered.slice((page - 1) * perPage, page * perPage)
+
 
   // --- FETCH groupes ---
   const fetchGroupes = async () => {
@@ -146,17 +158,13 @@ const Groupes = () => {
     setShowSubGroups(true)
   }
 
-  const filtered = groupes.filter(
-    (r) =>
-      r.name?.toLowerCase().includes(search.toLowerCase()) ||
-      r.description?.toLowerCase().includes(search.toLowerCase())
-  )
+  
 
   return (
     <div className="container py-4">
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
-          <span>Groupes</span>
+          <span>Édition des groupes</span>
           <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="group.new">
             <CButton color="primary" onClick={() => setShowCreate(true)}>
               <CIcon icon={cilPlus} className="me-2" /> Nouveau groupe
@@ -182,25 +190,25 @@ const Groupes = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {filtered.length ? (
-                filtered.map((g) => (
+              {paginated.length ? (
+    paginated.map((g) => (
                   <CTableRow key={g.id}>
                     <CTableDataCell className="align-middle" style={{ width: '50%' }}>{g.name}</CTableDataCell>
                     <CTableDataCell className="align-middle" style={{ textAlign: 'center',width: '30%' }}>
                       <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="group.viewUsers">
-                        <CButton size="sm" color="info" variant="ghost" onClick={() => openUsers(g)}>
+                        <CButton size="sm" className="me-2" color="info" variant="ghost" onClick={() => openUsers(g)}>
                           <CIcon icon={cilUser} size="lg" /> Utilisateurs
                         </CButton>
                       </ProtectedButton>
                       <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="group.viewSubGroups">
-                        <CButton size="sm" color="warning" variant="ghost" onClick={() => openSubGroups(g)}>
+                        <CButton size="sm" className="me-2" color="warning" variant="ghost" onClick={() => openSubGroups(g)}>
                           <CIcon icon={cilLayers} size="lg" /> Sous-groupes
                         </CButton>
                       </ProtectedButton>
                     </CTableDataCell>
                     <CTableDataCell className="text-center align-middle" style={{ width: '20%' }}>
                       <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="group.edit">
-                        <CButton size="sm" color="success" variant="ghost" onClick={() => openEdit(g)}>
+                        <CButton size="sm" className="me-2" color="success" variant="ghost" onClick={() => openEdit(g)}>
                           <CIcon icon={cilPencil} size="lg" />
                         </CButton>
                       </ProtectedButton>
@@ -209,7 +217,7 @@ const Groupes = () => {
                           title="Supprimer le groupe"
                           message="Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est irréversible."
                           trigger={
-                            <CButton size="sm" color="danger" variant="ghost">
+                            <CButton size="sm" className="me-2" color="danger" variant="ghost">
                               <CIcon icon={cilTrash} size="lg" />
                             </CButton>
                           }
@@ -237,11 +245,41 @@ const Groupes = () => {
               )}
             </CTableBody>
           </CTable>
+        <div className="d-flex justify-content-between align-items-center mt-3">
+          <span>Résultats : {filtered.length}</span>
+          <CFormSelect
+            value={perPage}
+            style={{ width: '120px' }}
+            onChange={(e) => {
+              setPerPage(Number(e.target.value))
+              setPage(1) // reset page
+            }}
+            options={[
+              { label: '10 / page', value: 10 },
+              { label: '20 / page', value: 20 },
+              { label: '50 / page', value: 50 },
+            ]}
+          />
+        </div>
+        
+        <div className="d-flex justify-content-center align-items-center mt-3 gap-3">
+          <CButton disabled={page === 1} onClick={() => setPage((p) => Math.max(p - 1, 1))}>
+            Précédent
+          </CButton>
+          <span>
+            Page {page} / {totalPages || 1}
+          </span>
+          <CButton disabled={page === totalPages} onClick={() => setPage((p) => Math.min(p + 1, totalPages))}>
+            Suivant
+          </CButton>
+        </div>
+        
+
         </CCardBody>
       </CCard>
 
       {/* Offcanvas édition */}
-      <COffcanvas placement="end" visible={showEdit} onHide={() => setShowEdit(false)} style={{ width: "30%" }}>
+      <COffcanvas placement="end" visible={showEdit} onHide={() => setShowEdit(false)} style={{ width: "20%" }}>
         <COffcanvasHeader>
           <h5 className="mb-0">Éditer groupe</h5>
         </COffcanvasHeader>
@@ -273,11 +311,11 @@ const Groupes = () => {
                   <CTableRow key={sg.id}>
                     <CTableDataCell>{sg.name}</CTableDataCell>
                     <CTableDataCell>
-                      <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="group.viewUsers">
+                      
                         <CButton size="sm" color="info" variant="ghost" onClick={() => openUsers(sg)}>
                           <CIcon icon={cilUser} size="lg" /> Membres
                         </CButton>
-                      </ProtectedButton>
+                     
                     </CTableDataCell>
                   </CTableRow>
                 ))}
@@ -290,7 +328,7 @@ const Groupes = () => {
       </COffcanvas>
 
       {/* Offcanvas création */}
-      <COffcanvas placement="end" visible={showCreate} onHide={() => setShowCreate(false)} style={{ width: "30%" }}>
+      <COffcanvas placement="end" visible={showCreate} onHide={() => setShowCreate(false)} style={{ width: "20%" }}>
         <COffcanvasHeader>
           <h5 className="mb-0">Nouveau groupe</h5>
         </COffcanvasHeader>
@@ -333,7 +371,7 @@ const Groupes = () => {
       {/* Offcanvas utilisateurs */}
       <COffcanvas placement="end" visible={showUsers} onHide={() => setShowUsers(false)} style={{ width: "20%" }}>
         <COffcanvasHeader>
-          <h5 className="mb-0">Utilisateurs du groupe : {selectedGroupe}</h5>
+          <h5 className="mb-0">Utili sateurs du groupe : {selectedGroupe}</h5>
         </COffcanvasHeader>
         <COffcanvasBody>
           {usersByGroupe.length ? (

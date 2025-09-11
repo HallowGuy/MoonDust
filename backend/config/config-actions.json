@@ -66,6 +66,84 @@
     ],
     "thematique": "Rôles"
   },
+  "form.delete": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "form.build": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "form.edit": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "form.new": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "form.history": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "form.version.delete": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "form.version.preview": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "form.version.restore": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "form.version.publish": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "form.preview": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "list.edit": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "list.new": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
+  "list.delete": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Rôles"
+  },
   "group.edit": {
     "roles": [
       "admin"

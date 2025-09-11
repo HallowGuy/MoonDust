@@ -59,7 +59,7 @@ const headerRef = useRef()
         </CHeaderToggler>
         <CHeaderNav className="d-none d-md-flex">
           <CNavItem>
-            <CNavLink to="/dashboard" as={NavLink}>
+            <CNavLink to="/settings/settings" as={NavLink}>
               Dashboard
             </CNavLink>
           </CNavItem>
@@ -70,81 +70,7 @@ const headerRef = useRef()
           <CNavItem>
             <CNavLink href="#">Settings</CNavLink>
           </CNavItem>
-          <CDropdown variant="nav-item">
-        <CDropdownToggle color="link">
-          <CIcon icon={cilPuzzle} className="me-1" /> Base
-        </CDropdownToggle>
-        <CDropdownMenu>
-          <CDropdownItem as={NavLink} to="/base/accordion">Accordion</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/breadcrumbs">Breadcrumb</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/cards">Cards</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/carousels">Carousel</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/collapses">Collapse</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/list-groups">List group</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/navs">Navs & Tabs</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/paginations">Pagination</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/placeholders">Placeholders</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/popovers">Popovers</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/progress">Progress</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/spinners">Spinners</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/tables">Tables</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/tabs">Tabs</CDropdownItem>
-  <CDropdownItem as={NavLink} to="/base/tooltips">Tooltips</CDropdownItem>
-        </CDropdownMenu>
-      </CDropdown>
-
-      {/* Buttons */}
-      <CDropdown variant="nav-item">
-        <CDropdownToggle color="link">
-          <CIcon icon={cilCursor} className="me-1" /> Buttons
-        </CDropdownToggle>
-        <CDropdownMenu>
-          <CDropdownItem as={NavLink} to="/buttons/buttons">
-  Buttons
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/buttons/button-groups">
-  Button groups
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/buttons/dropdowns">
-  Dropdowns
-</CDropdownItem>
-
-        </CDropdownMenu>
-      </CDropdown>
-
-      {/* Forms */}
-      <CDropdown variant="nav-item">
-        <CDropdownToggle color="link">
-          <CIcon icon={cilNotes} className="me-1" /> Forms
-        </CDropdownToggle>
-        <CDropdownMenu>
-          <CDropdownItem as={NavLink} to="/forms/checks-radios">
-  Checks & Radios
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/forms/floating-labels">
-  Floating Labels
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/forms/form-control">
-  Form Control
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/forms/input-group">
-  Input Group
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/forms/range">
-  Range
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/forms/select">
-  Select
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/forms/layout">
-  Layout
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/forms/validation">
-  Validation
-</CDropdownItem>
-
-        </CDropdownMenu>
-      </CDropdown>
+            
 
       {/* Charts */}
       <CNavItem>
@@ -172,47 +98,7 @@ const headerRef = useRef()
         </CDropdownMenu>
       </CDropdown>
 
-      {/* Notifications */}
-      <CDropdown variant="nav-item">
-        <CDropdownToggle color="link">
-          <CIcon icon={cilBell} className="me-1" /> Notifications
-        </CDropdownToggle>
-        <CDropdownMenu>
-         <CDropdownItem as={NavLink} to="/notifications/alerts">
-  Alerts
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/notifications/badges">
-  Badges
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/notifications/modals">
-  Modal
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/notifications/toasts">
-  Toasts
-</CDropdownItem>
-
-        </CDropdownMenu>
-      </CDropdown>
-
-      {/* Widgets */}
-      <CNavItem>
-        <CNavLink to="/widgets" as={NavLink}>
-          <CIcon icon={cilCalculator} className="me-1" /> Widgets
-        </CNavLink>
-      </CNavItem>
-
-     
-
-      {/* Docs */}
-      <CNavItem>
-        <CNavLink
-          href="https://coreui.io/react/docs/templates/installation/"
-          target="_blank"
-        >
-          <CIcon icon={cilDescription} className="me-1" /> Docs
-        </CNavLink>
-      </CNavItem>
-
+ 
      
         </CHeaderNav>
          <CHeaderNav className="ms-auto">

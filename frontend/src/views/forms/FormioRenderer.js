@@ -3,120 +3,126 @@ import React, { useEffect, useRef } from "react"
 import { Formio } from "formiojs"
 import "formiojs/dist/formio.full.min.css"
 
-const FormioRenderer = ({ form, submission, onSave, readOnly = false, stripSubmits = false }) => {
+const clone = (o) => JSON.parse(JSON.stringify(o || {}))
+
+// Parcours récursif du schéma pour forcer le bouton submit -> customSubmit
+const walk = (list = [], fn) => {
+  for (const c of list) {
+    fn(c)
+    if (Array.isArray(c.components)) walk(c.components, fn)
+    if (Array.isArray(c.columns)) c.columns.forEach(col => walk(col.components || [], fn))
+    if (Array.isArray(c.rows)) c.rows.forEach(row => row.forEach(cell => walk(cell.components || [], fn)))
+  }
+}
+
+const forceCustomSubmit = (schema) => {
+  let found = false
+  walk(schema.components || [], (c) => {
+    if (c.type === "button" && (c.key === "submit" || c.action === "submit")) {
+      found = true
+      c.key = "submit"
+      c.action = "event"
+      c.event = "customSubmit"
+      c.disableOnInvalid = true
+      c.label = c.label || "Enregistrer"
+    }
+  })
+  if (!found) {
+    // s'il n'y a PAS de bouton, on en ajoute un
+    schema.components = schema.components || []
+    schema.components.push({
+      type: "button",
+      input: true,
+      key: "submit",
+      label: "Enregistrer",
+      action: "event",
+      event: "customSubmit",
+      disableOnInvalid: true,
+      theme: "primary",
+      tableView: false,
+    })
+  }
+  return schema
+}
+
+const toSubmissionObj = (submission) =>
+  submission && typeof submission === "object"
+    ? (submission.data ? submission : { data: submission })
+    : { data: {} }
+
+const FormioRenderer = ({ form, submission, onSave }) => {
   const containerRef = useRef(null)
   const instanceRef = useRef(null)
-  const handledRef = useRef(false) // évite doubles appels
-
-  // petit util pour cloner
-  const deepClone = (o) => JSON.parse(JSON.stringify(o))
-
-  // parcours générique (components / columns / rows)
-  const walk = (comp, fn) => {
-    if (!comp) return
-    fn(comp)
-    if (Array.isArray(comp.components)) comp.components.forEach((c) => walk(c, fn))
-    if (Array.isArray(comp.columns)) {
-      comp.columns.forEach((col) => {
-        if (Array.isArray(col?.components)) col.components.forEach((c) => walk(c, fn))
-      })
-    }
-    if (Array.isArray(comp.rows)) {
-      comp.rows.forEach((row) => {
-        row.forEach((cell) => {
-          if (Array.isArray(cell?.components)) cell.components.forEach((c) => walk(c, fn))
-        })
-      })
-    }
-  }
+  const handledRef = useRef(false) // anti double-clic
 
   useEffect(() => {
     if (!containerRef.current || !form?.schema) return
 
     const token = localStorage.getItem("access_token")
-    if (token) Formio.setToken(token)
+    if (token) { try { Formio.setToken(token) } catch {} }
 
-    // clone pour ne pas muter la prop
-    const schema = deepClone(form.schema)
-
-    // 1) optionnel : masquer tous les boutons submit si on est en lecture seule
-    if (stripSubmits || readOnly || !onSave) {
-      walk(schema, (c) => {
-        if (!c) return
-        if (c.type === "button") {
-          const isSubmit =
-            c.action === "submit" ||
-            c.key === "submit" ||
-            c.event === "submit" ||
-            c.event === "customSubmit" ||
-            /submit/i.test(String(c.label || ""))
-          if (isSubmit) {
-            c.hidden = true
-          }
-        }
-      })
-    } else {
-      // 2) sinon, recâbler les vrais submit en "customSubmit" (clé quelle qu’elle soit)
-      walk(schema, (c) => {
-        if (!c) return
-        if (c.type === "button") {
-          const isSubmit =
-            c.action === "submit" ||
-            c.key === "submit" ||
-            c.event === "submit" ||
-            /submit/i.test(String(c.label || ""))
-          if (isSubmit) {
-            c.action = "event"
-            c.event = "customSubmit"
-          }
-        }
-      })
-    }
+    // 1) cloner le schéma et forcer le bouton -> customSubmit (récursif)
+    const schema = forceCustomSubmit(clone(form.schema))
 
     let cancelled = false
     ;(async () => {
+      // 2) createForm (plus fiable en offcanvas)
       const instance = await Formio.createForm(containerRef.current, schema, {
         saveDraft: false,
-        submitOnEnter: !readOnly && Boolean(onSave),
+        submitOnEnter: true,
         projectUrl: "",
-        submitUrl: "",
-        readOnly: !!readOnly, // ⬅️ important
+        submitUrl: "",      // pas d’appels réseau internes
+        noAlerts: false,
+        readOnly: false,
       })
       if (cancelled) { instance.destroy(true); return }
       instanceRef.current = instance
-      handledRef.current = false
 
-      // --- pré-remplissage
-      const data = submission?.data ?? submission ?? {}
-      if (Object.keys(data).length) {
+      // Empêche la soumission Form.io d’aller chercher un endpoint
+      instance.nosubmit = true
+
+      // 3) pré-remplir
+      const init = toSubmissionObj(submission)
+      if (Object.keys(init.data || {}).length) {
         try {
-          await instance.setSubmission({ data })
+          await instance.setSubmission(init)
         } catch {
-          Object.entries(data).forEach(([k, v]) => {
-            const comp = instance.getComponent(k, true)
-            comp?.setValue?.(v, { fromSubmission: true })
+          // fallback par champ si setSubmission indisponible
+          Object.entries(init.data).forEach(([k, v]) => {
+            instance.getComponent(k, true)?.setValue?.(v, { fromSubmission: true })
           })
           instance.redraw()
         }
       }
 
-      // --- capture des clics sur le bouton (seulement si onSave ET pas readOnly)
-      if (onSave && !readOnly) {
-        const handle = (payload, source) => {
-          const data = payload?.data ?? payload ?? {}
-          if (handledRef.current) return
-          handledRef.current = true
-          try { onSave?.(data) } finally {
-            setTimeout(() => (handledRef.current = false), 0)
-          }
+      // 4) Handler unique
+      const handle = async (payload, source) => {
+        const data = payload?.data ?? payload ?? {}
+        // console.log(`🛰️ submit via ${source}`, data)
+        if (handledRef.current) return
+        handledRef.current = true
+        try {
+          await onSave?.(data)
+          instance.emit("submitDone", { data }) // stoppe spinner interne
+        } catch (e) {
+          console.error("❌ onSave error:", e)
+          instance.emit("submitError", e)
+        } finally {
+          setTimeout(() => (handledRef.current = false), 0)
         }
+      }
 
-        instance.on("customSubmit", (data) => handle(data, "customSubmit"))
-        instance.on("formio.customEvent", (p) => {
-          if (p?.type === "customSubmit") handle(p, "formio.customEvent")
-        })
-        instance.on("customEvent", (p) => {
-          if (p?.type === "customSubmit") handle(p, "customEvent")
+      // 5) Écoutes robustes (3 variantes) + fallback 'submit'
+      instance.on("customSubmit", (data) => handle(data, "customSubmit"))
+      instance.on("formio.customEvent", (p) => { if (p?.type === "customSubmit") handle(p, "formio.customEvent") })
+      instance.on("customEvent", (p) => { if (p?.type === "customSubmit") handle(p, "customEvent") })
+      instance.on("submit", (sub) => handle(sub, "submit"))
+
+      // Fallback ultime : si le bouton existe mais n’émet pas correctement
+      const btn = instance.getComponent("submit", true)
+      if (btn?.buttonElement) {
+        btn.buttonElement.addEventListener("click", () => {
+          handle(instance.submission || { data: {} }, "button.click")
         })
       }
     })()
@@ -127,18 +133,18 @@ const FormioRenderer = ({ form, submission, onSave, readOnly = false, stripSubmi
       instanceRef.current = null
       if (containerRef.current) containerRef.current.innerHTML = ""
     }
-  }, [form, onSave, readOnly, stripSubmits])
+  }, [form])
 
-  // réappliquer un pré-remplissage si la prop change
+  // ré-appliquer un pré-remplissage si la prop submission change
   useEffect(() => {
     const instance = instanceRef.current
     if (!instance) return
-    const data = submission?.data ?? submission ?? {}
-    if (!Object.keys(data).length) return
+    const sub = toSubmissionObj(submission)
+    if (!Object.keys(sub.data || {}).length) return
     ;(async () => {
-      try { await instance.setSubmission({ data }) }
+      try { await instance.setSubmission(sub) }
       catch {
-        Object.entries(data).forEach(([k, v]) => {
+        Object.entries(sub.data).forEach(([k, v]) => {
           instance.getComponent(k, true)?.setValue?.(v, { fromSubmission: true })
         })
         instance.redraw()

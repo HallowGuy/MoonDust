@@ -113,7 +113,7 @@ const schema = patchSubmitButtons(builderInstance.current.instance.schema)
                 message="Êtes-vous sûr de vouloir annuler ? Toutes vos modifications non sauvegardées seront perdues."
                 confirmText="Oui, annuler"
                 confirmColor="danger"
-                onConfirm={() => navigate("/editionforms")}
+                onConfirm={() => navigate("/forms")}
                 trigger={
                   <CButton color="secondary" variant="ghost">
                     Annuler

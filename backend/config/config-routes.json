@@ -21,7 +21,7 @@
     "contribute",
     "admin"
   ],
-  "/settings/list/users": [
+  "/settings/users": [
     "superadmin",
     "admin",
     "contribute"
@@ -31,29 +31,23 @@
     "admin",
     "contribute"
   ],
-  "/settings/list/roles": [
+  "/settings/roles": [
     "admin",
     "read",
     "contribute"
   ],
-  "/settings/list/groupes": [
+  "/settings/groupes": [
     "admin",
     "read",
     "contribute"
   ],
-  "/settings/custom/themecolors": [
+  
+  "/settings/personnalisation": [
     "read",
     "contribute",
     "admin"
   ],
-  "/settings/custom/themelogo": [
-    "admin",
-    "read",
-    "superadmin"
-  ],
-  "/settings/custom/auditlogs": [
-    "read"
-  ],
+
   "/settings/routes": [
     "read",
     "contribute",
@@ -335,8 +329,7 @@
     "contribute"
   ],
   "/settings/audit": [
-    "read",
-    "admin"
+    "read"
   ],
   "/settings/listes": [
     "read",

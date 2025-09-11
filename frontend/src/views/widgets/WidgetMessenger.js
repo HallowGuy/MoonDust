@@ -23,33 +23,18 @@ const WidgetMessenger = () => {
   return (
     <div
       ref={widgetRef}
-      style={{
-        position: "fixed",
-        bottom: "80px",
-        right: "20px",
-        width: "350px",
-        height: "500px",
-        backgroundColor: "white",
-        borderRadius: "12px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        zIndex: 1001,
+      style={{position: "fixed",bottom: "80px",right: "20px",width: "350px",height: "500px",backgroundColor: "white",borderRadius: "12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.2)",display: "flex",flexDirection: "column",overflow: "hidden",zIndex: 1001,
       }}
     >
       {/* Header */}
-      <div
-        className="d-flex justify-content-between align-items-center p-2 bg-primary text-white"
-        style={{ cursor: "pointer" }}
-        onClick={closeMessenger}
-      >
+      <div className="d-flex justify-content-between align-items-center p-2 bg-primary text-white" style={{ cursor: "pointer" }} onClick={closeMessenger}>
         <span>Messagerie</span>
-        <span style={{ fontSize: "1.2rem", fontWeight: "bold" }}>×</span>
+        <span style={{ fontSize: "1.2rem", fontWeight: "bold" }}></span>
       </div>
 
       {/* Contenu */}
-      <div style={{ flex: 1, overflow: "auto", padding: "10px", background: "#212631" }}>
+      <div style={{ flex: 1, overflow: "auto", padding: "20px", background: "#212631" }}>
         <MessengerContent isWidget={true} startMode="list" />
       </div>
     </div>

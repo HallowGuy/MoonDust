@@ -22,7 +22,7 @@ import {
   cilList,
   cilFile,
   cilSpreadsheet,
-  cilFeaturedPlaylist
+  cilFeaturedPlaylist, cilLockLocked
 
   
 } from '@coreui/icons'
@@ -30,12 +30,7 @@ import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import { API_ROUTES_CONFIG, API_BASE } from 'src/api'
 
 const _nav = [
-  {
-    component: CNavItem,
-    name: 'Dashboard',
-    to: '/settings/settings',
-    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-  },
+  
   {
     component: CNavTitle,
     name: 'Annuaire',
@@ -81,18 +76,14 @@ const _nav = [
 },
 {
     component: CNavTitle,
-    name: 'Formulaires',
+    name: 'Admin',
   },
-{
+  {
   component: CNavItem,
   name: 'Formulaires',
   to: '/forms',
   icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
 },
-{
-    component: CNavTitle,
-    name: 'Admin',
-  },
   {
     component: CNavGroup,
     name: 'Paramétrage',
@@ -102,13 +93,13 @@ const _nav = [
       {
     component: CNavItem,
     name: 'Utilisateurs',
-    to: '/settings/list/users',
+    to: '/settings/users',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: 'Rôles',
-    to: '/settings/list/roles',
+    to: '/settings/roles',
     icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
   },
   {
@@ -120,7 +111,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Groupes',
-    to: '/settings/list/groupes',
+    to: '/settings/groupes',
     icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
   },     
     ],
@@ -129,7 +120,7 @@ const _nav = [
     component: CNavGroup,
     name: 'Sécurité',
     to: '/securite',
-    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilLockLocked} customClassName="nav-icon" />,
     items: [
       
   {
@@ -153,28 +144,13 @@ const _nav = [
      
     ],
   },
- {
-    component: CNavTitle,
+  {
+    component: CNavItem,
     name: 'Personnalisation',
-  },
-  {
-    component: CNavItem,
-    name: 'Couleurs',
-    to: '/settings/custom/themecolors',
+    to: '/settings/personnalisation',
     icon: <CIcon icon={cilDrop} customClassName="nav-icon" />,
-  },
-   {
-    component: CNavItem,
-    name: 'Logo',
-    to: '/settings/custom/themelogo',
-    icon: <CIcon icon={cilImagePlus} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Documents',
-    to: '/import/documents',
-    icon: <CIcon icon={cilFile} customClassName="nav-icon" />,
   }
+
 ]
 
 export async function getUserRoles() {

@@ -1,5 +1,5 @@
 // Listes.jsx
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useContext } from "react"
 import {
   CCard, CCardHeader, CCardBody,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
@@ -10,17 +10,22 @@ import CIcon from "@coreui/icons-react"
 import { cilPencil, cilTrash, cilPlus } from "@coreui/icons"
 import ConfirmDeleteModal from "../../components/confirmations/ConfirmDeleteModal"
 import { API_LISTES, API_LISTES_BY_TYPE, API_LISTES_CHILDREN } from "src/api"
+import { PermissionsContext } from '/src/context/PermissionsContext'
+import { fetchWithAuth } from "../../utils/auth";
+import ProtectedButton from "../../components/protected/ProtectedButton"
 
 const Listes = () => {
-  const [types, setTypes] = useState([])
   const [listes, setListes] = useState([])
-
+const [types, setTypes] = useState([])
+const [search, setSearch] = useState("")
+    const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
+  
   const [visible, setVisible] = useState(false)
   const [editType, setEditType] = useState(null)
   const [newTypeName, setNewTypeName] = useState("")
   const [values, setValues] = useState([])
 const [newValue, setNewValue] = useState("")
-
+const [liste, setListe] = useState([])
   // Enfants
   const [manageChildren, setManageChildren] = useState(null)
   const [children, setChildren] = useState([])
@@ -32,12 +37,18 @@ const [newChild, setNewChild] = useState("")
   const showSuccess = (m) => addToast(m, "success")
   const showError = (m) => addToast(m, "danger")
   const removeToast = (id) => setToasts((p) => p.filter((t) => t.id !== id))
-
+  
   const [page, setPage] = useState(1)
 const [perPage, setPerPage] = useState(10)
 
-const paginated = types.slice((page - 1) * perPage, page * perPage)
-const totalPages = Math.ceil(types.length / perPage)
+
+
+const filtered = types.filter((t) =>
+  t?.toLowerCase().includes(search.toLowerCase())
+)
+const totalPages = Math.ceil(filtered.length / perPage)
+const paginated = filtered.slice((page - 1) * perPage, page * perPage)
+
 
   // API
   const getAuthHeaders = () => ({
@@ -49,7 +60,7 @@ const totalPages = Math.ceil(types.length / perPage)
 
   if (editType) {
     // --- Mode édition : direct DB ---
-    await fetch(API_LISTES, {
+    await fetchWithAuth(API_LISTES, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify({ type: editType, valeur: newValue }),
@@ -69,7 +80,7 @@ const totalPages = Math.ceil(types.length / perPage)
 
   const fetchAll = async () => {
     try {
-      const res = await fetch(API_LISTES, { headers: getAuthHeaders() })
+      const res = await fetchWithAuth(API_LISTES, { headers: getAuthHeaders() })
       const data = await res.json()
       setListes(data)
       setTypes([...new Set(data.map((l) => l.type).filter(Boolean))])
@@ -80,19 +91,38 @@ const totalPages = Math.ceil(types.length / perPage)
 
   useEffect(() => { fetchAll() }, [])
 
+   const fetchListe = async () => {
+      try {
+        const res = await fetchWithAuth(API_LISTES)
+        if (!res.ok) throw new Error('Impossible de charger les rôles')
+        const data = await res.json()
+        setListe(data)
+      } catch (e) {
+        showError(e.message || 'Erreur réseau lors du chargement')
+      }
+    }
+  
+    useEffect(() => { fetchListe() }, [])
+  
+    const openCreate = () => {
+      setCreateName('')
+      setCreateDescription('')
+      setShowCreate(true)
+    }
+
   // --- LISTE ---
   const openOffcanvas = async (type) => {
     setEditType(type)
   setNewTypeName(type || "")
     setVisible(true)
-    const res = await fetch(API_LISTES_BY_TYPE(type), { headers: getAuthHeaders() })
+    const res = await fetchWithAuth(API_LISTES_BY_TYPE(type), { headers: getAuthHeaders() })
     const data = await res.json()
     setValues(data.filter(v => !v.parent_id))
   }
   const addChild = async () => {
   if (!newChild.trim()) return
   try {
-    await fetch(API_LISTES, {
+    await fetchWithAuth(API_LISTES, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -115,7 +145,7 @@ const totalPages = Math.ceil(types.length / perPage)
   try {
     if (editType) {
       // --- RENOMMER une liste existante ---
-      await fetch(`${API_LISTES}/rename`, {
+      await fetchWithAuth(`${API_LISTES}/rename`, {
         method: "PUT",
         headers: getAuthHeaders(),
         body: JSON.stringify({ oldType: editType, newType: newTypeName }),
@@ -134,7 +164,7 @@ const totalPages = Math.ceil(types.length / perPage)
 
       // enregistrer chaque valeur
       for (let v of values) {
-        await fetch(API_LISTES, {
+        await fetchWithAuth(API_LISTES, {
           method: "POST",
           headers: getAuthHeaders(),
           body: JSON.stringify({ type: newTypeName, valeur: v.valeur }),
@@ -154,7 +184,7 @@ const totalPages = Math.ceil(types.length / perPage)
 
 
   const deleteType = async (type) => {
-    await fetch(`${API_LISTES}/delete-type/${encodeURIComponent(type)}`, {
+    await fetchWithAuth(`${API_LISTES}/delete-type/${encodeURIComponent(type)}`, {
       method: "DELETE", headers: getAuthHeaders(),
     })
     showSuccess("Liste supprimée")
@@ -165,7 +195,7 @@ const totalPages = Math.ceil(types.length / perPage)
   const renameValue = async (val) => {
     const newName = prompt("Nouveau nom :", val.valeur)
     if (!newName) return
-    await fetch(`${API_LISTES}/${val.id}`, {
+    await fetchWithAuth(`${API_LISTES}/${val.id}`, {
       method: "PUT",
       headers: getAuthHeaders(),
       body: JSON.stringify({ valeur: newName, ordre: val.ordre, actif: true }),
@@ -175,7 +205,7 @@ const totalPages = Math.ceil(types.length / perPage)
   }
 
   const deleteValue = async (id) => {
-    await fetch(`${API_LISTES}/${id}`, { method: "DELETE", headers: getAuthHeaders() })
+    await fetchWithAuth(`${API_LISTES}/${id}`, { method: "DELETE", headers: getAuthHeaders() })
     showSuccess("Valeur supprimée")
     openOffcanvas(editType)
         fetchAll()              // refresh global du tableau principal
@@ -185,14 +215,14 @@ const totalPages = Math.ceil(types.length / perPage)
   // --- ENFANTS ---
   const openChildren = async (val) => {
     setManageChildren(val)
-    const res = await fetch(API_LISTES_CHILDREN(val.type, val.id), { headers: getAuthHeaders() })
+    const res = await fetchWithAuth(API_LISTES_CHILDREN(val.type, val.id), { headers: getAuthHeaders() })
     setChildren(await res.json())
   }
 
   const renameChild = async (c) => {
     const newName = prompt("Nouveau nom enfant :", c.valeur)
     if (!newName) return
-    await fetch(`${API_LISTES}/${c.id}`, {
+    await fetchWithAuth(`${API_LISTES}/${c.id}`, {
       method: "PUT",
       headers: getAuthHeaders(),
       body: JSON.stringify({ valeur: newName, ordre: c.ordre, actif: true }),
@@ -202,7 +232,7 @@ const totalPages = Math.ceil(types.length / perPage)
   }
 
   const deleteChild = async (id) => {
-    await fetch(`${API_LISTES}/${id}`, { method: "DELETE", headers: getAuthHeaders() })
+    await fetchWithAuth(`${API_LISTES}/${id}`, { method: "DELETE", headers: getAuthHeaders() })
     showSuccess("Enfant supprimé")
     openChildren(manageChildren)
     fetchAll() // refresh global
@@ -213,22 +243,35 @@ const totalPages = Math.ceil(types.length / perPage)
     <div className="container py-4">
       <CCard>
 <CCardHeader className="d-flex justify-content-between align-items-center">
-  <span>Gestion des Listes</span>
-  <CButton color="primary" onClick={() => openOffcanvas()}>
-    <CIcon icon={cilPlus} className="me-2" /> Créer une liste
-  </CButton>
+  <span>Édition des listes</span>
+  
+  <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="list.new">
+            <CButton color="primary" onClick={() => openOffcanvas()}>
+              <CIcon icon={cilPlus} className="me-2" /> Créer une liste
+            </CButton>
+          </ProtectedButton>
 </CCardHeader>        <CCardBody>
+  <CFormInput
+              className="mb-3"
+              type="text"
+              placeholder="Rechercher par nom ou chemin…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           <CTable striped hover>
   <CTableHead>
     <CTableRow>
       <CTableHeaderCell>Nom de la liste</CTableHeaderCell>
       <CTableHeaderCell>Valeurs</CTableHeaderCell>
-      <CTableHeaderCell style={{ textAlign: "center" }}>Actions</CTableHeaderCell>
+                      <CTableHeaderCell style={{ width: '160px', textAlign: 'center' }}>
+      Actions</CTableHeaderCell>
     </CTableRow>
   </CTableHead>
   <CTableBody>
-    {types.map((t) => {
-      const valeurs = listes.filter((l) => l.type === t && !l.parent_id) // valeurs "parent"
+  {paginated.length ? (
+    paginated.map((t) => {
+      const valeurs = listes.filter((l) => l.type === t && !l.parent_id)
+
       return (
         <CTableRow key={t}>
           <CTableDataCell>{t}</CTableDataCell>
@@ -238,7 +281,7 @@ const totalPages = Math.ceil(types.length / perPage)
                 {valeurs.map((v) => (
                   <li key={v.id}>
                     {v.valeur}
-                    {/* enfants ? */}
+                    {/* enfants */}
                     {listes.some((c) => c.parent_id === v.id) && (
                       <ul>
                         {listes
@@ -253,29 +296,40 @@ const totalPages = Math.ceil(types.length / perPage)
               <i>Aucune valeur</i>
             )}
           </CTableDataCell>
-          <CTableDataCell style={{ textAlign: "center" }}>
-            <CButton size="sm" color="success" variant="ghost" onClick={() => openOffcanvas(t)}>
-              <CIcon icon={cilPencil} size="lg" />
-            </CButton>
+          <CTableDataCell className="text-center align-middle">
+            <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="list.edit">
+              <CButton className="me-2" color="success" variant="ghost" onClick={() => openOffcanvas(t)}>
+                <CIcon icon={cilPencil} size="lg" />
+              </CButton>
+            </ProtectedButton>
             <ConfirmDeleteModal
               title="Supprimer la liste"
               message="Supprimer cette liste ?"
               trigger={
-                <CButton size="sm" color="danger" variant="ghost">
-                  <CIcon icon={cilTrash} size="lg" />
-                </CButton>
+                <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="list.delete">
+                  <CButton className="me-2" color="danger" variant="ghost">
+                    <CIcon icon={cilTrash} size="lg" />
+                  </CButton>
+                </ProtectedButton>
               }
               onConfirm={() => deleteType(t)}
             />
           </CTableDataCell>
         </CTableRow>
       )
-    })}
-  </CTableBody>
+    })
+  ) : (
+    <CTableRow>
+      <CTableDataCell colSpan={4} className="text-center">
+        Aucune liste
+      </CTableDataCell>
+    </CTableRow>
+  )}
+</CTableBody>
+
 </CTable>
 <div className="d-flex justify-content-between align-items-center mt-3">
-  <span>Résultats : {types.length}</span>
-
+  <span>Résultats : {filtered.length}</span>
   <CFormSelect
     value={perPage}
     style={{ width: '120px' }}
@@ -304,11 +358,12 @@ const totalPages = Math.ceil(types.length / perPage)
 </div>
 
 
+
         </CCardBody>
       </CCard>
 
       {/* OFFCANVAS LISTE */}
-      <COffcanvas placement="end" visible={visible} onHide={() => setVisible(false)} style={{ width: "25%" }}>
+      <COffcanvas placement="end" visible={visible} onHide={() => setVisible(false)} style={{ width: "20%" }}>
         <COffcanvasHeader><h5>{editType ? `Éditer la liste "${editType}"` : "Créer une nouvelle liste"}</h5></COffcanvasHeader>
         <COffcanvasBody>
           <CFormInput label="Nom de la liste" value={newTypeName} onChange={(e) => setNewTypeName(e.target.value)} />
@@ -357,7 +412,7 @@ const totalPages = Math.ceil(types.length / perPage)
       </COffcanvas>
 
       {/* OFFCANVAS ENFANTS */}
-      <COffcanvas placement="end" visible={!!manageChildren} onHide={() => setManageChildren(null)} style={{ width: "25%" }}>
+      <COffcanvas placement="end" visible={!!manageChildren} onHide={() => setManageChildren(null)} style={{ width: "20%" }}>
         <COffcanvasHeader><h5>Enfants de "{manageChildren?.valeur}"</h5></COffcanvasHeader>
         <div className="d-flex mb-3">
     <CFormInput

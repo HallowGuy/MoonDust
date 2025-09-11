@@ -12,7 +12,7 @@ import { cilTrash, cilPlus, cilEnvelopeClosed, cilSearch } from '@coreui/icons'
 import ConfirmDeleteModal from "src/components/confirmations/ConfirmDeleteModal"
 import ProtectedButton from "src/components/protected/ProtectedButton"
 import { PermissionsContext } from 'src/context/PermissionsContext'
-import { API_CONTACTS, API_ENTREPRISES, API_FORM_CONFIG } from 'src/api'
+import { API_CONTACTS, API_ENTREPRISES, API_FORM_CONFIG, API_FORM_DETAIL } from 'src/api'
 import { fetchWithAuth } from 'src/utils/auth'
 import FormioRenderer from 'src/views/forms/FormioRenderer'
 
@@ -37,13 +37,18 @@ const Contacts = () => {
   const toText = (v) => (v == null ? "" : String(v)) // safe pour toLowerCase
 const fdOf = (c) => c?.form_data || {}
   // ---------- FETCH ----------
-  const fetchContacts = async () => {
-    try {
-      const res = await fetchWithAuth(`${API_CONTACTS}`)
-      if (!res.ok) throw new Error('Impossible de charger les contacts')
-      setContacts(await res.json())
-    } catch (e) { showError(e.message) }
+// ✅ remplace TOUTE ta fonction fetchContacts par ceci
+const fetchContacts = async () => {
+  try {
+    const res = await fetchWithAuth(`${API_CONTACTS}`)
+    if (!res.ok) throw new Error('Impossible de charger les contacts')
+    setContacts(await res.json())
+  } catch (e) {
+    showError(e.message || 'Erreur lors du chargement des contacts')
   }
+}
+
+
 
   const fetchEntreprises = async () => {
     try {
@@ -59,9 +64,10 @@ const fdOf = (c) => c?.form_data || {}
   const fetchForm = async () => {
     try {
       // ⚠️ utilise l'id de ton formulaire contact (ici "toto")
-      const res = await fetchWithAuth(`${API_FORM_CONFIG}/contact`)
-      if (!res.ok) throw new Error('Form contact introuvable')
-      setForm(await res.json())
+      const resForm = await fetchWithAuth(API_FORM_DETAIL("contact"));
+      if (!resForm.ok) throw new Error('Form contact introuvable')
+      const meta = await resForm.json(); // { id, name, current_version, current_schema }
+setForm({ id: meta.id, name: meta.name, schema: meta.current_schema });
     } catch (e) { showError(e.message) }
   }
 
@@ -152,53 +158,40 @@ const resetCols = () => setVisibleCols(defaultCols)
   }
 
   // ---------- SAVE from Formio ----------
-  const saveFromFormio = async (data) => {
-    // data = JSON brut { prenom?, nom?, email?, telephone?, poste?, entreprise_id?, ... }
+ // ✅ remplace TOUTE ta fonction saveFromFormio par ceci
+const saveFromFormio = async (data) => {
+  try {
     const clean = { ...data }
     delete clean.submit
 
-    // Colonnes "fixes" connues (si présentes dans le JSON)
-    const fixed = {
-      entreprise_id: clean.entreprise_id ?? (editContact?.entreprise_id ?? null),
-      prenom:        clean.prenom        ?? (editContact?.prenom ?? null),
-      nom:           clean.nom           ?? (editContact?.nom ?? null),
-      email:         clean.email         ?? (editContact?.email ?? null),
-      telephone:     clean.telephone     ?? (editContact?.telephone ?? null),
-      poste:         clean.poste         ?? (editContact?.poste ?? null),
-      civilite:      clean.civilite      ?? (editContact?.civilite ?? null),
-      adresse:       clean.adresse       ?? (editContact?.adresse ?? null),
-      ville:         clean.ville         ?? (editContact?.ville ?? null),
-      pays:          clean.pays          ?? (editContact?.pays ?? null),
-      tags:          clean.tags          ?? (editContact?.tags ?? null),
-      source:        clean.source        ?? (editContact?.source ?? null),
-      statut:        clean.statut        ?? (editContact?.statut ?? null),
-      notes:         clean.notes         ?? (editContact?.notes ?? null),
+    if (editContact) {
+      const res = await fetchWithAuth(`${API_CONTACTS}/${editContact.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...editContact, form_data: clean }),
+      })
+      if (!res.ok) throw new Error('Mise à jour impossible')
+      showSuccess('Contact mis à jour')
+    } else {
+      const res = await fetchWithAuth(`${API_CONTACTS}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ form_data: clean }),
+      })
+      if (!res.ok) throw new Error('Création impossible')
+      showSuccess('Contact créé')
     }
 
-    try {
-      if (editContact) {
-        const res = await fetchWithAuth(`${API_CONTACTS}/${editContact.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...editContact, ...fixed, form_data: clean }),
-        })
-        if (!res.ok) throw new Error('Mise à jour impossible')
-        showSuccess('Contact mis à jour')
-      } else {
-        const res = await fetchWithAuth(`${API_CONTACTS}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...fixed, form_data: clean }),
-        })
-        if (!res.ok) throw new Error('Création impossible')
-        showSuccess('Contact créé')
-      }
-      await fetchContacts()
-      setVisible(false)
-    } catch (e) {
-      showError(e.message || 'Erreur lors de la sauvegarde')
-    }
+    await fetchContacts()
+    setVisible(false)
+  } catch (e) {
+    console.error('❌ saveFromFormio:', e)
+    showError(e.message || 'Erreur lors de la sauvegarde')
   }
+}
+
+
+
 
   // ---------- SEARCH ----------
   const [search, setSearch] = useState('')
@@ -339,10 +332,12 @@ const resetCols = () => setVisibleCols(defaultCols)
             <p>Chargement du formulaire…</p>
           ) : (
             <FormioRenderer
-              form={form}
-              submission={editContact?.form_data || {}}
-              onSave={saveFromFormio}
-            />
+  key={`${form?.id}-${editContact?.id || 'new'}`}
+  form={form}
+  submission={editContact?.form_data ? { data: editContact.form_data } : { data: {} }}
+  onSave={saveFromFormio}
+/>
+
           )}
           
         </COffcanvasBody>

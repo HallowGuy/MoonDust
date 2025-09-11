@@ -42,5 +42,7 @@
 .formio-component-submit {
   margin-top : 20px;
 }
-
+.messenger {
+  padding : 20px !important;
+}
 

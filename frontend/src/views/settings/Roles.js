@@ -3,20 +3,21 @@ import {
   CCard, CCardHeader, CCardBody, CFormInput, CButton,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
   COffcanvas, COffcanvasHeader, COffcanvasBody,
-  CToaster, CToast, CToastBody,
+  CToaster, CToast, CToastBody,CFormSelect
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilPlus, cilUser } from '@coreui/icons'
 import { API_ROLES, API_ROLE_USERS } from 'src/api'
-import ConfirmDeleteModal from "../../../components/confirmations/ConfirmDeleteModal"
-import ProtectedButton from "../../../components/protected/ProtectedButton"
+import ConfirmDeleteModal from "../../components/confirmations/ConfirmDeleteModal"
+import ProtectedButton from "../../components/protected/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
-import { fetchWithAuth } from "../../../utils/auth";
+import { fetchWithAuth } from "../../utils/auth";
 
 const Roles = () => {
   const [roles, setRoles] = useState([])
   const [search, setSearch] = useState('')
-
+    const [perPage, setPerPage] = useState(10)
+    const [page, setPage] = useState(1)
   const { actionsConfig, currentUserRoles } = useContext(PermissionsContext)
 
   // --- TOASTS
@@ -128,17 +129,21 @@ const Roles = () => {
     }
   }
 
-  const filtered = roles.filter(
-    (r) =>
-      r.name?.toLowerCase().includes(search.toLowerCase()) ||
-      r.description?.toLowerCase().includes(search.toLowerCase())
-  )
+const filtered = roles.filter(
+  (r) =>
+    r.name?.toLowerCase().includes(search.toLowerCase()) ||
+    r.description?.toLowerCase().includes(search.toLowerCase())
+)
+
+const totalPages = Math.ceil(filtered.length / perPage)
+const paginated = filtered.slice((page - 1) * perPage, page * perPage)
+
 
   return (
     <><div className="container py-4">
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
-          <span>Rôles</span>
+          <span>Édition des rôles</span>
           <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="role.new">
             <CButton color="primary" onClick={openCreate}>
               <CIcon icon={cilPlus} className="me-2" /> Nouveau rôle
@@ -166,57 +171,88 @@ const Roles = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {filtered.length ? (
-                filtered.map((r) => (
-                  <CTableRow key={r.id}>
-                    <CTableDataCell className="align-middle">{r.name}</CTableDataCell>
-                    <CTableDataCell className="align-middle">{r.description}</CTableDataCell>
-                    <CTableDataCell className="text-center align-middle">
-                      <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="role.edit">
-                        <CButton size="sm" color="success" variant="ghost" onClick={() => openEdit(r)}>
-                          <CIcon icon={cilPencil} size="lg" />
-                        </CButton>
-                      </ProtectedButton>
+  {paginated.length ? (
+    paginated.map((r) => (
+      <CTableRow key={r.id}>
+        <CTableDataCell className="align-middle">{r.name}</CTableDataCell>
+        <CTableDataCell className="align-middle">{r.description}</CTableDataCell>
+        <CTableDataCell className="text-center align-middle">
+          <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="role.edit">
+            <CButton size="sm" className="me-2" color="success" variant="ghost" onClick={() => openEdit(r)}>
+              <CIcon icon={cilPencil} size="lg" />
+            </CButton>
+          </ProtectedButton>
 
-                      <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="role.viewUsers">
-                        <CButton size="sm" color="info" variant="ghost" onClick={() => openUsers(r.name)}>
-                          <CIcon icon={cilUser} size="lg" />
-                        </CButton>
-                      </ProtectedButton>
+          <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="role.viewUsers">
+            <CButton size="sm" className="me-2" color="info" variant="ghost" onClick={() => openUsers(r.name)}>
+              <CIcon icon={cilUser} size="lg" />
+            </CButton>
+          </ProtectedButton>
 
-                      <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="role.delete">
-                        <ConfirmDeleteModal
-                          title="Supprimer le rôle"
-                          message="Êtes-vous sûr de vouloir supprimer ce rôle ? Cette action est irréversible."
-                          trigger={
-                            <CButton size="sm" color="danger" variant="ghost">
-                              <CIcon icon={cilTrash} size="lg" />
-                            </CButton>
-                          }
-                          onConfirm={async () => {
-                            try {
-                              const res = await fetchWithAuth(`${API_ROLES}/${r.name}`, { method: "DELETE" })
-                              if (!res.ok) throw new Error("Suppression impossible")
-                              setRoles((prev) => prev.filter((rr) => rr.name !== r.name))
-                              showSuccess("✅ Rôle supprimé")
-                            } catch (e) {
-                              showError(e.message || "Erreur lors de la suppression")
-                            }
-                          }}
-                        />
-                      </ProtectedButton>
-                    </CTableDataCell>
-                  </CTableRow>
-                ))
-              ) : (
-                <CTableRow>
-                  <CTableDataCell colSpan={4} className="text-center">
-                    Aucun rôle
-                  </CTableDataCell>
-                </CTableRow>
-              )}
-            </CTableBody>
+          <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="role.delete">
+            <ConfirmDeleteModal
+              title="Supprimer le rôle"
+              message="Êtes-vous sûr de vouloir supprimer ce rôle ? Cette action est irréversible."
+              trigger={
+                <CButton size="sm" className="me-2" color="danger" variant="ghost">
+                  <CIcon icon={cilTrash} size="lg" />
+                </CButton>
+              }
+              onConfirm={async () => {
+                try {
+                  const res = await fetchWithAuth(`${API_ROLES}/${r.name}`, { method: "DELETE" })
+                  if (!res.ok) throw new Error("Suppression impossible")
+                  setRoles((prev) => prev.filter((rr) => rr.name !== r.name))
+                  showSuccess("✅ Rôle supprimé")
+                } catch (e) {
+                  showError(e.message || "Erreur lors de la suppression")
+                }
+              }}
+            />
+          </ProtectedButton>
+        </CTableDataCell>
+      </CTableRow>
+    ))
+  ) : (
+    <CTableRow>
+      <CTableDataCell colSpan={3} className="text-center">
+        Aucun rôle
+      </CTableDataCell>
+    </CTableRow>
+  )}
+</CTableBody>
+
           </CTable>
+<div className="d-flex justify-content-between align-items-center mt-3">
+  <span>Résultats : {filtered.length}</span>
+  <CFormSelect
+    value={perPage}
+    style={{ width: '120px' }}
+    onChange={(e) => {
+      setPerPage(Number(e.target.value))
+      setPage(1) // reset page
+    }}
+    options={[
+      { label: '10 / page', value: 10 },
+      { label: '20 / page', value: 20 },
+      { label: '50 / page', value: 50 },
+    ]}
+  />
+</div>
+
+<div className="d-flex justify-content-center align-items-center mt-3 gap-3">
+  <CButton disabled={page === 1} onClick={() => setPage((p) => Math.max(p - 1, 1))}>
+    Précédent
+  </CButton>
+  <span>
+    Page {page} / {totalPages || 1}
+  </span>
+  <CButton disabled={page === totalPages} onClick={() => setPage((p) => Math.min(p + 1, totalPages))}>
+    Suivant
+  </CButton>
+</div>
+
+
 
           {/* Sidebar création */}
           <COffcanvas placement="end" visible={showCreate} onHide={() => setShowCreate(false)} style={{ width: "20%" }}>
