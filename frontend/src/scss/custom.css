@@ -39,6 +39,8 @@
 [data-coreui-theme="dark"] .formio-component-select .choices__item.is-highlighted {
   background-color: #3b3f4a !important;
 }
-
+.formio-component-submit {
+  margin-top : 20px;
+}
 
 

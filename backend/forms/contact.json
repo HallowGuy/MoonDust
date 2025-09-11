@@ -196,6 +196,23 @@
                 "input": true
               },
               {
+                "label": "Réponse 1",
+                "optionsLabelPosition": "right",
+                "inline": false,
+                "tableView": false,
+                "values": [
+                  {
+                    "label": "Réponse 1",
+                    "value": "reponse1",
+                    "shortcut": ""
+                  }
+                ],
+                "validateWhenHidden": false,
+                "key": "reponse1",
+                "type": "radio",
+                "input": true
+              },
+              {
                 "label": "Notes",
                 "applyMaskOn": "change",
                 "autoExpand": false,
@@ -233,5 +250,5 @@
     ]
   },
   "createdAt": "2025-09-10T08:39:12.134Z",
-  "updatedAt": "2025-09-10T17:07:14.703Z"
+  "updatedAt": "2025-09-11T07:06:28.557Z"
 }

@@ -11,6 +11,7 @@ import { cilPencil, cilSave } from '@coreui/icons'
 import { API_ROLES, API_ACTIONS_CONFIG } from 'src/api'
 import ProtectedButton from "/src/components/protected/ProtectedButton"
 import { PermissionsContext } from '/src/context/PermissionsContext'
+import { fetchWithAuth } from "../../utils/auth";
 
 const ROLE_COLORS = {
   admin: 'danger',
@@ -68,7 +69,7 @@ const totalPages = Math.ceil(filtered.length / perPage)
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await fetch(API_ACTIONS_CONFIG)
+        const res = await fetchWithAuth(API_ACTIONS_CONFIG)
         if (!res.ok) throw new Error("Impossible de charger la config des actions")
         const data = await res.json()
         setConfig(data)
@@ -84,7 +85,7 @@ const totalPages = Math.ceil(filtered.length / perPage)
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const res = await fetch(API_ROLES)
+        const res = await fetchWithAuth(API_ROLES)
         if (!res.ok) throw new Error("Impossible de charger les rôles")
         const data = await res.json()
         setAvailableRoles(data.map((r) => r.name))
@@ -103,14 +104,14 @@ const totalPages = Math.ceil(filtered.length / perPage)
       setConfig({ ...newConfig })
       setActionsConfig({ ...newConfig })
 
-      const res = await fetch(API_ACTIONS_CONFIG, {
+      const res = await fetchWithAuth(API_ACTIONS_CONFIG, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newConfig),
       })
       if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
 
-      const refreshed = await fetch(`${API_ACTIONS_CONFIG}?t=${Date.now()}`).then((r) => r.json())
+      const refreshed = await fetchWithAuth(`${API_ACTIONS_CONFIG}?t=${Date.now()}`).then((r) => r.json())
 
       setConfig({ ...refreshed })
       setActionsConfig({ ...refreshed })

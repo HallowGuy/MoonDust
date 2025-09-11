@@ -4,7 +4,7 @@ import {
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
   CButton, COffcanvas, COffcanvasHeader, COffcanvasBody,
   CFormInput,
-  CToaster, CToast, CToastBody
+  CToaster, CToast, CToastBody,CDropdown, CDropdownToggle, CDropdownMenu, CDropdownItem, CFormCheck, CRow, CCol
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { Link } from 'react-router-dom'
@@ -70,6 +70,80 @@ const fdOf = (c) => c?.form_data || {}
     fetchEntreprises()
     fetchForm()
   }, [])
+
+
+// --------- COLONNES CUSTOM ---------
+
+// --- Helpers préférences utilisateur ---
+// Essaie de récupérer un identifiant stable d'utilisateur (JWT dans localStorage).
+// Adapte 'access_token' si ton projet utilise un autre nom.
+const getUserKey = () => {
+  try {
+    const token = localStorage.getItem('access_token')
+    if (!token) return 'anon'
+    const payload = JSON.parse(atob(token.split('.')[1] || ''))
+    return payload.sub || payload.user_id || payload.email || 'anon'
+  } catch {
+    return 'anon'
+  }
+}
+const STORAGE_KEY = (uid) => `contacts.visibleCols.${uid}`
+const loadCols = (uid, defaults) => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY(uid))
+    return raw ? JSON.parse(raw) : defaults
+  } catch {
+    return defaults
+  }
+}
+const saveCols = (uid, cols) => {
+  try {
+    localStorage.setItem(STORAGE_KEY(uid), JSON.stringify(cols))
+  } catch {}
+}
+
+// 1. Config des colonnes
+const allColumns = [
+  { id: "name", label: "Nom complet", render: (c, fd) => `${fd.prenom || ""} ${fd.nom || ""}` },
+  { id: "email", label: "Email", render: (c, fd) => fd.email || "-" },
+  { id: "telephone", label: "Téléphone", render: (c, fd) => fd.telephone || "-" },
+  { id: "poste", label: "Poste", render: (c, fd) => fd.poste || "-" },
+  {
+    id: "entreprise",
+    label: "Entreprise",
+    render: (c, fd) =>
+      c.entreprise_id ? (
+        <Link to={`/entreprises/${c.entreprise_id}`} className="text-primary fw-bold">
+          {c.entreprise_nom || "Entreprise"}
+        </Link>
+      ) : (fd.entreprise || "-"),
+  },
+]
+
+// 2. Colonnes visibles avec persistance par user
+const userKey = useMemo(() => getUserKey(), [])
+const defaultCols = useMemo(() => allColumns.map(c => c.id), [])
+const [visibleCols, setVisibleCols] = useState(() => loadCols(userKey, defaultCols))
+
+// Sauvegarde automatique à chaque changement
+useEffect(() => {
+  saveCols(userKey, visibleCols)
+}, [userKey, visibleCols])
+
+// 3. Toggle
+const toggleCol = (colId) => {
+  setVisibleCols(prev =>
+    prev.includes(colId) ? prev.filter(id => id !== colId) : [...prev, colId]
+  )
+}
+
+// (Optionnel) Reset aux valeurs par défaut
+const resetCols = () => setVisibleCols(defaultCols)
+
+
+
+
+
 
   // ---------- OPEN SIDEBAR ----------
   const openOffcanvas = (contact = null) => {
@@ -148,52 +222,71 @@ const fdOf = (c) => c?.form_data || {}
       <CCard className="mb-4">
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <span>Contacts</span>
-          <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="contact.new">
-            <CButton color="primary" onClick={() => openOffcanvas()}>
-              <CIcon icon={cilPlus} className="me-2" /> Nouveau contact
-            </CButton>
-          </ProtectedButton>
+       
+          <div className="d-flex gap-2">
+  <ProtectedButton actionsConfig={actionsConfig} currentUserRoles={currentUserRoles} action="contact.new">
+    <CButton color="primary" onClick={() => openOffcanvas()}>
+      <CIcon icon={cilPlus} className="me-2" /> Nouveau contact
+    </CButton>
+  </ProtectedButton>
+
+  
+</div>
+
         </CCardHeader>
 
         <CCardBody>
+          <CRow className="g-2 mb-3 align-middle">
+  <CCol md>
           <CFormInput
             className="mb-3"
             placeholder="Rechercher…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+          /></CCol>
+          <CCol md="auto">
+          <CDropdown>
+    <CDropdownToggle color="secondary">Colonnes</CDropdownToggle>
+    <CDropdownMenu>
+      {allColumns.map(col => (
+        <CDropdownItem key={col.id} className="d-flex align-items-center">
+          <CFormCheck
+            id={`col-${col.id}`}
+            checked={visibleCols.includes(col.id)}
+            onChange={() => toggleCol(col.id)}
+            label={col.label}
           />
-
+        </CDropdownItem>
+      ))}
+      <CDropdownItem onClick={resetCols} className="text-danger">Réinitialiser</CDropdownItem>
+    </CDropdownMenu>
+  </CDropdown></CCol>
+</CRow>
           <CTable striped hover responsive className="align-middle">
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell>Nom complet</CTableHeaderCell>
-                <CTableHeaderCell>Email</CTableHeaderCell>
-                <CTableHeaderCell>Téléphone</CTableHeaderCell>
-                <CTableHeaderCell>Poste</CTableHeaderCell>
-                <CTableHeaderCell>Entreprise</CTableHeaderCell>
+                {allColumns
+                  .filter((col) => visibleCols.includes(col.id))
+                  .map((col) => (
+                    <CTableHeaderCell key={col.id}>{col.label}</CTableHeaderCell>
+                  ))}
                 <CTableHeaderCell style={{ textAlign: 'center' }}>Actions</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
               {filteredContacts.length ? filteredContacts.map((c) => {
-  const fd = fdOf(c)
-  const entrepriseNom = c.entreprise_id
-    ? (entreprisesMap[c.entreprise_id] || fd.entreprise || "-")
-    : (fd.entreprise || "-")
+            const fd = fdOf(c)
+            const entrepriseNom = c.entreprise_id
+              ? (entreprisesMap[c.entreprise_id] || fd.entreprise || "-")
+              : (fd.entreprise || "-")
 
-  return (
+                return (
                   <CTableRow key={c.id}>
-                    <CTableDataCell>{`${fd.prenom || ""} ${fd.nom || ""}`}</CTableDataCell>
-      <CTableDataCell>{fd.email || "-"}</CTableDataCell>
-      <CTableDataCell>{fd.telephone || "-"}</CTableDataCell>
-      <CTableDataCell>{fd.poste || "-"}</CTableDataCell>
-                    <CTableDataCell>
-                      {c.entreprise_id ? (
-                        <Link to={`/entreprises/${c.entreprise_id}`} className="text-primary fw-bold">
-                          {c.entreprise_nom || 'Entreprise'}
-                        </Link>
-                      ) : ('-')}
-                    </CTableDataCell>
+                   {allColumns
+                      .filter((col) => visibleCols.includes(col.id))
+                      .map((col) => (
+                        <CTableDataCell key={col.id}>{col.render(c, fd)}</CTableDataCell>
+                      ))}
                     <CTableDataCell style={{ textAlign: 'center' }}>
                       <ProtectedButton action="contact.view" actionsConfig={actionsConfig} currentUserRoles={currentUserRoles}>
                         <Link to={`/annuaire/contacts/${c.id}`}>
@@ -226,12 +319,13 @@ const fdOf = (c) => c?.form_data || {}
                 )
 }) : (
   <CTableRow>
-    <CTableDataCell colSpan={6} className="text-center">Aucun contact trouvé</CTableDataCell>
+    <CTableDataCell colSpan={visibleCols.length + 1} className="text-center">Aucun contact trouvé</CTableDataCell>
   </CTableRow>
 )}
 
             </CTableBody>
           </CTable>
+          
         </CCardBody>
       </CCard>
 
@@ -250,9 +344,7 @@ const fdOf = (c) => c?.form_data || {}
               onSave={saveFromFormio}
             />
           )}
-          <div className="text-end mt-3">
-            <CButton color="secondary" variant="ghost" onClick={() => setVisible(false)}>Fermer</CButton>
-          </div>
+          
         </COffcanvasBody>
       </COffcanvas>
 
