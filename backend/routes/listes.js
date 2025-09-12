@@ -22,6 +22,36 @@ router.put("/rename", async (req, res) => {
     res.status(500).json({ error: err.message })
   }
 })
+
+// ➜ À ajouter avant les routes paramétrées (/:type, /:type/:parentId)
+router.get('/count', async (req, res) => {
+  try {
+    const { type, active, distinct } = req.query
+    const where = []
+    const params = []
+
+    if (type) { params.push(type); where.push(`type = $${params.length}`) }
+    if (typeof active !== 'undefined') {
+      const val = active === 'true' || active === '1'
+      params.push(val); where.push(`actif = $${params.length}`)
+    }
+
+    const whereSql = where.length ? ` WHERE ${where.join(' AND ')}` : ''
+
+    let sql
+    if (!type && (distinct === 'type')) {
+      sql = `SELECT COUNT(DISTINCT type)::int AS count FROM demo_first.listes${whereSql}`
+    } else {
+      sql = `SELECT COUNT(*)::int AS count FROM demo_first.listes${whereSql}`
+    }
+
+    const result = await pool.query(sql, params)
+    res.json({ count: result.rows[0].count })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Supprimer tout un type
 router.delete("/delete-type/:type", async (req, res) => {
   try {

@@ -45,4 +45,12 @@
 .messenger {
   padding : 20px !important;
 }
+/* global.css */
+a.d-block.text-reset.text-decoration-none:hover .card,
+div[role="button"]:hover .card { box-shadow: 0 .5rem 1rem rgba(0,0,0,.15); }
+div[role="button"]:focus-visible { outline: 2px solid var(--cui-primary); outline-offset: 2px; }
 
+
+.fw-semibold {
+    margin-bottom: 0;
+}

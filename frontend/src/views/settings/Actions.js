@@ -202,7 +202,7 @@ const totalPages = Math.ceil(filtered.length / perPage)
                     indeterminate={selectedActions.length > 0 && selectedActions.length < paginated.length}
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelectedActions(paginated.map((a) => a))
+                        setSelectedActions((prev) => [...new Set([...prev, ...paginated])])
                       } else {
                         setSelectedActions([])
                       }
@@ -226,11 +226,11 @@ const totalPages = Math.ceil(filtered.length / perPage)
                         <CFormCheck
                           checked={selectedActions.includes(a)}
                           onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedActions((prev) => [...prev, a])
-                            } else {
-                              setSelectedActions((prev) => prev.filter((p) => p !== a))
-                            }
+                             setSelectedActions((prev) => 
+                              e.target.checked 
+                                ? (prev.includes(a) ? prev : [...prev, a])
+                                : prev.filter((p) => p !== a)
+                            )
                           }}
                         />
                       </CTableDataCell>

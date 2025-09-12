@@ -70,79 +70,79 @@
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Formulaires"
   },
   "form.build": {
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Formulaires"
   },
   "form.edit": {
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Formulaires"
   },
   "form.new": {
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Formulaires"
   },
   "form.history": {
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Formulaires"
   },
   "form.version.delete": {
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Formulaires"
   },
   "form.version.preview": {
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Formulaires"
   },
   "form.version.restore": {
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Formulaires"
   },
   "form.version.publish": {
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Formulaires"
   },
   "form.preview": {
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Formulaires"
   },
   "list.edit": {
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Listes"
   },
   "list.new": {
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Listes"
   },
   "list.delete": {
     "roles": [
       "admin"
     ],
-    "thematique": "Rôles"
+    "thematique": "Listes"
   },
   "group.edit": {
     "roles": [
@@ -178,25 +178,25 @@
     "roles": [
       "admin"
     ],
-    "thematique": "Configuration"
+    "thematique": "Actions"
   },
   "actions.editMasse": {
     "roles": [
       "admin"
     ],
-    "thematique": "Configuration"
+    "thematique": "Actions"
   },
   "routes.edit": {
     "roles": [
       "admin"
     ],
-    "thematique": "Autre"
+    "thematique": "Routes"
   },
   "routes.editMasse": {
     "roles": [
       "admin"
     ],
-    "thematique": "Autre"
+    "thematique": "Routes"
   },
   "liste.edit": {
     "roles": [
@@ -220,42 +220,96 @@
     "roles": [
       "admin"
     ],
-    "thematique": "Listes"
+    "thematique": "Contacts"
   },
   "contact.new": {
     "roles": [
       "admin"
     ],
-    "thematique": "Listes"
+    "thematique": "Contacts"
   },
   "contact.delete": {
     "roles": [
       "admin"
     ],
-    "thematique": "Listes"
+    "thematique": "Contacts"
   },
   "contact.view": {
     "roles": [
       "admin"
     ],
-    "thematique": "Listes"
+    "thematique": "Contacts"
   },
   "entreprise.edit": {
     "roles": [
       "admin"
     ],
-    "thematique": "Listes"
+    "thematique": "Entreprises"
   },
   "entreprise.new": {
     "roles": [
       "admin"
     ],
-    "thematique": "Listes"
+    "thematique": "Entreprises"
   },
   "entreprise.delete": {
     "roles": [
       "admin"
     ],
-    "thematique": "Listes"
+    "thematique": "Entreprises"
+  },
+  "dashboard.edit": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Dashboard"
+  },
+  "widgets.users.view": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Dashboard"
+  },
+  "widgets.roles.view": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Dashboard"
+  },
+  "widgets.groups.view": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Dashboard"
+  },
+  "widgets.realm.view": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Dashboard"
+  },
+  "widgets.forms.view": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Dashboard"
+  },
+  "widgets.lists.view": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Dashboard"
+  },
+  "widgets.routes.view": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Dashboard"
+  },
+  "widgets.actions.view": {
+    "roles": [
+      "admin"
+    ],
+    "thematique": "Dashboard"
   }
 }

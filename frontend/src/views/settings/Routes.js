@@ -7,7 +7,6 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilSave } from '@coreui/icons'
-import routes from '../../routes'
 import { PermissionsContext } from "src/context/PermissionsContext"
 import ProtectedButton from "src/components/protected/ProtectedButton"
 import { API_ROLES, API_ROUTES_CONFIG } from 'src/api'
@@ -51,7 +50,7 @@ const RouteEdition = () => {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await fetch(API_ROUTES_CONFIG)
+        const res = await fetchWithAuth(API_ROUTES_CONFIG)
         if (!res.ok) throw new Error("Impossible de charger la config des routes")
         const data = await res.json()
         setConfig(data)
@@ -84,7 +83,7 @@ const RouteEdition = () => {
   const saveConfig = async (newConfig) => {
     try {
       setSaving(true)
-      const res = await fetch(API_ROUTES_CONFIG, {
+      const res = await fetchWithAuth(API_ROUTES_CONFIG, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newConfig),
@@ -92,7 +91,7 @@ const RouteEdition = () => {
       if (!res.ok) throw new Error("Erreur lors de la sauvegarde")
 
       // 👉 recharger depuis backend avec cache buster
-      const refreshed = await fetch(`${API_ROUTES_CONFIG}?t=${Date.now()}`).then(r => r.json())
+      const refreshed = await fetchWithAuth(`${API_ROUTES_CONFIG}?t=${Date.now()}`).then(r => r.json())
       setConfig(refreshed)
       setRoutesConfig({ ...refreshed })
       showSuccess("Configuration sauvegardée")
@@ -195,7 +194,7 @@ const totalPages = Math.ceil(filtered.length / perPage)
                     indeterminate={selectedRoutes.length > 0 && selectedRoutes.length < paginated.length}
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelectedRoutes(paginated.map((r) => r.path))
+                        setSelectedRoutes((prev) => [...new Set([...prev, ...paginated.map(r => r.path)])])
                       } else {
                         setSelectedRoutes([])
                       }
@@ -218,11 +217,11 @@ const totalPages = Math.ceil(filtered.length / perPage)
                       <CFormCheck
                         checked={selectedRoutes.includes(r.path)}
                         onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedRoutes((prev) => [...prev, r.path])
-                          } else {
-                            setSelectedRoutes((prev) => prev.filter((p) => p !== r.path))
-                          }
+                         setSelectedRoutes((prev) =>
+                          e.target.checked
+                            ? (prev.includes(r.path) ? prev : [...prev, r.path])
+                            : prev.filter((p) => p !== r.path)
+                        )
                         }}
                       />
                     </CTableDataCell>

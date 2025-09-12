@@ -41,13 +41,11 @@
     "read",
     "contribute"
   ],
-  
   "/settings/personnalisation": [
     "read",
     "contribute",
     "admin"
   ],
-
   "/settings/routes": [
     "read",
     "contribute",
@@ -329,7 +327,8 @@
     "contribute"
   ],
   "/settings/audit": [
-    "read"
+    "read",
+    "admin"
   ],
   "/settings/listes": [
     "read",

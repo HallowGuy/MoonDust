@@ -58,47 +58,7 @@ const headerRef = useRef()
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
         <CHeaderNav className="d-none d-md-flex">
-          <CNavItem>
-            <CNavLink to="/settings/settings" as={NavLink}>
-              Dashboard
-            </CNavLink>
-          </CNavItem>
-          <CNavItem>
-            <CNavLink to="/settings/list/users" as={NavLink}>Utilisateurs
-            </CNavLink>
-          </CNavItem>
-          <CNavItem>
-            <CNavLink href="#">Settings</CNavLink>
-          </CNavItem>
-            
-
-      {/* Charts */}
-      <CNavItem>
-        <CNavLink to="/charts" as={NavLink}>
-          <CIcon icon={cilChartPie} className="me-1" /> Charts
-        </CNavLink>
-      </CNavItem>
-
-      {/* Icons */}
-      <CDropdown variant="nav-item">
-        <CDropdownToggle color="link">
-          <CIcon icon={cilStar} className="me-1" /> Icons
-        </CDropdownToggle>
-        <CDropdownMenu>
-          <CDropdownItem as={NavLink} to="/icons/coreui-icons">
-  CoreUI Free
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/icons/flags">
-  Flags
-</CDropdownItem>
-<CDropdownItem as={NavLink} to="/icons/brands">
-  Brands
-</CDropdownItem>
-
-        </CDropdownMenu>
-      </CDropdown>
-
- 
+     
      
         </CHeaderNav>
          <CHeaderNav className="ms-auto">

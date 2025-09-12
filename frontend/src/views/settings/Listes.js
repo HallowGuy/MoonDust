@@ -4,7 +4,7 @@ import {
   CCard, CCardHeader, CCardBody,
   CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
   CButton, COffcanvas, COffcanvasHeader, COffcanvasBody,
-  CFormInput, CToaster, CToast, CToastBody,CFormSelect
+  CFormInput, CToaster, CToast, CToastBody,CFormSelect, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter
 } from "@coreui/react"
 import CIcon from "@coreui/icons-react"
 import { cilPencil, cilTrash, cilPlus } from "@coreui/icons"
@@ -30,6 +30,11 @@ const [liste, setListe] = useState([])
   const [manageChildren, setManageChildren] = useState(null)
   const [children, setChildren] = useState([])
 const [newChild, setNewChild] = useState("")
+
+const [showRename, setShowRename] = useState(false)
+const [renameTarget, setRenameTarget] = useState(null) // { type: 'value'|'child', item }
+const [renameValue, setRenameValue] = useState('')
+
 
   // Toasts
   const [toasts, setToasts] = useState([])
@@ -91,18 +96,6 @@ const paginated = filtered.slice((page - 1) * perPage, page * perPage)
 
   useEffect(() => { fetchAll() }, [])
 
-   const fetchListe = async () => {
-      try {
-        const res = await fetchWithAuth(API_LISTES)
-        if (!res.ok) throw new Error('Impossible de charger les rôles')
-        const data = await res.json()
-        setListe(data)
-      } catch (e) {
-        showError(e.message || 'Erreur réseau lors du chargement')
-      }
-    }
-  
-    useEffect(() => { fetchListe() }, [])
   
     const openCreate = () => {
       setCreateName('')
@@ -192,17 +185,11 @@ const paginated = filtered.slice((page - 1) * perPage, page * perPage)
   }
 
   // --- VALEURS ---
-  const renameValue = async (val) => {
-    const newName = prompt("Nouveau nom :", val.valeur)
-    if (!newName) return
-    await fetchWithAuth(`${API_LISTES}/${val.id}`, {
-      method: "PUT",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ valeur: newName, ordre: val.ordre, actif: true }),
-    })
-    showSuccess("Valeur renommée")
-    openOffcanvas(editType)
-  }
+ const openRenameValue = (val) => {
+   setRenameTarget({ type: 'value', item: val })
+   setRenameValue(val.valeur || '')
+   setShowRename(true)
+ }
 
   const deleteValue = async (id) => {
     await fetchWithAuth(`${API_LISTES}/${id}`, { method: "DELETE", headers: getAuthHeaders() })
@@ -219,17 +206,11 @@ const paginated = filtered.slice((page - 1) * perPage, page * perPage)
     setChildren(await res.json())
   }
 
-  const renameChild = async (c) => {
-    const newName = prompt("Nouveau nom enfant :", c.valeur)
-    if (!newName) return
-    await fetchWithAuth(`${API_LISTES}/${c.id}`, {
-      method: "PUT",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ valeur: newName, ordre: c.ordre, actif: true }),
-    })
-    showSuccess("Enfant renommé")
-    openChildren(manageChildren)
-  }
+ const openRenameChild = (c) => {
+   setRenameTarget({ type: 'child', item: c })
+   setRenameValue(c.valeur || '')
+   setShowRename(true)
+ }
 
   const deleteChild = async (id) => {
     await fetchWithAuth(`${API_LISTES}/${id}`, { method: "DELETE", headers: getAuthHeaders() })
@@ -238,6 +219,29 @@ const paginated = filtered.slice((page - 1) * perPage, page * perPage)
     fetchAll() // refresh global
 
   }
+
+const submitRename = async () => {
+  const val = (renameValue || '').trim()
+  if (!val) return showError('Nom requis')
+
+  const { item } = renameTarget
+  await fetchWithAuth(`${API_LISTES}/${item.id}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ valeur: val, ordre: item.ordre, actif: true }),
+  })
+  showSuccess('Nom mis à jour')
+
+  setShowRename(false)
+  setRenameTarget(null)
+  setRenameValue('')
+
+  // rafraîchissement ciblé
+  if (manageChildren) openChildren(manageChildren)
+  else if (editType) openOffcanvas(editType)
+  fetchAll()
+}
+
 
   return (
     <div className="container py-4">
@@ -393,7 +397,7 @@ const paginated = filtered.slice((page - 1) * perPage, page * perPage)
             <CTableBody>
               {values.map((v) => (
                 <CTableRow key={v.id}>
-                  <CTableDataCell onDoubleClick={() => renameValue(v)} style={{ cursor: "pointer" }}>
+                  <CTableDataCell onDoubleClick={() => openRenameValue(v)} style={{ cursor: "pointer" }}>
                     {v.valeur}
                   </CTableDataCell>
                   <CTableDataCell style={{ textAlign: "center" }}>
@@ -435,7 +439,7 @@ const paginated = filtered.slice((page - 1) * perPage, page * perPage)
             <CTableBody>
               {children.map((c) => (
                 <CTableRow key={c.id}>
-                  <CTableDataCell onDoubleClick={() => renameChild(c)} style={{ cursor: "pointer" }}>
+                  <CTableDataCell onDoubleClick={() => openRenameChild(c)} style={{ cursor: "pointer" }}>
                     {c.valeur}
                   </CTableDataCell>
                   <CTableDataCell style={{ textAlign: "center" }}>
@@ -458,6 +462,22 @@ const paginated = filtered.slice((page - 1) * perPage, page * perPage)
           </CToast>
         ))}
       </CToaster>
+      <CModal visible={showRename} onClose={() => setShowRename(false)}>
+  <CModalHeader><CModalTitle>Renommer</CModalTitle></CModalHeader>
+  <CModalBody>
+    <CFormInput
+      label="Nouveau nom"
+      value={renameValue}
+      onChange={(e) => setRenameValue(e.target.value)}
+      maxLength={120}
+    />
+  </CModalBody>
+  <CModalFooter>
+    <CButton color="secondary" variant="ghost" onClick={() => setShowRename(false)}>Annuler</CButton>
+    <CButton color="primary" onClick={submitRename}>Enregistrer</CButton>
+  </CModalFooter>
+</CModal>
+
     </div>
   )
 }

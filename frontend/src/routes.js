@@ -26,6 +26,7 @@ const Entreprises = React.lazy(() => import('./views/annuaire/Entreprises'))
 const Projets = React.lazy(() => import('./views/annuaire/Projets'))
 const ContactsDetail = React.lazy(() => import('./views/annuaire/ContactsDetail'))
 const Personnalisation = React.lazy(() => import('./views/settings/Personnalisation'))
+const CustomDashboard = React.lazy(() => import('./views/settings/EditDashboard'))
 
 
 
@@ -82,6 +83,8 @@ const routes = [
   { path: '/', name: 'Accueil', element: Settings  },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard  },
   { path: '/settings/settings', name: 'Paramétrage', element: Settings  },
+    { path: '/settings/settingsdashboard', name: 'Paramétrage', element: CustomDashboard  },
+
   { path: '/settings/users', name: 'Gestion des utilisateurs', element: Users  },
   { path: '/settings/roles', name: 'Gestion des rôles', element: Roles  },
   { path: '/settings/groupes', name: 'Gestion des groupes', element: Groupes  },

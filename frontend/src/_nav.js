@@ -22,7 +22,7 @@ import {
   cilList,
   cilFile,
   cilSpreadsheet,
-  cilFeaturedPlaylist, cilLockLocked
+  cilFeaturedPlaylist, cilLockLocked,cilMap,cilBolt
 
   
 } from '@coreui/icons'
@@ -127,13 +127,13 @@ const _nav = [
     component: CNavItem,
     name: 'Routes',
     to: '/settings/routes',
-    icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilMap} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: 'Actions',
     to: '/settings/actions',
-    icon: <CIcon icon={cilList} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilBolt} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,

@@ -137,13 +137,23 @@ const Personnalisation = () => {
       showError('Sélectionnez un fichier SVG')
       return
     }
+    if (file.size > 200 * 1024) { 
+      showError('SVG trop volumineux (>200 Ko)'); 
+      return 
+    }
 
     // Petite validation du type
     if (file.type !== 'image/svg+xml' && !file.name.endsWith('.svg')) {
       showError('Le fichier doit être au format SVG')
       return
     }
-
+    // Inspection basique du contenu
+      const text = await file.text()
+      const DANGEROUS = /(<!\s*script)|on\w+=|javascript:|<\s*foreignObject/i
+      if (DANGEROUS.test(text)) {
+        showError('SVG refusé (contenu potentiellement dangereux)')
+        return
+      }
     const formData = new FormData()
     formData.append('file', file)
 

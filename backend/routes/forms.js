@@ -26,6 +26,37 @@ router.get("/", async (_req, res) => {
   res.json(rows);
 });
 
+
+// ➜ À ajouter avant les routes paramétrées (/:type, /:type/:parentId)
+router.get('/count', async (req, res) => {
+  try {
+    const { type, active } = req.query
+
+    const where = []
+    const params = []
+
+    if (type) {
+      params.push(type)
+      where.push(`type = $${params.length}`)
+    }
+    if (typeof active !== 'undefined') {
+      // accepte active=true/false/1/0
+      const val = active === 'true' || active === '1'
+      params.push(val)
+      where.push(`actif = $${params.length}`)
+    }
+
+    let sql = 'SELECT COUNT(*)::int AS count FROM demo_first.forms'
+    if (where.length) sql += ' WHERE ' + where.join(' AND ')
+
+    const result = await pool.query(sql, params)
+    res.json({ count: result.rows[0].count })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
 // === DÉTAIL D’UN FORM (avec version publiée) ===
 router.get("/:id", async (req, res) => {
   const { rows } = await pool.query(`
