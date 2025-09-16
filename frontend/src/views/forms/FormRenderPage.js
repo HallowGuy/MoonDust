@@ -1,7 +1,7 @@
 // src/views/forms/RenderFormPage.js
 import React, { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { API_FORM_CONFIG } from "src/api"
+import { API_FORMS } from "src/api"
 import FormioRenderer from "./FormioRenderer"
 
 const RenderFormPage = () => {
@@ -11,7 +11,7 @@ const RenderFormPage = () => {
   useEffect(() => {
     const fetchForm = async () => {
       try {
-        const res = await fetch(`${API_FORM_CONFIG}/${id}`)
+        const res = await fetch(`${API_FORMS}/${id}`)
         if (!res.ok) throw new Error("Formulaire introuvable")
         const data = await res.json()
         setForm(data)

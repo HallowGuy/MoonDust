@@ -54,27 +54,36 @@ export function useDashboardPrefs(userId = 'me', allIds = null) {
   const [error, setError] = useState(null)
   const didLoadRef = useRef(false)
 
-  const uniq = (arr) => Array.from(new Set((arr || []).filter(Boolean)))
+const uniq = (arr) => Array.from(new Set((arr || []).filter(Boolean)))
   const allIdsKey = Array.isArray(allIds) ? allIds.join('|') : ''
 
   const mergeWithAllIds = (p) => {
-    if (!Array.isArray(allIds) || allIds.length === 0) return p
-    const ids = uniq(allIds)
-    const prevOrder = Array.isArray(p.order) ? p.order : []
-    const prevVisible = Array.isArray(p.visible) ? p.visible : []
+  if (!Array.isArray(allIds) || allIds.length === 0) return p
+  const ids = uniq(allIds)
 
-    // garde l’ordre existant (pour les IDs présents), ajoute les nouveaux à la fin
-    const order = uniq([
-      ...prevOrder.filter((id) => ids.includes(id)),
-      ...ids.filter((id) => !prevOrder.includes(id)),
-    ])
-    // garde la visibilité existante + rend visibles les nouveaux par défaut
-    const visible = uniq([
-      ...prevVisible.filter((id) => ids.includes(id)),
-      ...ids.filter((id) => !prevVisible.includes(id)),
-    ])
-    return { ...p, order, visible }
-  }
+  const prevOrder = Array.isArray(p.order) ? p.order : []
+  const prevVisible = Array.isArray(p.visible) ? p.visible : []
+
+  // IDs déjà connus (dans order ou visible)
+  const known = new Set([...prevOrder, ...prevVisible])
+
+  // VRAIS nouveaux IDs (jamais vus avant)
+  const newIds = ids.filter((id) => !known.has(id))
+
+  // Conserver l'ordre existant pour les IDs présents + ajouter les nouveaux à la fin
+  const order = uniq([
+    ...prevOrder.filter((id) => ids.includes(id)),
+    ...newIds,
+  ])
+
+  // Conserver la visibilité existante + rendre visibles seulement les nouveaux IDs
+  const visible = uniq([
+    ...prevVisible.filter((id) => ids.includes(id)),
+    ...newIds,
+  ])
+
+  return { ...p, order, visible }
+}
 
   useEffect(() => {
     let cancelled = false

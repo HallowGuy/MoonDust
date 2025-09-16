@@ -2,16 +2,17 @@
 import React, { useEffect, useRef } from "react"
 import { Formio } from "formiojs"
 import "formiojs/dist/formio.full.min.css"
-
-const clone = (o) => JSON.parse(JSON.stringify(o || {}))
+import rfdc from "rfdc"
+const clone = rfdc()
 
 // Parcours récursif du schéma pour forcer le bouton submit -> customSubmit
-const walk = (list = [], fn) => {
+const walk = (list = [], visit) => {
+  if (typeof visit !== "function") return
   for (const c of list) {
-    fn(c)
-    if (Array.isArray(c.components)) walk(c.components, fn)
-    if (Array.isArray(c.columns)) c.columns.forEach(col => walk(col.components || [], fn))
-    if (Array.isArray(c.rows)) c.rows.forEach(row => row.forEach(cell => walk(cell.components || [], fn)))
+    visit(c)
+    if (Array.isArray(c.components)) walk(c.components, visit)
+    if (Array.isArray(c.columns)) c.columns.forEach(col => walk(col.components || [], visit))
+    if (Array.isArray(c.rows)) c.rows.forEach(row => row.forEach(cell => walk(cell.components || [], visit)))
   }
 }
 
@@ -62,7 +63,8 @@ const FormioRenderer = ({ form, submission, onSave }) => {
     if (token) { try { Formio.setToken(token) } catch {} }
 
     // 1) cloner le schéma et forcer le bouton -> customSubmit (récursif)
-    const schema = forceCustomSubmit(clone(form.schema))
+    //const schema = forceCustomSubmit(clone(form.schema))
+    const schema = forceCustomSubmit(form.schema)
 
     let cancelled = false
     ;(async () => {
@@ -89,7 +91,7 @@ const FormioRenderer = ({ form, submission, onSave }) => {
         } catch {
           // fallback par champ si setSubmission indisponible
           Object.entries(init.data).forEach(([k, v]) => {
-            instance.getComponent(k, true)?.setValue?.(v, { fromSubmission: true })
+            instance.getComponent(k)?.setValue?.(v, { fromSubmission: true })
           })
           instance.redraw()
         }
@@ -119,7 +121,7 @@ const FormioRenderer = ({ form, submission, onSave }) => {
       instance.on("submit", (sub) => handle(sub, "submit"))
 
       // Fallback ultime : si le bouton existe mais n’émet pas correctement
-      const btn = instance.getComponent("submit", true)
+      const btn = instance.getComponent("submit")
       if (btn?.buttonElement) {
         btn.buttonElement.addEventListener("click", () => {
           handle(instance.submission || { data: {} }, "button.click")
@@ -145,7 +147,7 @@ const FormioRenderer = ({ form, submission, onSave }) => {
       try { await instance.setSubmission(sub) }
       catch {
         Object.entries(sub.data).forEach(([k, v]) => {
-          instance.getComponent(k, true)?.setValue?.(v, { fromSubmission: true })
+          instance.getComponent(k)?.setValue?.(v, { fromSubmission: true })
         })
         instance.redraw()
       }

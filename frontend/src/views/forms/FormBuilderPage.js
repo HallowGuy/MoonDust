@@ -16,7 +16,7 @@ import {
 } from "@coreui/react"
 import CIcon from "@coreui/icons-react"
 import { cilSave } from "@coreui/icons"
-import { API_FORM_CONFIG } from "src/api"
+import { API_FORMS } from "src/api"
 import ConfirmCancelModal from "src/components/confirmations/ConfirmCancelModal"
 
 const FormBuilderPage = () => {
@@ -38,7 +38,7 @@ const FormBuilderPage = () => {
   useEffect(() => {
     const fetchForm = async () => {
       try {
-        const res = await fetch(`${API_FORM_CONFIG}/${id}`)
+        const res = await fetch(`${API_FORMS}/${id}`)
         if (!res.ok) throw new Error("Impossible de charger le formulaire")
         const data = await res.json()
         setForm(data)
@@ -83,7 +83,7 @@ const FormBuilderPage = () => {
     try {
 const schema = patchSubmitButtons(builderInstance.current.instance.schema)
 
-      const res = await fetch(`${API_FORM_CONFIG}/${id}`, {
+      const res = await fetch(`${API_FORMS}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, schema }),

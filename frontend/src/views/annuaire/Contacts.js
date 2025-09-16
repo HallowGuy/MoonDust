@@ -12,7 +12,7 @@ import { cilTrash, cilPlus, cilEnvelopeClosed, cilSearch } from '@coreui/icons'
 import ConfirmDeleteModal from "src/components/confirmations/ConfirmDeleteModal"
 import ProtectedButton from "src/components/protected/ProtectedButton"
 import { PermissionsContext } from 'src/context/PermissionsContext'
-import { API_CONTACTS, API_ENTREPRISES, API_FORM_CONFIG, API_FORM_DETAIL } from 'src/api'
+import { API_CONTACTS, API_ENTREPRISES, API_FORMS, API_FORM_DETAIL } from 'src/api'
 import { fetchWithAuth } from 'src/utils/auth'
 import FormioRenderer from 'src/views/forms/FormioRenderer'
 

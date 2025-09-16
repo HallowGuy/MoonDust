@@ -12,6 +12,7 @@ import {
   CSidebarToggler,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
+import { AppHeaderDropdown } from './header/index'
 
 import { AppSidebarNav } from './AppSidebarNav'
 import { logo } from 'src/assets/brand/logo'
@@ -70,11 +71,10 @@ const AppSidebar = () => {
       {/* 🔥 Ici on passe la navigation filtrée */}
       <AppSidebarNav items={navItems} />
 
-      <CSidebarFooter className="border-top d-none d-lg-flex">
-        <CSidebarToggler
-          onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
+      <CSidebarFooter className="border-top d-none d-lg-flex"><CSidebarToggler          onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
         />
       </CSidebarFooter>
+      
     </CSidebar>
   )
 }
