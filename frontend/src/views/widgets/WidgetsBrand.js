@@ -2,11 +2,10 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { CRow, CCol } from '@coreui/react'
 
-
-import UsersWidget from 'src/dashboard/widgets/UsersWidget'
-import RolesWidget from 'src/dashboard/widgets/RolesWidget'
-import GroupsWidget from 'src/dashboard/widgets/GroupsWidget'
-import RealmWidget from 'src/dashboard/widgets/RealmWidget'
+import UsersWidget from './UsersWidget.js'
+import RolesWidget from './RolesWidget.js'
+import GroupsWidget from './GroupsWidget.js'
+import RealmWidget from './RealmWidget.js'
 
 
 const WidgetsBrand = ({ className }) => {

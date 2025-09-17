@@ -8,7 +8,7 @@ import keycloak from './keycloak.js';
 
 // ✅ Initialiser Keycloak sans forcer login
 keycloak.init({ onLoad: "check-sso" }).then(() => {
-  if (keycloak.authenticated) {
+    if (keycloak.authenticated) {
     console.log("✅ Connecté :", keycloak.tokenParsed?.preferred_username);
     localStorage.setItem("access_token", keycloak.token);
 

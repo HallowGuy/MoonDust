@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 0REEWmkEBDt44vfH9je9gZPK6J9TgMSfh4eKUFnchlOVogBlHdI6WWdEHEsqLoq
+\restrict fwQMsvFOB9Fqjy2MX7mjgqRzCJnRZcqF0TenYI7Yc90jh5SzJZnVYAxNYBcnLzk
 
 -- Dumped from database version 15.14 (Debian 15.14-1.pgdg13+1)
 -- Dumped by pg_dump version 15.14 (Debian 15.14-1.pgdg13+1)
@@ -19,28 +19,16 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: demo_first; Type: SCHEMA; Schema: -; Owner: -
+-- Name: demo_first; Type: SCHEMA; Schema: -; Owner: postgres
 --
 
 CREATE SCHEMA demo_first;
 
 
---
--- Name: public; Type: SCHEMA; Schema: -; Owner: -
---
-
--- *not* creating schema, since initdb creates it
-
+ALTER SCHEMA demo_first OWNER TO postgres;
 
 --
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON SCHEMA public IS '';
-
-
---
--- Name: update_updated_at_column(); Type: FUNCTION; Schema: demo_first; Owner: -
+-- Name: update_updated_at_column(); Type: FUNCTION; Schema: demo_first; Owner: postgres
 --
 
 CREATE FUNCTION demo_first.update_updated_at_column() RETURNS trigger
@@ -53,12 +41,14 @@ END;
 $$;
 
 
+ALTER FUNCTION demo_first.update_updated_at_column() OWNER TO postgres;
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- Name: activites; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: activites; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.activites (
@@ -73,8 +63,10 @@ CREATE TABLE demo_first.activites (
 );
 
 
+ALTER TABLE demo_first.activites OWNER TO postgres;
+
 --
--- Name: activites_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: activites_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.activites_id_seq
@@ -86,15 +78,17 @@ CREATE SEQUENCE demo_first.activites_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.activites_id_seq OWNER TO postgres;
+
 --
--- Name: activites_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: activites_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.activites_id_seq OWNED BY demo_first.activites.id;
 
 
 --
--- Name: audit_log; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: audit_log; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.audit_log (
@@ -108,8 +102,10 @@ CREATE TABLE demo_first.audit_log (
 );
 
 
+ALTER TABLE demo_first.audit_log OWNER TO postgres;
+
 --
--- Name: audit_log_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: audit_log_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.audit_log_id_seq
@@ -120,15 +116,17 @@ CREATE SEQUENCE demo_first.audit_log_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.audit_log_id_seq OWNER TO postgres;
+
 --
--- Name: audit_log_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: audit_log_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.audit_log_id_seq OWNED BY demo_first.audit_log.id;
 
 
 --
--- Name: contact_old; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: contact_old; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.contact_old (
@@ -154,8 +152,10 @@ CREATE TABLE demo_first.contact_old (
 );
 
 
+ALTER TABLE demo_first.contact_old OWNER TO postgres;
+
 --
--- Name: contact_projet; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: contact_projet; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.contact_projet (
@@ -164,8 +164,10 @@ CREATE TABLE demo_first.contact_projet (
 );
 
 
+ALTER TABLE demo_first.contact_projet OWNER TO postgres;
+
 --
--- Name: contact_tags; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: contact_tags; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.contact_tags (
@@ -174,8 +176,10 @@ CREATE TABLE demo_first.contact_tags (
 );
 
 
+ALTER TABLE demo_first.contact_tags OWNER TO postgres;
+
 --
--- Name: contacts; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: contacts; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.contacts (
@@ -187,8 +191,10 @@ CREATE TABLE demo_first.contacts (
 );
 
 
+ALTER TABLE demo_first.contacts OWNER TO postgres;
+
 --
--- Name: contacts_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: contacts_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.contacts_id_seq
@@ -200,15 +206,17 @@ CREATE SEQUENCE demo_first.contacts_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.contacts_id_seq OWNER TO postgres;
+
 --
--- Name: contacts_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: contacts_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.contacts_id_seq OWNED BY demo_first.contacts.id;
 
 
 --
--- Name: conversation_participants; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: conversation_participants; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.conversation_participants (
@@ -217,8 +225,10 @@ CREATE TABLE demo_first.conversation_participants (
 );
 
 
+ALTER TABLE demo_first.conversation_participants OWNER TO postgres;
+
 --
--- Name: conversations; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: conversations; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.conversations (
@@ -229,8 +239,10 @@ CREATE TABLE demo_first.conversations (
 );
 
 
+ALTER TABLE demo_first.conversations OWNER TO postgres;
+
 --
--- Name: document_tags; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: document_tags; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.document_tags (
@@ -240,8 +252,10 @@ CREATE TABLE demo_first.document_tags (
 );
 
 
+ALTER TABLE demo_first.document_tags OWNER TO postgres;
+
 --
--- Name: document_versions; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: document_versions; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.document_versions (
@@ -255,8 +269,10 @@ CREATE TABLE demo_first.document_versions (
 );
 
 
+ALTER TABLE demo_first.document_versions OWNER TO postgres;
+
 --
--- Name: document_versions_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: document_versions_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.document_versions_id_seq
@@ -267,15 +283,17 @@ CREATE SEQUENCE demo_first.document_versions_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.document_versions_id_seq OWNER TO postgres;
+
 --
--- Name: document_versions_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: document_versions_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.document_versions_id_seq OWNED BY demo_first.document_versions.id;
 
 
 --
--- Name: documents; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: documents; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.documents (
@@ -292,8 +310,10 @@ CREATE TABLE demo_first.documents (
 );
 
 
+ALTER TABLE demo_first.documents OWNER TO postgres;
+
 --
--- Name: documents_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: documents_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.documents_id_seq
@@ -304,15 +324,17 @@ CREATE SEQUENCE demo_first.documents_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.documents_id_seq OWNER TO postgres;
+
 --
--- Name: documents_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: documents_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.documents_id_seq OWNED BY demo_first.documents.id;
 
 
 --
--- Name: entreprises; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: entreprises; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.entreprises (
@@ -327,8 +349,10 @@ CREATE TABLE demo_first.entreprises (
 );
 
 
+ALTER TABLE demo_first.entreprises OWNER TO postgres;
+
 --
--- Name: entreprises_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: entreprises_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.entreprises_id_seq
@@ -340,15 +364,17 @@ CREATE SEQUENCE demo_first.entreprises_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.entreprises_id_seq OWNER TO postgres;
+
 --
--- Name: entreprises_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: entreprises_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.entreprises_id_seq OWNED BY demo_first.entreprises.id;
 
 
 --
--- Name: exports; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: exports; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.exports (
@@ -361,8 +387,10 @@ CREATE TABLE demo_first.exports (
 );
 
 
+ALTER TABLE demo_first.exports OWNER TO postgres;
+
 --
--- Name: exports_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: exports_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.exports_id_seq
@@ -374,15 +402,17 @@ CREATE SEQUENCE demo_first.exports_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.exports_id_seq OWNER TO postgres;
+
 --
--- Name: exports_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: exports_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.exports_id_seq OWNED BY demo_first.exports.id;
 
 
 --
--- Name: form_versions; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: form_versions; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.form_versions (
@@ -397,8 +427,10 @@ CREATE TABLE demo_first.form_versions (
 );
 
 
+ALTER TABLE demo_first.form_versions OWNER TO postgres;
+
 --
--- Name: form_versions_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: form_versions_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.form_versions_id_seq
@@ -409,15 +441,17 @@ CREATE SEQUENCE demo_first.form_versions_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.form_versions_id_seq OWNER TO postgres;
+
 --
--- Name: form_versions_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: form_versions_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.form_versions_id_seq OWNED BY demo_first.form_versions.id;
 
 
 --
--- Name: forms; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: forms; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.forms (
@@ -427,8 +461,10 @@ CREATE TABLE demo_first.forms (
 );
 
 
+ALTER TABLE demo_first.forms OWNER TO postgres;
+
 --
--- Name: forms_current; Type: VIEW; Schema: demo_first; Owner: -
+-- Name: forms_current; Type: VIEW; Schema: demo_first; Owner: postgres
 --
 
 CREATE VIEW demo_first.forms_current AS
@@ -442,8 +478,10 @@ CREATE VIEW demo_first.forms_current AS
   ORDER BY form_versions.form_id, form_versions.version DESC;
 
 
+ALTER TABLE demo_first.forms_current OWNER TO postgres;
+
 --
--- Name: keycloak_users; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: keycloak_users; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.keycloak_users (
@@ -453,8 +491,10 @@ CREATE TABLE demo_first.keycloak_users (
 );
 
 
+ALTER TABLE demo_first.keycloak_users OWNER TO postgres;
+
 --
--- Name: leave_requests; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: leave_requests; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.leave_requests (
@@ -470,8 +510,10 @@ CREATE TABLE demo_first.leave_requests (
 );
 
 
+ALTER TABLE demo_first.leave_requests OWNER TO postgres;
+
 --
--- Name: leave_requests_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: leave_requests_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.leave_requests_id_seq
@@ -483,15 +525,17 @@ CREATE SEQUENCE demo_first.leave_requests_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.leave_requests_id_seq OWNER TO postgres;
+
 --
--- Name: leave_requests_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: leave_requests_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.leave_requests_id_seq OWNED BY demo_first.leave_requests.id;
 
 
 --
--- Name: listes; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: listes; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.listes (
@@ -505,8 +549,10 @@ CREATE TABLE demo_first.listes (
 );
 
 
+ALTER TABLE demo_first.listes OWNER TO postgres;
+
 --
--- Name: listes_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: listes_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.listes_id_seq
@@ -518,15 +564,17 @@ CREATE SEQUENCE demo_first.listes_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.listes_id_seq OWNER TO postgres;
+
 --
--- Name: listes_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: listes_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.listes_id_seq OWNED BY demo_first.listes.id;
 
 
 --
--- Name: message_reads; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: message_reads; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.message_reads (
@@ -536,8 +584,10 @@ CREATE TABLE demo_first.message_reads (
 );
 
 
+ALTER TABLE demo_first.message_reads OWNER TO postgres;
+
 --
--- Name: messages; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: messages; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.messages (
@@ -549,8 +599,10 @@ CREATE TABLE demo_first.messages (
 );
 
 
+ALTER TABLE demo_first.messages OWNER TO postgres;
+
 --
--- Name: notes; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: notes; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.notes (
@@ -562,8 +614,10 @@ CREATE TABLE demo_first.notes (
 );
 
 
+ALTER TABLE demo_first.notes OWNER TO postgres;
+
 --
--- Name: notes_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: notes_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.notes_id_seq
@@ -575,15 +629,17 @@ CREATE SEQUENCE demo_first.notes_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.notes_id_seq OWNER TO postgres;
+
 --
--- Name: notes_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: notes_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.notes_id_seq OWNED BY demo_first.notes.id;
 
 
 --
--- Name: notes_replies; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: notes_replies; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.notes_replies (
@@ -595,8 +651,10 @@ CREATE TABLE demo_first.notes_replies (
 );
 
 
+ALTER TABLE demo_first.notes_replies OWNER TO postgres;
+
 --
--- Name: notifications; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: notifications; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.notifications (
@@ -608,8 +666,10 @@ CREATE TABLE demo_first.notifications (
 );
 
 
+ALTER TABLE demo_first.notifications OWNER TO postgres;
+
 --
--- Name: notifications_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: notifications_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.notifications_id_seq
@@ -621,15 +681,17 @@ CREATE SEQUENCE demo_first.notifications_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.notifications_id_seq OWNER TO postgres;
+
 --
--- Name: notifications_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: notifications_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.notifications_id_seq OWNED BY demo_first.notifications.id;
 
 
 --
--- Name: projets; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: projets; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.projets (
@@ -645,8 +707,10 @@ CREATE TABLE demo_first.projets (
 );
 
 
+ALTER TABLE demo_first.projets OWNER TO postgres;
+
 --
--- Name: projets_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: projets_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.projets_id_seq
@@ -658,15 +722,17 @@ CREATE SEQUENCE demo_first.projets_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.projets_id_seq OWNER TO postgres;
+
 --
--- Name: projets_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: projets_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.projets_id_seq OWNED BY demo_first.projets.id;
 
 
 --
--- Name: roles; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: roles; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.roles (
@@ -678,8 +744,10 @@ CREATE TABLE demo_first.roles (
 );
 
 
+ALTER TABLE demo_first.roles OWNER TO postgres;
+
 --
--- Name: roles_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: roles_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.roles_id_seq
@@ -690,15 +758,17 @@ CREATE SEQUENCE demo_first.roles_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.roles_id_seq OWNER TO postgres;
+
 --
--- Name: roles_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: roles_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.roles_id_seq OWNED BY demo_first.roles.id;
 
 
 --
--- Name: submissions; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: submissions; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.submissions (
@@ -710,8 +780,10 @@ CREATE TABLE demo_first.submissions (
 );
 
 
+ALTER TABLE demo_first.submissions OWNER TO postgres;
+
 --
--- Name: submissions_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: submissions_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.submissions_id_seq
@@ -723,15 +795,17 @@ CREATE SEQUENCE demo_first.submissions_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.submissions_id_seq OWNER TO postgres;
+
 --
--- Name: submissions_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: submissions_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.submissions_id_seq OWNED BY demo_first.submissions.id;
 
 
 --
--- Name: tags; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: tags; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.tags (
@@ -741,8 +815,10 @@ CREATE TABLE demo_first.tags (
 );
 
 
+ALTER TABLE demo_first.tags OWNER TO postgres;
+
 --
--- Name: tags_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: tags_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.tags_id_seq
@@ -753,15 +829,17 @@ CREATE SEQUENCE demo_first.tags_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.tags_id_seq OWNER TO postgres;
+
 --
--- Name: tags_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: tags_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.tags_id_seq OWNED BY demo_first.tags.id;
 
 
 --
--- Name: user_roles; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: user_roles; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.user_roles (
@@ -771,8 +849,10 @@ CREATE TABLE demo_first.user_roles (
 );
 
 
+ALTER TABLE demo_first.user_roles OWNER TO postgres;
+
 --
--- Name: users; Type: TABLE; Schema: demo_first; Owner: -
+-- Name: users; Type: TABLE; Schema: demo_first; Owner: postgres
 --
 
 CREATE TABLE demo_first.users (
@@ -786,8 +866,10 @@ CREATE TABLE demo_first.users (
 );
 
 
+ALTER TABLE demo_first.users OWNER TO postgres;
+
 --
--- Name: users_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: -
+-- Name: users_id_seq; Type: SEQUENCE; Schema: demo_first; Owner: postgres
 --
 
 CREATE SEQUENCE demo_first.users_id_seq
@@ -798,396 +880,136 @@ CREATE SEQUENCE demo_first.users_id_seq
     CACHE 1;
 
 
+ALTER TABLE demo_first.users_id_seq OWNER TO postgres;
+
 --
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: -
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: demo_first; Owner: postgres
 --
 
 ALTER SEQUENCE demo_first.users_id_seq OWNED BY demo_first.users.id;
 
 
 --
--- Name: activites; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.activites (
-    id integer NOT NULL,
-    contact_id integer,
-    action character varying(255) NOT NULL,
-    details text,
-    created_at timestamp without time zone DEFAULT now()
-);
-
-
---
--- Name: activites_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.activites_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: activites_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.activites_id_seq OWNED BY public.activites.id;
-
-
---
--- Name: contact_projet; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.contact_projet (
-    contact_id integer NOT NULL,
-    projet_id integer NOT NULL
-);
-
-
---
--- Name: contact_tags; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.contact_tags (
-    contact_id integer NOT NULL,
-    tag_id integer NOT NULL
-);
-
-
---
--- Name: contacts; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.contacts (
-    id integer NOT NULL,
-    nom character varying(255) NOT NULL,
-    prenom character varying(255),
-    email character varying(255),
-    telephone character varying(50),
-    date_naissance date,
-    entreprise_id integer,
-    created_at timestamp without time zone DEFAULT now()
-);
-
-
---
--- Name: contacts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.contacts_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: contacts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.contacts_id_seq OWNED BY public.contacts.id;
-
-
---
--- Name: entreprises; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.entreprises (
-    id integer NOT NULL,
-    nom character varying(255) NOT NULL,
-    secteur character varying(255),
-    adresse text,
-    ville character varying(100),
-    pays character varying(100),
-    created_at timestamp without time zone DEFAULT now()
-);
-
-
---
--- Name: entreprises_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.entreprises_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: entreprises_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.entreprises_id_seq OWNED BY public.entreprises.id;
-
-
---
--- Name: exports; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.exports (
-    id integer NOT NULL,
-    type character varying(50) NOT NULL,
-    filtre jsonb,
-    created_at timestamp without time zone DEFAULT now(),
-    created_by character varying(150)
-);
-
-
---
--- Name: exports_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.exports_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: exports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.exports_id_seq OWNED BY public.exports.id;
-
-
---
--- Name: projets; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.projets (
-    id integer NOT NULL,
-    nom character varying(255) NOT NULL,
-    description text,
-    entreprise_id integer,
-    created_at timestamp without time zone DEFAULT now()
-);
-
-
---
--- Name: projets_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.projets_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: projets_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.projets_id_seq OWNED BY public.projets.id;
-
-
---
--- Name: tags; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.tags (
-    id integer NOT NULL,
-    nom character varying(100) NOT NULL
-);
-
-
---
--- Name: tags_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.tags_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: tags_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.tags_id_seq OWNED BY public.tags.id;
-
-
---
--- Name: activites id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: activites id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.activites ALTER COLUMN id SET DEFAULT nextval('demo_first.activites_id_seq'::regclass);
 
 
 --
--- Name: audit_log id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: audit_log id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.audit_log ALTER COLUMN id SET DEFAULT nextval('demo_first.audit_log_id_seq'::regclass);
 
 
 --
--- Name: contacts id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: contacts id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.contacts ALTER COLUMN id SET DEFAULT nextval('demo_first.contacts_id_seq'::regclass);
 
 
 --
--- Name: document_versions id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: document_versions id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.document_versions ALTER COLUMN id SET DEFAULT nextval('demo_first.document_versions_id_seq'::regclass);
 
 
 --
--- Name: documents id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: documents id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.documents ALTER COLUMN id SET DEFAULT nextval('demo_first.documents_id_seq'::regclass);
 
 
 --
--- Name: entreprises id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: entreprises id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.entreprises ALTER COLUMN id SET DEFAULT nextval('demo_first.entreprises_id_seq'::regclass);
 
 
 --
--- Name: exports id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: exports id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.exports ALTER COLUMN id SET DEFAULT nextval('demo_first.exports_id_seq'::regclass);
 
 
 --
--- Name: form_versions id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: form_versions id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.form_versions ALTER COLUMN id SET DEFAULT nextval('demo_first.form_versions_id_seq'::regclass);
 
 
 --
--- Name: leave_requests id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: leave_requests id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.leave_requests ALTER COLUMN id SET DEFAULT nextval('demo_first.leave_requests_id_seq'::regclass);
 
 
 --
--- Name: listes id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: listes id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.listes ALTER COLUMN id SET DEFAULT nextval('demo_first.listes_id_seq'::regclass);
 
 
 --
--- Name: notes id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: notes id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.notes ALTER COLUMN id SET DEFAULT nextval('demo_first.notes_id_seq'::regclass);
 
 
 --
--- Name: notifications id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: notifications id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.notifications ALTER COLUMN id SET DEFAULT nextval('demo_first.notifications_id_seq'::regclass);
 
 
 --
--- Name: projets id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: projets id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.projets ALTER COLUMN id SET DEFAULT nextval('demo_first.projets_id_seq'::regclass);
 
 
 --
--- Name: roles id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: roles id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.roles ALTER COLUMN id SET DEFAULT nextval('demo_first.roles_id_seq'::regclass);
 
 
 --
--- Name: submissions id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: submissions id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.submissions ALTER COLUMN id SET DEFAULT nextval('demo_first.submissions_id_seq'::regclass);
 
 
 --
--- Name: tags id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: tags id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.tags ALTER COLUMN id SET DEFAULT nextval('demo_first.tags_id_seq'::regclass);
 
 
 --
--- Name: users id; Type: DEFAULT; Schema: demo_first; Owner: -
+-- Name: users id; Type: DEFAULT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.users ALTER COLUMN id SET DEFAULT nextval('demo_first.users_id_seq'::regclass);
 
 
 --
--- Name: activites id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.activites ALTER COLUMN id SET DEFAULT nextval('public.activites_id_seq'::regclass);
-
-
---
--- Name: contacts id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.contacts ALTER COLUMN id SET DEFAULT nextval('public.contacts_id_seq'::regclass);
-
-
---
--- Name: entreprises id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.entreprises ALTER COLUMN id SET DEFAULT nextval('public.entreprises_id_seq'::regclass);
-
-
---
--- Name: exports id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.exports ALTER COLUMN id SET DEFAULT nextval('public.exports_id_seq'::regclass);
-
-
---
--- Name: projets id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.projets ALTER COLUMN id SET DEFAULT nextval('public.projets_id_seq'::regclass);
-
-
---
--- Name: tags id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.tags ALTER COLUMN id SET DEFAULT nextval('public.tags_id_seq'::regclass);
-
-
---
--- Name: activites activites_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: activites activites_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.activites
@@ -1195,7 +1017,7 @@ ALTER TABLE ONLY demo_first.activites
 
 
 --
--- Name: audit_log audit_log_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: audit_log audit_log_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.audit_log
@@ -1203,7 +1025,7 @@ ALTER TABLE ONLY demo_first.audit_log
 
 
 --
--- Name: contact_projet contact_projet_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: contact_projet contact_projet_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.contact_projet
@@ -1211,7 +1033,7 @@ ALTER TABLE ONLY demo_first.contact_projet
 
 
 --
--- Name: contact_tags contact_tags_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: contact_tags contact_tags_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.contact_tags
@@ -1219,7 +1041,7 @@ ALTER TABLE ONLY demo_first.contact_tags
 
 
 --
--- Name: contacts contacts_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: contacts contacts_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.contacts
@@ -1227,7 +1049,7 @@ ALTER TABLE ONLY demo_first.contacts
 
 
 --
--- Name: conversation_participants conversation_participants_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: conversation_participants conversation_participants_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.conversation_participants
@@ -1235,7 +1057,7 @@ ALTER TABLE ONLY demo_first.conversation_participants
 
 
 --
--- Name: conversations conversations_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: conversations conversations_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.conversations
@@ -1243,7 +1065,7 @@ ALTER TABLE ONLY demo_first.conversations
 
 
 --
--- Name: document_tags document_tags_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: document_tags document_tags_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.document_tags
@@ -1251,7 +1073,7 @@ ALTER TABLE ONLY demo_first.document_tags
 
 
 --
--- Name: document_versions document_versions_document_id_version_no_key; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: document_versions document_versions_document_id_version_no_key; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.document_versions
@@ -1259,7 +1081,7 @@ ALTER TABLE ONLY demo_first.document_versions
 
 
 --
--- Name: document_versions document_versions_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: document_versions document_versions_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.document_versions
@@ -1267,7 +1089,7 @@ ALTER TABLE ONLY demo_first.document_versions
 
 
 --
--- Name: documents documents_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: documents documents_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.documents
@@ -1275,7 +1097,7 @@ ALTER TABLE ONLY demo_first.documents
 
 
 --
--- Name: entreprises entreprises_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: entreprises entreprises_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.entreprises
@@ -1283,7 +1105,7 @@ ALTER TABLE ONLY demo_first.entreprises
 
 
 --
--- Name: exports exports_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: exports exports_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.exports
@@ -1291,7 +1113,7 @@ ALTER TABLE ONLY demo_first.exports
 
 
 --
--- Name: form_versions form_versions_form_id_version_key; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: form_versions form_versions_form_id_version_key; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.form_versions
@@ -1299,7 +1121,7 @@ ALTER TABLE ONLY demo_first.form_versions
 
 
 --
--- Name: form_versions form_versions_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: form_versions form_versions_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.form_versions
@@ -1307,7 +1129,7 @@ ALTER TABLE ONLY demo_first.form_versions
 
 
 --
--- Name: forms forms_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: forms forms_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.forms
@@ -1315,7 +1137,7 @@ ALTER TABLE ONLY demo_first.forms
 
 
 --
--- Name: keycloak_users keycloak_users_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: keycloak_users keycloak_users_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.keycloak_users
@@ -1323,7 +1145,7 @@ ALTER TABLE ONLY demo_first.keycloak_users
 
 
 --
--- Name: leave_requests leave_requests_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: leave_requests leave_requests_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.leave_requests
@@ -1331,7 +1153,7 @@ ALTER TABLE ONLY demo_first.leave_requests
 
 
 --
--- Name: listes listes_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: listes listes_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.listes
@@ -1339,7 +1161,7 @@ ALTER TABLE ONLY demo_first.listes
 
 
 --
--- Name: message_reads message_reads_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: message_reads message_reads_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.message_reads
@@ -1347,7 +1169,7 @@ ALTER TABLE ONLY demo_first.message_reads
 
 
 --
--- Name: messages messages_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: messages messages_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.messages
@@ -1355,7 +1177,7 @@ ALTER TABLE ONLY demo_first.messages
 
 
 --
--- Name: notes notes_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: notes notes_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.notes
@@ -1363,7 +1185,7 @@ ALTER TABLE ONLY demo_first.notes
 
 
 --
--- Name: notes_replies notes_replies_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: notes_replies notes_replies_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.notes_replies
@@ -1371,7 +1193,7 @@ ALTER TABLE ONLY demo_first.notes_replies
 
 
 --
--- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.notifications
@@ -1379,7 +1201,7 @@ ALTER TABLE ONLY demo_first.notifications
 
 
 --
--- Name: projets projets_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: projets projets_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.projets
@@ -1387,7 +1209,7 @@ ALTER TABLE ONLY demo_first.projets
 
 
 --
--- Name: roles roles_code_key; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: roles roles_code_key; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.roles
@@ -1395,7 +1217,7 @@ ALTER TABLE ONLY demo_first.roles
 
 
 --
--- Name: roles roles_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: roles roles_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.roles
@@ -1403,7 +1225,7 @@ ALTER TABLE ONLY demo_first.roles
 
 
 --
--- Name: submissions submissions_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: submissions submissions_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.submissions
@@ -1411,7 +1233,7 @@ ALTER TABLE ONLY demo_first.submissions
 
 
 --
--- Name: tags tags_name_key; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: tags tags_name_key; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.tags
@@ -1419,7 +1241,7 @@ ALTER TABLE ONLY demo_first.tags
 
 
 --
--- Name: tags tags_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: tags tags_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.tags
@@ -1427,7 +1249,7 @@ ALTER TABLE ONLY demo_first.tags
 
 
 --
--- Name: user_roles user_roles_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: user_roles user_roles_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.user_roles
@@ -1435,7 +1257,7 @@ ALTER TABLE ONLY demo_first.user_roles
 
 
 --
--- Name: users users_email_key; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.users
@@ -1443,7 +1265,7 @@ ALTER TABLE ONLY demo_first.users
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.users
@@ -1451,7 +1273,7 @@ ALTER TABLE ONLY demo_first.users
 
 
 --
--- Name: users users_username_key; Type: CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: users users_username_key; Type: CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.users
@@ -1459,199 +1281,98 @@ ALTER TABLE ONLY demo_first.users
 
 
 --
--- Name: activites activites_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.activites
-    ADD CONSTRAINT activites_pkey PRIMARY KEY (id);
-
-
---
--- Name: contact_projet contact_projet_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.contact_projet
-    ADD CONSTRAINT contact_projet_pkey PRIMARY KEY (contact_id, projet_id);
-
-
---
--- Name: contact_tags contact_tags_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.contact_tags
-    ADD CONSTRAINT contact_tags_pkey PRIMARY KEY (contact_id, tag_id);
-
-
---
--- Name: contacts contacts_email_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.contacts
-    ADD CONSTRAINT contacts_email_key UNIQUE (email);
-
-
---
--- Name: contacts contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.contacts
-    ADD CONSTRAINT contacts_pkey PRIMARY KEY (id);
-
-
---
--- Name: entreprises entreprises_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.entreprises
-    ADD CONSTRAINT entreprises_pkey PRIMARY KEY (id);
-
-
---
--- Name: exports exports_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.exports
-    ADD CONSTRAINT exports_pkey PRIMARY KEY (id);
-
-
---
--- Name: projets projets_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.projets
-    ADD CONSTRAINT projets_pkey PRIMARY KEY (id);
-
-
---
--- Name: tags tags_nom_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.tags
-    ADD CONSTRAINT tags_nom_key UNIQUE (nom);
-
-
---
--- Name: tags tags_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.tags
-    ADD CONSTRAINT tags_pkey PRIMARY KEY (id);
-
-
---
--- Name: idx_audit_log_entity; Type: INDEX; Schema: demo_first; Owner: -
+-- Name: idx_audit_log_entity; Type: INDEX; Schema: demo_first; Owner: postgres
 --
 
 CREATE INDEX idx_audit_log_entity ON demo_first.audit_log USING btree (entity_type, entity_id);
 
 
 --
--- Name: idx_audit_log_occurred_at; Type: INDEX; Schema: demo_first; Owner: -
+-- Name: idx_audit_log_occurred_at; Type: INDEX; Schema: demo_first; Owner: postgres
 --
 
 CREATE INDEX idx_audit_log_occurred_at ON demo_first.audit_log USING btree (occurred_at);
 
 
 --
--- Name: idx_conversations_is_group; Type: INDEX; Schema: demo_first; Owner: -
+-- Name: idx_conversations_is_group; Type: INDEX; Schema: demo_first; Owner: postgres
 --
 
 CREATE INDEX idx_conversations_is_group ON demo_first.conversations USING btree (is_group);
 
 
 --
--- Name: idx_document_versions_doc_version; Type: INDEX; Schema: demo_first; Owner: -
+-- Name: idx_document_versions_doc_version; Type: INDEX; Schema: demo_first; Owner: postgres
 --
 
 CREATE INDEX idx_document_versions_doc_version ON demo_first.document_versions USING btree (document_id, version_no);
 
 
 --
--- Name: idx_documents_owner_user_id; Type: INDEX; Schema: demo_first; Owner: -
+-- Name: idx_documents_owner_user_id; Type: INDEX; Schema: demo_first; Owner: postgres
 --
 
 CREATE INDEX idx_documents_owner_user_id ON demo_first.documents USING btree (owner_user_id);
 
 
 --
--- Name: idx_documents_status; Type: INDEX; Schema: demo_first; Owner: -
+-- Name: idx_documents_status; Type: INDEX; Schema: demo_first; Owner: postgres
 --
 
 CREATE INDEX idx_documents_status ON demo_first.documents USING btree (status);
 
 
 --
--- Name: idx_listes_type; Type: INDEX; Schema: demo_first; Owner: -
+-- Name: idx_listes_type; Type: INDEX; Schema: demo_first; Owner: postgres
 --
 
 CREATE INDEX idx_listes_type ON demo_first.listes USING btree (type);
 
 
 --
--- Name: idx_tags_name; Type: INDEX; Schema: demo_first; Owner: -
+-- Name: idx_tags_name; Type: INDEX; Schema: demo_first; Owner: postgres
 --
 
 CREATE INDEX idx_tags_name ON demo_first.tags USING btree (name);
 
 
 --
--- Name: idx_users_email; Type: INDEX; Schema: demo_first; Owner: -
+-- Name: idx_users_email; Type: INDEX; Schema: demo_first; Owner: postgres
 --
 
 CREATE INDEX idx_users_email ON demo_first.users USING btree (email);
 
 
 --
--- Name: idx_users_username; Type: INDEX; Schema: demo_first; Owner: -
+-- Name: idx_users_username; Type: INDEX; Schema: demo_first; Owner: postgres
 --
 
 CREATE INDEX idx_users_username ON demo_first.users USING btree (username);
 
 
 --
--- Name: idx_contacts_email; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_contacts_email ON public.contacts USING btree (email);
-
-
---
--- Name: idx_contacts_nom; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_contacts_nom ON public.contacts USING btree (nom);
-
-
---
--- Name: idx_projets_nom; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_projets_nom ON public.projets USING btree (nom);
-
-
---
--- Name: documents trg_documents_updated_at; Type: TRIGGER; Schema: demo_first; Owner: -
+-- Name: documents trg_documents_updated_at; Type: TRIGGER; Schema: demo_first; Owner: postgres
 --
 
 CREATE TRIGGER trg_documents_updated_at BEFORE UPDATE ON demo_first.documents FOR EACH ROW EXECUTE FUNCTION demo_first.update_updated_at_column();
 
 
 --
--- Name: roles trg_roles_updated_at; Type: TRIGGER; Schema: demo_first; Owner: -
+-- Name: roles trg_roles_updated_at; Type: TRIGGER; Schema: demo_first; Owner: postgres
 --
 
 CREATE TRIGGER trg_roles_updated_at BEFORE UPDATE ON demo_first.roles FOR EACH ROW EXECUTE FUNCTION demo_first.update_updated_at_column();
 
 
 --
--- Name: users trg_users_updated_at; Type: TRIGGER; Schema: demo_first; Owner: -
+-- Name: users trg_users_updated_at; Type: TRIGGER; Schema: demo_first; Owner: postgres
 --
 
 CREATE TRIGGER trg_users_updated_at BEFORE UPDATE ON demo_first.users FOR EACH ROW EXECUTE FUNCTION demo_first.update_updated_at_column();
 
 
 --
--- Name: activites activites_contact_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: activites activites_contact_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.activites
@@ -1659,7 +1380,7 @@ ALTER TABLE ONLY demo_first.activites
 
 
 --
--- Name: activites activites_projet_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: activites activites_projet_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.activites
@@ -1667,7 +1388,7 @@ ALTER TABLE ONLY demo_first.activites
 
 
 --
--- Name: audit_log audit_log_actor_user_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: audit_log audit_log_actor_user_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.audit_log
@@ -1675,7 +1396,7 @@ ALTER TABLE ONLY demo_first.audit_log
 
 
 --
--- Name: contact_projet contact_projet_contact_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: contact_projet contact_projet_contact_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.contact_projet
@@ -1683,7 +1404,7 @@ ALTER TABLE ONLY demo_first.contact_projet
 
 
 --
--- Name: contact_projet contact_projet_projet_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: contact_projet contact_projet_projet_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.contact_projet
@@ -1691,7 +1412,7 @@ ALTER TABLE ONLY demo_first.contact_projet
 
 
 --
--- Name: contact_tags contact_tags_contact_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: contact_tags contact_tags_contact_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.contact_tags
@@ -1699,7 +1420,7 @@ ALTER TABLE ONLY demo_first.contact_tags
 
 
 --
--- Name: contact_tags contact_tags_tag_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: contact_tags contact_tags_tag_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.contact_tags
@@ -1707,7 +1428,7 @@ ALTER TABLE ONLY demo_first.contact_tags
 
 
 --
--- Name: contacts contacts_entreprise_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: contacts contacts_entreprise_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.contacts
@@ -1715,7 +1436,7 @@ ALTER TABLE ONLY demo_first.contacts
 
 
 --
--- Name: conversation_participants conversation_participants_conversation_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: conversation_participants conversation_participants_conversation_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.conversation_participants
@@ -1723,7 +1444,7 @@ ALTER TABLE ONLY demo_first.conversation_participants
 
 
 --
--- Name: document_tags document_tags_document_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: document_tags document_tags_document_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.document_tags
@@ -1731,7 +1452,7 @@ ALTER TABLE ONLY demo_first.document_tags
 
 
 --
--- Name: document_tags document_tags_tag_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: document_tags document_tags_tag_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.document_tags
@@ -1739,7 +1460,7 @@ ALTER TABLE ONLY demo_first.document_tags
 
 
 --
--- Name: document_versions document_versions_document_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: document_versions document_versions_document_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.document_versions
@@ -1747,7 +1468,7 @@ ALTER TABLE ONLY demo_first.document_versions
 
 
 --
--- Name: documents documents_owner_user_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: documents documents_owner_user_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.documents
@@ -1755,7 +1476,7 @@ ALTER TABLE ONLY demo_first.documents
 
 
 --
--- Name: form_versions form_versions_form_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: form_versions form_versions_form_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.form_versions
@@ -1763,7 +1484,7 @@ ALTER TABLE ONLY demo_first.form_versions
 
 
 --
--- Name: listes listes_parent_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: listes listes_parent_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.listes
@@ -1771,7 +1492,7 @@ ALTER TABLE ONLY demo_first.listes
 
 
 --
--- Name: message_reads message_reads_message_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: message_reads message_reads_message_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.message_reads
@@ -1779,7 +1500,7 @@ ALTER TABLE ONLY demo_first.message_reads
 
 
 --
--- Name: messages messages_conversation_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: messages messages_conversation_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.messages
@@ -1787,7 +1508,7 @@ ALTER TABLE ONLY demo_first.messages
 
 
 --
--- Name: notes notes_contact_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: notes notes_contact_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.notes
@@ -1795,7 +1516,7 @@ ALTER TABLE ONLY demo_first.notes
 
 
 --
--- Name: notes_replies notes_replies_note_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: notes_replies notes_replies_note_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.notes_replies
@@ -1803,7 +1524,7 @@ ALTER TABLE ONLY demo_first.notes_replies
 
 
 --
--- Name: notes_replies notes_replies_utilisateur_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: notes_replies notes_replies_utilisateur_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.notes_replies
@@ -1811,7 +1532,7 @@ ALTER TABLE ONLY demo_first.notes_replies
 
 
 --
--- Name: notifications notifications_note_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: notifications notifications_note_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.notifications
@@ -1819,7 +1540,7 @@ ALTER TABLE ONLY demo_first.notifications
 
 
 --
--- Name: projets projets_entreprise_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: projets projets_entreprise_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.projets
@@ -1827,7 +1548,7 @@ ALTER TABLE ONLY demo_first.projets
 
 
 --
--- Name: user_roles user_roles_role_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: user_roles user_roles_role_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.user_roles
@@ -1835,7 +1556,7 @@ ALTER TABLE ONLY demo_first.user_roles
 
 
 --
--- Name: user_roles user_roles_user_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: -
+-- Name: user_roles user_roles_user_id_fkey; Type: FK CONSTRAINT; Schema: demo_first; Owner: postgres
 --
 
 ALTER TABLE ONLY demo_first.user_roles
@@ -1843,64 +1564,8 @@ ALTER TABLE ONLY demo_first.user_roles
 
 
 --
--- Name: activites activites_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.activites
-    ADD CONSTRAINT activites_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id) ON DELETE CASCADE;
-
-
---
--- Name: contact_projet contact_projet_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.contact_projet
-    ADD CONSTRAINT contact_projet_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id) ON DELETE CASCADE;
-
-
---
--- Name: contact_projet contact_projet_projet_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.contact_projet
-    ADD CONSTRAINT contact_projet_projet_id_fkey FOREIGN KEY (projet_id) REFERENCES public.projets(id) ON DELETE CASCADE;
-
-
---
--- Name: contact_tags contact_tags_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.contact_tags
-    ADD CONSTRAINT contact_tags_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id) ON DELETE CASCADE;
-
-
---
--- Name: contact_tags contact_tags_tag_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.contact_tags
-    ADD CONSTRAINT contact_tags_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
-
-
---
--- Name: contacts contacts_entreprise_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.contacts
-    ADD CONSTRAINT contacts_entreprise_id_fkey FOREIGN KEY (entreprise_id) REFERENCES public.entreprises(id) ON DELETE SET NULL;
-
-
---
--- Name: projets projets_entreprise_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.projets
-    ADD CONSTRAINT projets_entreprise_id_fkey FOREIGN KEY (entreprise_id) REFERENCES public.entreprises(id) ON DELETE CASCADE;
-
-
---
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 0REEWmkEBDt44vfH9je9gZPK6J9TgMSfh4eKUFnchlOVogBlHdI6WWdEHEsqLoq
+\unrestrict fwQMsvFOB9Fqjy2MX7mjgqRzCJnRZcqF0TenYI7Yc90jh5SzJZnVYAxNYBcnLzk
 

@@ -1,6 +1,6 @@
-FROM node:22-alpine as build
+FROM node:22-alpine
 
-# Optionally bake API URL and Keycloak vars at build time
+# Variables Vite (facultatif si tu les passes au run/compose)
 ARG VITE_API_URL
 ARG VITE_KEYCLOAK_URL
 ARG VITE_REALM
@@ -10,17 +10,16 @@ ENV VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}
 ENV VITE_REALM=${VITE_REALM}
 ENV VITE_FRONT_ID=${VITE_FRONT_ID}
 
+# Pour que le HMR détecte les changements via volume bind
+ENV CHOKIDAR_USEPOLLING=true
+
 WORKDIR /usr/src/app
+
 COPY package*.json ./
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+RUN npm ci || npm install
+
 COPY . .
-RUN npm run build
 
-FROM nginx:alpine
-# Ici on copie le dossier "build" (car outDir = 'build' dans vite.config.mjs)
-COPY --from=build /usr/src/app/build /usr/share/nginx/html
-
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 3002
+# Vite dev: bind sur 0.0.0.0 pour être accessible depuis l’hôte
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3002"]
