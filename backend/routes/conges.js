@@ -1,7 +1,7 @@
 // backend/routes/conges.js
 import express from "express";
 import fetch from "node-fetch";
-import pool from "../db.js";
+import pool, { DB_SCHEMA } from "../db.js";
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ const router = express.Router();
 router.get("/", async (_req, res) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM demo_first.leave_requests ORDER BY created_at DESC`
+      `SELECT * FROM ${DB_SCHEMA}.leave_requests ORDER BY created_at DESC`
     );
     res.json(result.rows);
   } catch (e) { res.status(500).json({ error: "Erreur serveur" }); }
@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
   try {
     const { name, email, start_date, end_date, reason } = req.body;
     const { rows } = await pool.query(
-      `INSERT INTO demo_first.leave_requests
+      `INSERT INTO ${DB_SCHEMA}.leave_requests
        (name, email, start_date, end_date, reason, status, created_at, updated_at)
        VALUES ($1,$2,$3,$4,$5,'EN ATTENTE', NOW(), NOW())
        RETURNING *`,
@@ -50,7 +50,7 @@ router.put("/:id/status", async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     const { rows } = await pool.query(
-      `UPDATE demo_first.leave_requests
+      `UPDATE ${DB_SCHEMA}.leave_requests
        SET status=$1, updated_at=NOW()
        WHERE id=$2 RETURNING *`,
       [status, id]
@@ -64,7 +64,7 @@ router.put("/:id/status", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const { rows } = await pool.query(
-      `SELECT * FROM demo_first.leave_requests WHERE id=$1`,
+      `SELECT * FROM ${DB_SCHEMA}.leave_requests WHERE id=$1`,
       [req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: "Demande introuvable" });

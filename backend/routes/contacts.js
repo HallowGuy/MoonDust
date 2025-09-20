@@ -1,5 +1,5 @@
 import express from "express";
-import pool from "../db.js";
+import pool, { DB_SCHEMA } from "../db.js";
 
 const router = express.Router();
 
@@ -21,8 +21,8 @@ router.get("/", async (req, res) => {
         c.form_data->>'telephone' AS telephone,
         c.form_data->>'poste' AS poste,
         e.nom AS entreprise_nom
-      FROM demo_first.contacts c
-      LEFT JOIN demo_first.entreprises e ON c.entreprise_id = e.id
+      FROM ${DB_SCHEMA}.contacts c
+      LEFT JOIN ${DB_SCHEMA}.entreprises e ON c.entreprise_id = e.id
       ORDER BY c.created_at DESC
     `);
     res.json(result.rows);
@@ -50,8 +50,8 @@ router.get("/:id", async (req, res) => {
          c.form_data->>'telephone' AS telephone,
          c.form_data->>'poste' AS poste,
          e.nom AS entreprise_nom
-       FROM demo_first.contacts c
-       LEFT JOIN demo_first.entreprises e ON c.entreprise_id = e.id
+       FROM ${DB_SCHEMA}.contacts c
+       LEFT JOIN ${DB_SCHEMA}.entreprises e ON c.entreprise_id = e.id
        WHERE c.id = $1`,
       [req.params.id]
     );
@@ -79,7 +79,7 @@ router.post("/", async (req, res) => {
     delete cleanFormData.submit;
 
     const result = await pool.query(
-      `INSERT INTO demo_first.contacts 
+      `INSERT INTO ${DB_SCHEMA}.contacts 
         (entreprise_id, last_interaction, form_data)
        VALUES ($1, $2, $3)
        RETURNING *`,
@@ -108,7 +108,7 @@ router.put("/:id", async (req, res) => {
     delete cleanFormData.submit;
 
     const result = await pool.query(
-      `UPDATE demo_first.contacts
+      `UPDATE ${DB_SCHEMA}.contacts
        SET entreprise_id=$1,
            last_interaction=$2,
            form_data=$3
@@ -139,7 +139,7 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const result = await pool.query(
-      "DELETE FROM demo_first.contacts WHERE id=$1 RETURNING *",
+      `DELETE FROM ${DB_SCHEMA}.contacts WHERE id=$1 RETURNING *`,
       [req.params.id]
     );
     if (result.rows.length === 0) {

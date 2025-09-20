@@ -1,7 +1,7 @@
 // backend/routes/keycloakUsers.js
 import express from "express"
 import fetch from "node-fetch"
-import pool from "../db.js"
+import pool, { DB_SCHEMA } from "../db.js"
 import { getAdminToken } from "../utils/keycloak.js"
 import { authenticate } from "../middleware/authenticate.js"
 
@@ -22,7 +22,7 @@ const syncKeycloakUsers = async () => {
   const users = await kcRes.json()
   for (const u of users) {
     await pool.query(
-      `INSERT INTO demo_first.keycloak_users (id, username, email)
+      `INSERT INTO ${DB_SCHEMA}.keycloak_users (id, username, email)
        VALUES ($1, $2, $3)
        ON CONFLICT (id) DO UPDATE
        SET username = EXCLUDED.username,
@@ -48,7 +48,7 @@ router.post("/sync", async (_req, res) => {
 router.get("/", async (_req, res) => {
   try {
     await syncKeycloakUsers() // 🔥 synchro automatique ici
-    const result = await pool.query(`SELECT * FROM demo_first.keycloak_users ORDER BY username ASC`)
+    const result = await pool.query(`SELECT * FROM ${DB_SCHEMA}.keycloak_users ORDER BY username ASC`)
     res.json(result.rows)
   } catch (err) {
     console.error("❌ Erreur list users:", err)
@@ -62,7 +62,7 @@ router.get("/search", authenticate, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, username, email
-       FROM demo_first.keycloak_users
+       FROM ${DB_SCHEMA}.keycloak_users
        WHERE username ILIKE $1 OR email ILIKE $1
        LIMIT 10`,
       [`%${q}%`]

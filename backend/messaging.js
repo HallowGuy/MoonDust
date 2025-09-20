@@ -1,4 +1,4 @@
-import pool from "./db.js"
+import pool, { DB_SCHEMA } from "./db.js"
 import jwt from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
 
@@ -71,7 +71,7 @@ export default function messaging(io) {
 
       try {
         const result = await pool.query(
-          `INSERT INTO demo_first.messages (conversation_id, sender_id, content)
+          `INSERT INTO ${DB_SCHEMA}.messages (conversation_id, sender_id, content)
            VALUES ($1, $2, $3) RETURNING *`,
           [convId, socket.user.sub, content]
         )

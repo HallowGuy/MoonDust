@@ -1,5 +1,5 @@
 import express from "express";
-import pool from "../db.js";
+import pool, { DB_SCHEMA } from "../db.js";
 import { authenticate } from "../middleware/authenticate.js";
 
 const router = express.Router();
@@ -12,7 +12,7 @@ router.post("/", authenticate, async (req, res) => {
 
     // 1. Trouver l'id local de l'utilisateur connecté via son username
     const userRes = await pool.query(
-      "SELECT id FROM demo_first.keycloak_users WHERE username=$1",
+      `SELECT id FROM ${DB_SCHEMA}.keycloak_users WHERE username=$1`,
       [req.auth.preferred_username || req.auth.username]
     )
 
@@ -24,7 +24,7 @@ router.post("/", authenticate, async (req, res) => {
 
     // 2. Insérer la note
     const noteRes = await pool.query(
-      `INSERT INTO demo_first.notes (contact_id, contenu, utilisateur_id)
+      `INSERT INTO ${DB_SCHEMA}.notes (contact_id, contenu, utilisateur_id)
        VALUES ($1,$2,$3) RETURNING id`,
       [contact_id, contenu, localUserId]
     )
@@ -34,14 +34,14 @@ router.post("/", authenticate, async (req, res) => {
     // 3. Pour chaque mention → créer notification
     for (const username of mentions) {
       const mentionedUserRes = await pool.query(
-        "SELECT id FROM demo_first.keycloak_users WHERE username=$1",
+        `SELECT id FROM ${DB_SCHEMA}.keycloak_users WHERE username=$1`,
         [username]
       )
 
       if (mentionedUserRes.rows.length) {
         const mentionedUserId = mentionedUserRes.rows[0].id
         await pool.query(
-          `INSERT INTO demo_first.notifications (user_id, note_id, status, created_at)
+          `INSERT INTO ${DB_SCHEMA}.notifications (user_id, note_id, status, created_at)
            VALUES ($1,$2,'unread', NOW())`,
           [mentionedUserId, noteId]
         )
@@ -51,8 +51,8 @@ router.post("/", authenticate, async (req, res) => {
     // 4. Recharger la note avec le username pour la réponse
     const enrichedRes = await pool.query(
       `SELECT n.*, ku.username
-       FROM demo_first.notes n
-       LEFT JOIN demo_first.keycloak_users ku ON ku.id = n.utilisateur_id
+       FROM ${DB_SCHEMA}.notes n
+       LEFT JOIN ${DB_SCHEMA}.keycloak_users ku ON ku.id = n.utilisateur_id
        WHERE n.id = $1`,
       [noteId]
     )
@@ -83,10 +83,10 @@ router.get("/:contact_id", authenticate, async (req, res) => {
                   )
                 ) FILTER (WHERE r.id IS NOT NULL), '[]'
               ) AS replies
-       FROM demo_first.notes n
-       LEFT JOIN demo_first.keycloak_users ku ON ku.id = n.utilisateur_id
-       LEFT JOIN demo_first.notes_replies r ON r.note_id = n.id
-       LEFT JOIN demo_first.keycloak_users ru ON ru.id = r.utilisateur_id
+       FROM ${DB_SCHEMA}.notes n
+       LEFT JOIN ${DB_SCHEMA}.keycloak_users ku ON ku.id = n.utilisateur_id
+       LEFT JOIN ${DB_SCHEMA}.notes_replies r ON r.note_id = n.id
+       LEFT JOIN ${DB_SCHEMA}.keycloak_users ru ON ru.id = r.utilisateur_id
        WHERE n.contact_id = $1
        GROUP BY n.id, ku.username
        ORDER BY n.created_at DESC`,
@@ -110,7 +110,7 @@ router.put("/:id", authenticate, async (req, res) => {
 
     // Vérifier que la note existe
     const check = await pool.query(
-      "SELECT * FROM demo_first.notes WHERE id=$1",
+      `SELECT * FROM ${DB_SCHEMA}.notes WHERE id=$1`,
       [noteId]
     );
     if (check.rows.length === 0) {
@@ -124,7 +124,7 @@ router.put("/:id", authenticate, async (req, res) => {
 
     // Mise à jour
     const updateRes = await pool.query(
-      `UPDATE demo_first.notes
+      `UPDATE ${DB_SCHEMA}.notes
        SET contenu=$1
        WHERE id=$2
        RETURNING id, contact_id, contenu, utilisateur_id, created_at`,
@@ -134,8 +134,8 @@ router.put("/:id", authenticate, async (req, res) => {
     // Renvoyer enrichi avec username
     const enriched = await pool.query(
       `SELECT n.*, ku.username
-       FROM demo_first.notes n
-       LEFT JOIN demo_first.keycloak_users ku ON ku.id = n.utilisateur_id
+       FROM ${DB_SCHEMA}.notes n
+       LEFT JOIN ${DB_SCHEMA}.keycloak_users ku ON ku.id = n.utilisateur_id
        WHERE n.id=$1`,
       [noteId]
     );
@@ -155,10 +155,10 @@ router.get("/notifications/me", authenticate, async (req, res) => {
       `SELECT n.id, n.note_id, n.status, n.created_at,
        c.nom AS contact_nom, c.prenom AS contact_prenom,
        ku.username AS from_user
-FROM demo_first.notifications n
-JOIN demo_first.notes no ON no.id = n.note_id
-JOIN demo_first.contacts c ON c.id = no.contact_id
-JOIN demo_first.keycloak_users ku ON ku.id = no.utilisateur_id
+FROM ${DB_SCHEMA}.notifications n
+JOIN ${DB_SCHEMA}.notes no ON no.id = n.note_id
+JOIN ${DB_SCHEMA}.contacts c ON c.id = no.contact_id
+JOIN ${DB_SCHEMA}.keycloak_users ku ON ku.id = no.utilisateur_id
 WHERE n.user_id = $1
 ORDER BY n.created_at DESC
 LIMIT 20
@@ -179,7 +179,7 @@ router.delete("/:id", authenticate, async (req, res) => {
 
     // Vérifier que la note existe
     const check = await pool.query(
-      "SELECT * FROM demo_first.notes WHERE id=$1",
+      `SELECT * FROM ${DB_SCHEMA}.notes WHERE id=$1`,
       [noteId]
     );
 
@@ -189,7 +189,7 @@ router.delete("/:id", authenticate, async (req, res) => {
 
     // Récupérer l'id local de l'utilisateur connecté
     const userRes = await pool.query(
-      "SELECT id FROM demo_first.keycloak_users WHERE username=$1",
+      `SELECT id FROM ${DB_SCHEMA}.keycloak_users WHERE username=$1`,
       [req.auth.preferred_username || req.auth.username]
     );
 
@@ -205,7 +205,7 @@ router.delete("/:id", authenticate, async (req, res) => {
     }
 
     // Supprimer la note
-    await pool.query("DELETE FROM demo_first.notes WHERE id=$1", [noteId]);
+    await pool.query(`DELETE FROM ${DB_SCHEMA}.notes WHERE id=$1`, [noteId]);
 
     res.status(204).send();
   } catch (err) {
@@ -223,7 +223,7 @@ router.post("/:noteId/replies", authenticate, async (req, res) => {
 
     // Récupérer utilisateur local
     const userRes = await pool.query(
-      "SELECT id FROM demo_first.keycloak_users WHERE username=$1",
+      `SELECT id FROM ${DB_SCHEMA}.keycloak_users WHERE username=$1`,
       [req.auth.preferred_username || req.auth.username]
     );
 
@@ -235,7 +235,7 @@ router.post("/:noteId/replies", authenticate, async (req, res) => {
 
     // Insérer la réponse
     const replyRes = await pool.query(
-      `INSERT INTO demo_first.notes_replies (note_id, contenu, utilisateur_id)
+      `INSERT INTO ${DB_SCHEMA}.notes_replies (note_id, contenu, utilisateur_id)
        VALUES ($1,$2,$3) RETURNING id, note_id, contenu, utilisateur_id, created_at`,
       [noteId, contenu, localUserId]
     );
@@ -243,8 +243,8 @@ router.post("/:noteId/replies", authenticate, async (req, res) => {
     // Joindre avec username
     const enriched = await pool.query(
       `SELECT r.*, ku.username 
-       FROM demo_first.notes_replies r
-       LEFT JOIN demo_first.keycloak_users ku ON ku.id = r.utilisateur_id
+       FROM ${DB_SCHEMA}.notes_replies r
+       LEFT JOIN ${DB_SCHEMA}.keycloak_users ku ON ku.id = r.utilisateur_id
        WHERE r.id=$1`,
       [replyRes.rows[0].id]
     );
@@ -262,7 +262,7 @@ router.delete("/replies/:id", authenticate, async (req, res) => {
     const replyId = req.params.id;
 
     const check = await pool.query(
-      "SELECT * FROM demo_first.notes_replies WHERE id=$1",
+      `SELECT * FROM ${DB_SCHEMA}.notes_replies WHERE id=$1`,
       [replyId]
     );
 
@@ -275,7 +275,7 @@ router.delete("/replies/:id", authenticate, async (req, res) => {
       return res.status(403).json({ error: "Accès interdit" });
     }
 
-    await pool.query("DELETE FROM demo_first.notes_replies WHERE id=$1", [
+    await pool.query(`DELETE FROM ${DB_SCHEMA}.notes_replies WHERE id=$1`, [
       replyId,
     ]);
 

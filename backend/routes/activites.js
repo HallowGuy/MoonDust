@@ -1,5 +1,5 @@
 import express from "express";
-import pool from "../db.js";
+import pool, { DB_SCHEMA } from "../db.js";
 import { authenticate } from "../middleware/authenticate.js";
 
 const router = express.Router();
@@ -12,8 +12,8 @@ router.get("/", async (req, res) => {
       SELECT a.*, 
              ku.username AS utilisateur_username,
              ku.email AS utilisateur_email
-      FROM demo_first.activites a
-      LEFT JOIN demo_first.keycloak_users ku 
+      FROM ${DB_SCHEMA}.activites a
+      LEFT JOIN ${DB_SCHEMA}.keycloak_users ku 
         ON ku.id = a.utilisateur_id
     `;
     const params = [];
@@ -35,7 +35,7 @@ router.get("/", async (req, res) => {
 // GET one
 router.get("/:id", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM demo_first.activites WHERE id=$1", [req.params.id]);
+    const result = await pool.query(`SELECT * FROM ${DB_SCHEMA}.activites WHERE id=$1`, [req.params.id]);
     if (!result.rows.length) return res.status(404).json({ error: "Activité non trouvée" });
     res.json(result.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -58,7 +58,7 @@ router.post("/", authenticate, async (req, res) => {
 
     // Récupérer l'id local
     const userRes = await pool.query(
-      "SELECT id FROM demo_first.keycloak_users WHERE username=$1",
+      `SELECT id FROM ${DB_SCHEMA}.keycloak_users WHERE username=$1`,
       [username]
     );
     if (userRes.rows.length === 0) {
@@ -68,7 +68,7 @@ router.post("/", authenticate, async (req, res) => {
 
     // Insérer l'activité
     const insertRes = await pool.query(
-      `INSERT INTO demo_first.activites (contact_id, type, description, utilisateur_id)
+      `INSERT INTO ${DB_SCHEMA}.activites (contact_id, type, description, utilisateur_id)
        VALUES ($1,$2,$3,$4) RETURNING id`,
       [contact_id, type, description, localUserId]
     );
@@ -80,8 +80,8 @@ router.post("/", authenticate, async (req, res) => {
       `SELECT a.*,
               ku.username AS utilisateur_username,
               ku.email AS utilisateur_email
-       FROM demo_first.activites a
-       LEFT JOIN demo_first.keycloak_users ku ON ku.id = a.utilisateur_id
+       FROM ${DB_SCHEMA}.activites a
+       LEFT JOIN ${DB_SCHEMA}.keycloak_users ku ON ku.id = a.utilisateur_id
        WHERE a.id = $1`,
       [newId]
     );
@@ -100,7 +100,7 @@ router.put("/:id", authenticate, async (req, res) => {
     const { type, description } = req.body;
 
     const result = await pool.query(
-      `UPDATE demo_first.activites 
+      `UPDATE ${DB_SCHEMA}.activites 
        SET type=$1, description=$2
        WHERE id=$3 RETURNING *`,
       [type, description, req.params.id]
@@ -115,7 +115,7 @@ router.put("/:id", authenticate, async (req, res) => {
 router.delete("/:id", authenticate, async (req, res) => {
   try {
     const result = await pool.query(
-      "DELETE FROM demo_first.activites WHERE id=$1 RETURNING *",
+      `DELETE FROM ${DB_SCHEMA}.activites WHERE id=$1 RETURNING *`,
       [req.params.id]
     );
 

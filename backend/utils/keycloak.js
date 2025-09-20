@@ -1,6 +1,6 @@
 // backend/utils/keycloak.js
 import dotenv from "dotenv";
-import pool from "../db.js";
+import pool, { DB_SCHEMA } from "../db.js";
 import { fetchWithRetry } from "./retryFetch.js";
 
 dotenv.config();
@@ -55,7 +55,7 @@ export async function syncKeycloakUsers() {
 
     for (const u of users) {
       await pool.query(
-        `INSERT INTO demo_first.keycloak_users (id, username, email)
+        `INSERT INTO ${DB_SCHEMA}.keycloak_users (id, username, email)
          VALUES ($1,$2,$3)
          ON CONFLICT (id) DO UPDATE
            SET username = EXCLUDED.username,

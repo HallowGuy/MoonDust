@@ -1,6 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import pool from "../db.js";
+import pool, { DB_SCHEMA } from "../db.js";
 
 const router = express.Router();
 
@@ -48,9 +48,9 @@ router.post("/", authMiddleware, async (req, res) => {
       const existing = await pool.query(
         `
         SELECT c.id
-        FROM demo_first.conversations c
-        JOIN demo_first.conversation_participants cp1 ON c.id = cp1.conversation_id AND cp1.user_id = $1
-        JOIN demo_first.conversation_participants cp2 ON c.id = cp2.conversation_id AND cp2.user_id = $2
+        FROM ${DB_SCHEMA}.conversations c
+        JOIN ${DB_SCHEMA}.conversation_participants cp1 ON c.id = cp1.conversation_id AND cp1.user_id = $1
+        JOIN ${DB_SCHEMA}.conversation_participants cp2 ON c.id = cp2.conversation_id AND cp2.user_id = $2
         LIMIT 1
         `,
         [u1, u2]
@@ -60,7 +60,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
     // Crée la conversation
     const conv = await pool.query(
-      `INSERT INTO demo_first.conversations (is_group, title)
+      `INSERT INTO ${DB_SCHEMA}.conversations (is_group, title)
        VALUES ($1, $2) RETURNING *`,
       [isGroup, title]
     )
@@ -68,7 +68,7 @@ router.post("/", authMiddleware, async (req, res) => {
     // Participants
     const values = participantIds.map((_, i) => `($1, $${i + 2})`).join(",")
     await pool.query(
-      `INSERT INTO demo_first.conversation_participants (conversation_id, user_id)
+      `INSERT INTO ${DB_SCHEMA}.conversation_participants (conversation_id, user_id)
        VALUES ${values}`,
       [conv.rows[0].id, ...participantIds]
     )
@@ -100,11 +100,11 @@ router.get("/mine", authMiddleware, async (req, res) => {
         ) AS participants,
         COALESCE((
           SELECT COUNT(*)
-          FROM demo_first.messages m
+          FROM ${DB_SCHEMA}.messages m
           WHERE m.conversation_id = c.id
             AND m.sender_id != $1
             AND NOT EXISTS (
-              SELECT 1 FROM demo_first.message_reads mr
+              SELECT 1 FROM ${DB_SCHEMA}.message_reads mr
               WHERE mr.message_id = m.id AND mr.user_id = $1::uuid
             )
         ), 0) AS unread_count,
@@ -112,22 +112,22 @@ router.get("/mine", authMiddleware, async (req, res) => {
           SELECT row_to_json(m2)
           FROM (
             SELECT m.id, m.content, m.created_at, ku.username AS sender_username
-            FROM demo_first.messages m
-            JOIN demo_first.keycloak_users ku ON m.sender_id = ku.id
+            FROM ${DB_SCHEMA}.messages m
+            JOIN ${DB_SCHEMA}.keycloak_users ku ON m.sender_id = ku.id
             WHERE m.conversation_id = c.id
             ORDER BY m.created_at DESC
             LIMIT 1
           ) m2
         ) AS last_message
-      FROM demo_first.conversations c
-      JOIN demo_first.conversation_participants cp ON c.id = cp.conversation_id
-      JOIN demo_first.keycloak_users ku ON cp.user_id = ku.id
+      FROM ${DB_SCHEMA}.conversations c
+      JOIN ${DB_SCHEMA}.conversation_participants cp ON c.id = cp.conversation_id
+      JOIN ${DB_SCHEMA}.keycloak_users ku ON cp.user_id = ku.id
       WHERE c.id IN (
-        SELECT conversation_id FROM demo_first.conversation_participants WHERE user_id = $1::uuid
+        SELECT conversation_id FROM ${DB_SCHEMA}.conversation_participants WHERE user_id = $1::uuid
       )
       GROUP BY c.id, c.created_at, c.is_group, c.title
       ORDER BY COALESCE(
-        (SELECT m.created_at FROM demo_first.messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1),
+        (SELECT m.created_at FROM ${DB_SCHEMA}.messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1),
         c.created_at
       ) DESC
       `,
@@ -153,7 +153,7 @@ router.get("/:id/messages", authMiddleware, async (req, res) => {
       `
       WITH parts AS (
         SELECT cp.user_id
-        FROM demo_first.conversation_participants cp
+        FROM ${DB_SCHEMA}.conversation_participants cp
         WHERE cp.conversation_id = $1
       ),
       recipients AS (
@@ -169,7 +169,7 @@ router.get("/:id/messages", authMiddleware, async (req, res) => {
 
         -- moi j'ai lu ?
         EXISTS (
-          SELECT 1 FROM demo_first.message_reads mr
+          SELECT 1 FROM ${DB_SCHEMA}.message_reads mr
           WHERE mr.message_id = m.id AND mr.user_id = $2::uuid
         ) AS read_by_me,
 
@@ -177,7 +177,7 @@ router.get("/:id/messages", authMiddleware, async (req, res) => {
         COALESCE(
           ARRAY(
             SELECT mr.user_id
-            FROM demo_first.message_reads mr
+            FROM ${DB_SCHEMA}.message_reads mr
             WHERE mr.message_id = m.id
               AND mr.user_id <> m.sender_id
           ),
@@ -187,7 +187,7 @@ router.get("/:id/messages", authMiddleware, async (req, res) => {
         -- compte combien ont lu (hors expéditeur)
         (
           SELECT COUNT(*)
-          FROM demo_first.message_reads mr
+          FROM ${DB_SCHEMA}.message_reads mr
           WHERE mr.message_id = m.id
             AND mr.user_id <> m.sender_id
         ) AS read_count,
@@ -197,8 +197,8 @@ router.get("/:id/messages", authMiddleware, async (req, res) => {
           SELECT COUNT(*) FROM recipients
         ) AS recipient_count
 
-      FROM demo_first.messages m
-      JOIN demo_first.keycloak_users ku ON m.sender_id = ku.id
+      FROM ${DB_SCHEMA}.messages m
+      JOIN ${DB_SCHEMA}.keycloak_users ku ON m.sender_id = ku.id
       WHERE m.conversation_id = $1
       ORDER BY m.created_at ASC
       `,
@@ -221,10 +221,10 @@ router.post("/:id/read", authMiddleware, async (req, res) => {
     const userId = req.user.sub;
 
     await pool.query(
-      `INSERT INTO demo_first.message_reads (message_id, user_id, read_at)
+      `INSERT INTO ${DB_SCHEMA}.message_reads (message_id, user_id, read_at)
 SELECT m.id, $2, NOW()
-FROM demo_first.messages m
-LEFT JOIN demo_first.message_reads mr
+FROM ${DB_SCHEMA}.messages m
+LEFT JOIN ${DB_SCHEMA}.message_reads mr
   ON mr.message_id = m.id AND mr.user_id = $2
 WHERE m.conversation_id = $1 AND mr.user_id IS NULL
 `,
@@ -247,7 +247,7 @@ router.get("/:id/summary", authMiddleware, async (req, res) => {
 
     // must be participant
     const chk = await pool.query(
-      `SELECT 1 FROM demo_first.conversation_participants
+      `SELECT 1 FROM ${DB_SCHEMA}.conversation_participants
        WHERE conversation_id = $1 AND user_id = $2 LIMIT 1`,
       [convId, me]
     )
@@ -255,7 +255,7 @@ router.get("/:id/summary", authMiddleware, async (req, res) => {
 
     const meta = await pool.query(
       `SELECT c.id, c.created_at, c.is_group, c.title
-       FROM demo_first.conversations c
+       FROM ${DB_SCHEMA}.conversations c
        WHERE c.id = $1`,
       [convId]
     )
@@ -263,8 +263,8 @@ router.get("/:id/summary", authMiddleware, async (req, res) => {
 
     const participants = await pool.query(
       `SELECT ku.id, ku.username
-       FROM demo_first.conversation_participants cp
-       JOIN demo_first.keycloak_users ku ON ku.id = cp.user_id
+       FROM ${DB_SCHEMA}.conversation_participants cp
+       JOIN ${DB_SCHEMA}.keycloak_users ku ON ku.id = cp.user_id
        WHERE cp.conversation_id = $1
        ORDER BY ku.username ASC`,
       [convId]
@@ -272,9 +272,9 @@ router.get("/:id/summary", authMiddleware, async (req, res) => {
 
     const counts = await pool.query(
       `SELECT
-         (SELECT COUNT(*) FROM demo_first.messages m WHERE m.conversation_id = $1) AS messages_count,
-         (SELECT COUNT(*) FROM demo_first.conversation_participants cp WHERE cp.conversation_id = $1) AS participants_count,
-         (SELECT MAX(m.created_at) FROM demo_first.messages m WHERE m.conversation_id = $1) AS last_message_at`,
+         (SELECT COUNT(*) FROM ${DB_SCHEMA}.messages m WHERE m.conversation_id = $1) AS messages_count,
+         (SELECT COUNT(*) FROM ${DB_SCHEMA}.conversation_participants cp WHERE cp.conversation_id = $1) AS participants_count,
+         (SELECT MAX(m.created_at) FROM ${DB_SCHEMA}.messages m WHERE m.conversation_id = $1) AS last_message_at`,
       [convId]
     )
 
@@ -299,7 +299,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 
     // Vérifier que je suis participant
     const chk = await client.query(
-      `SELECT 1 FROM demo_first.conversation_participants
+      `SELECT 1 FROM ${DB_SCHEMA}.conversation_participants
        WHERE conversation_id = $1 AND user_id = $2 LIMIT 1`,
       [convId, me]
     )
@@ -311,13 +311,13 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 
     // Si pas de FK ON DELETE CASCADE, on nettoie manuellement :
     await client.query(
-      `DELETE FROM demo_first.message_reads
-       WHERE message_id IN (SELECT id FROM demo_first.messages WHERE conversation_id = $1)`,
+      `DELETE FROM ${DB_SCHEMA}.message_reads
+       WHERE message_id IN (SELECT id FROM ${DB_SCHEMA}.messages WHERE conversation_id = $1)`,
       [convId]
     )
-    await client.query(`DELETE FROM demo_first.messages WHERE conversation_id = $1`, [convId])
-    await client.query(`DELETE FROM demo_first.conversation_participants WHERE conversation_id = $1`, [convId])
-    await client.query(`DELETE FROM demo_first.conversations WHERE id = $1`, [convId])
+    await client.query(`DELETE FROM ${DB_SCHEMA}.messages WHERE conversation_id = $1`, [convId])
+    await client.query(`DELETE FROM ${DB_SCHEMA}.conversation_participants WHERE conversation_id = $1`, [convId])
+    await client.query(`DELETE FROM ${DB_SCHEMA}.conversations WHERE id = $1`, [convId])
 
     await client.query("COMMIT")
     res.json({ success: true })

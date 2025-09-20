@@ -1,5 +1,5 @@
 import express from "express";
-import pool from "../db.js";
+import pool, { DB_SCHEMA } from "../db.js";
 import { authenticate } from "../middleware/authenticate.js"
 
 const router = express.Router();
@@ -13,7 +13,7 @@ router.get("/:formId", authenticate,async (req, res) => {
 delete cleanData.submit
 
 const { rows } = await pool.query(
-  "INSERT INTO demo_first.submissions (form_id, submission_data) VALUES ($1, $2) RETURNING *",
+  `INSERT INTO ${DB_SCHEMA}.submissions (form_id, submission_data) VALUES ($1, $2) RETURNING *`,
   [formId, cleanData]
 )
     res.json(rows);
@@ -36,7 +36,7 @@ router.post("/:formId", async (req, res) => {
     delete cleanData.submit
 
     const { rows } = await pool.query(
-      "INSERT INTO demo_first.submissions (form_id, submission_data) VALUES ($1, $2) RETURNING *",
+      `INSERT INTO ${DB_SCHEMA}.submissions (form_id, submission_data) VALUES ($1, $2) RETURNING *`,
       [formId, cleanData]
     );
 

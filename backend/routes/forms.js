@@ -1,6 +1,6 @@
 // routes/forms.js
 import express from "express";
-import pool from "../db.js";
+import pool, { DB_SCHEMA } from "../db.js";
 import { authenticate } from "../middleware/authenticate.js";
 
 const router = express.Router();
@@ -13,10 +13,10 @@ router.get("/", async (_req, res) => {
       f.name,
       pv.version AS current_version,
       pv.schema  AS current_schema
-    FROM demo_first.forms f
+    FROM ${DB_SCHEMA}.forms f
     LEFT JOIN LATERAL (
       SELECT version, schema
-      FROM demo_first.form_versions
+      FROM ${DB_SCHEMA}.form_versions
       WHERE form_id = f.id AND status = 'publiée'
       ORDER BY version DESC
       LIMIT 1
@@ -46,7 +46,7 @@ router.get('/count', async (req, res) => {
       where.push(`actif = $${params.length}`)
     }
 
-    let sql = 'SELECT COUNT(*)::int AS count FROM demo_first.forms'
+    let sql = 'SELECT COUNT(*)::int AS count FROM ${DB_SCHEMA}.forms'
     if (where.length) sql += ' WHERE ' + where.join(' AND ')
 
     const result = await pool.query(sql, params)
@@ -65,10 +65,10 @@ router.get("/:id", async (req, res) => {
       f.name,
       pv.version AS current_version,
       pv.schema  AS current_schema
-    FROM demo_first.forms f
+    FROM ${DB_SCHEMA}.forms f
     LEFT JOIN LATERAL (
       SELECT version, schema
-      FROM demo_first.form_versions
+      FROM ${DB_SCHEMA}.form_versions
       WHERE form_id = f.id AND status = 'publiée'
       ORDER BY version DESC
       LIMIT 1
@@ -82,7 +82,7 @@ router.get("/:id", async (req, res) => {
 router.get("/:id/versions", async (req, res) => {
   const { rows } = await pool.query(`
     SELECT id, form_id, version, status, notes, author_id, created_at
-    FROM demo_first.form_versions
+    FROM ${DB_SCHEMA}.form_versions
     WHERE form_id = $1
     ORDER BY version DESC
   `, [req.params.id]);
@@ -94,18 +94,18 @@ router.post("/:id/versions", authenticate, async (req, res) => {
   const authorId = req.auth?.sub || null;
 
   await pool.query(`
-    INSERT INTO demo_first.forms (id, name)
+    INSERT INTO ${DB_SCHEMA}.forms (id, name)
     VALUES ($1, $1) ON CONFLICT (id) DO NOTHING
   `, [req.params.id]);
 
   const { rows: last } = await pool.query(`
     SELECT COALESCE(MAX(version),0)+1 AS next
-    FROM demo_first.form_versions WHERE form_id=$1
+    FROM ${DB_SCHEMA}.form_versions WHERE form_id=$1
   `, [req.params.id]);
 
   const next = last[0].next;
   const { rows } = await pool.query(`
-    INSERT INTO demo_first.form_versions (form_id, version, status, schema, notes, author_id)
+    INSERT INTO ${DB_SCHEMA}.form_versions (form_id, version, status, schema, notes, author_id)
     VALUES ($1,$2,'brouillon',$3,$4,$5)
     RETURNING *
   `, [req.params.id, next, JSON.stringify(schema||{}), notes||null, authorId]);
@@ -116,11 +116,11 @@ router.post("/:id/versions", authenticate, async (req, res) => {
 router.put("/:id/versions/:version/publish", authenticate, async (req, res) => {
   const { id, version } = req.params;
   await pool.query(`
-    UPDATE demo_first.form_versions SET status='archivée'
+    UPDATE ${DB_SCHEMA}.form_versions SET status='archivée'
     WHERE form_id=$1 AND status='publiée'
   `, [id]);
   const { rows } = await pool.query(`
-    UPDATE demo_first.form_versions SET status='publiée'
+    UPDATE ${DB_SCHEMA}.form_versions SET status='publiée'
     WHERE form_id=$1 AND version=$2
     RETURNING *
   `, [id, version]);
@@ -131,7 +131,7 @@ router.put("/:id/versions/:version/publish", authenticate, async (req, res) => {
 router.put("/:id/versions/:version/archive", authenticate, async (req, res) => {
   const { id, version } = req.params;
   const { rows } = await pool.query(`
-    UPDATE demo_first.form_versions SET status='archivée'
+    UPDATE ${DB_SCHEMA}.form_versions SET status='archivée'
     WHERE form_id=$1 AND version=$2
     RETURNING *
   `, [id, version]);
@@ -142,7 +142,7 @@ router.put("/:id/versions/:version/archive", authenticate, async (req, res) => {
 router.get("/:id/versions/:version", async (req, res) => {
   const { id, version } = req.params;
   const { rows } = await pool.query(`
-    SELECT * FROM demo_first.form_versions
+    SELECT * FROM ${DB_SCHEMA}.form_versions
     WHERE form_id=$1 AND version=$2
   `, [id, version]);
   if (!rows.length) return res.status(404).json({ error: "Version not found" });
@@ -154,19 +154,19 @@ router.post("/:id/versions/:version/restore", authenticate, async (req, res) => 
   const authorId = req.auth?.sub || null;
 
   const { rows: v } = await pool.query(`
-    SELECT schema FROM demo_first.form_versions
+    SELECT schema FROM ${DB_SCHEMA}.form_versions
     WHERE form_id=$1 AND version=$2
   `, [id, version]);
   if (!v.length) return res.status(404).json({ error: "Version not found" });
 
   const { rows: last } = await pool.query(`
     SELECT COALESCE(MAX(version),0)+1 AS next
-    FROM demo_first.form_versions WHERE form_id=$1
+    FROM ${DB_SCHEMA}.form_versions WHERE form_id=$1
   `, [id]);
 
   const next = last[0].next;
   const { rows } = await pool.query(`
-    INSERT INTO demo_first.form_versions (form_id, version, status, schema, notes, author_id)
+    INSERT INTO ${DB_SCHEMA}.form_versions (form_id, version, status, schema, notes, author_id)
     VALUES ($1,$2,'brouillon',$3,$4,$5)
     RETURNING *
   `, [id, next, v[0].schema, `restore from v${version}`, authorId]);
@@ -182,13 +182,13 @@ router.delete("/:id", authenticate, async (req, res) => {
 
     // on supprime d’abord les versions
     await pool.query(
-      "DELETE FROM demo_first.form_versions WHERE form_id = $1",
+      `DELETE FROM ${DB_SCHEMA}.form_versions WHERE form_id = $1`,
       [id]
     );
 
     // puis le formulaire
     const del = await pool.query(
-      "DELETE FROM demo_first.forms WHERE id = $1 RETURNING id",
+      `DELETE FROM ${DB_SCHEMA}.forms WHERE id = $1 RETURNING id`,
       [id]
     );
 
@@ -213,7 +213,7 @@ router.delete("/:id/versions/:version", authenticate, async (req, res) => {
   try {
     // exemple: bloque la suppression d'une version publiée
     const check = await pool.query(
-      "SELECT status FROM demo_first.form_versions WHERE form_id = $1 AND version = $2",
+      `SELECT status FROM ${DB_SCHEMA}.form_versions WHERE form_id = $1 AND version = $2`,
       [id, version]
     );
     if (!check.rowCount) return res.status(404).json({ error: "Version not found" });
@@ -222,7 +222,7 @@ router.delete("/:id/versions/:version", authenticate, async (req, res) => {
     }
 
     const del = await pool.query(
-      "DELETE FROM demo_first.form_versions WHERE form_id = $1 AND version = $2",
+      `DELETE FROM ${DB_SCHEMA}.form_versions WHERE form_id = $1 AND version = $2`,
       [id, version]
     );
     if (!del.rowCount) return res.status(404).json({ error: "Version not found" });
@@ -246,7 +246,7 @@ router.patch("/:id", authenticate, async (req, res) => {
     if (!newName) return res.status(400).json({ error: "Name is required" });
 
     const up = await pool.query(
-      "UPDATE demo_first.forms SET name = $2 WHERE id = $1 RETURNING id, name",
+      `UPDATE ${DB_SCHEMA}.forms SET name = $2 WHERE id = $1 RETURNING id, name`,
       [id, newName]
     );
     if (!up.rowCount) return res.status(404).json({ error: "Form not found" });
@@ -258,10 +258,10 @@ router.patch("/:id", authenticate, async (req, res) => {
         f.name,
         pv.version AS current_version,
         pv.schema  AS current_schema
-      FROM demo_first.forms f
+      FROM ${DB_SCHEMA}.forms f
       LEFT JOIN LATERAL (
         SELECT version, schema
-        FROM demo_first.form_versions
+        FROM ${DB_SCHEMA}.form_versions
         WHERE form_id = f.id AND status = 'publiée'
         ORDER BY version DESC
         LIMIT 1

@@ -48,7 +48,7 @@ services:
         VITE_FRONT_ID: ${VITE_FRONT_ID:-react-app}
     container_name: ${FRONTEND_CONTAINER_NAME}
     ports:
-      - "${FRONTEND_PORT_HOST}:${FRONTEND_PORT_CONTAINER}"
+      - "3002:3002"
     volumes:
      - ./frontend:/app   # <-- monte ton code local dans le container
      - /app/node_modules # <-- évite d’écraser node_modules du container

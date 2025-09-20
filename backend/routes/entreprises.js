@@ -1,6 +1,6 @@
 // backend/routes/entreprises.js
 import express from "express";
-import pool from "../db.js";
+import pool, { DB_SCHEMA } from "../db.js";
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ const router = express.Router();
 router.get("/", async (_, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM demo_first.entreprises ORDER BY created_at DESC"
+      `SELECT * FROM ${DB_SCHEMA}.entreprises ORDER BY created_at DESC`
     );
     res.json(result.rows);
   } catch (err) {
@@ -21,7 +21,7 @@ router.get("/", async (_, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM demo_first.entreprises WHERE id=$1",
+      `SELECT * FROM ${DB_SCHEMA}.entreprises WHERE id=$1`,
       [req.params.id]
     );
     if (!result.rows.length)
@@ -38,7 +38,7 @@ router.post("/", async (req, res) => {
   try {
     const { nom, secteur, adresse, telephone, email, site_web } = req.body;
     const result = await pool.query(
-      `INSERT INTO demo_first.entreprises (nom, secteur, adresse, telephone, email, site_web)
+      `INSERT INTO ${DB_SCHEMA}.entreprises (nom, secteur, adresse, telephone, email, site_web)
        VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
       [nom, secteur, adresse, telephone, email, site_web]
     );
@@ -54,7 +54,7 @@ router.put("/:id", async (req, res) => {
   try {
     const { nom, secteur, adresse, telephone, email, site_web } = req.body;
     const result = await pool.query(
-      `UPDATE demo_first.entreprises
+      `UPDATE ${DB_SCHEMA}.entreprises
        SET nom=$1, secteur=$2, adresse=$3, telephone=$4, email=$5, site_web=$6
        WHERE id=$7 RETURNING *`,
       [nom, secteur, adresse, telephone, email, site_web, req.params.id]
@@ -72,7 +72,7 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const result = await pool.query(
-      "DELETE FROM demo_first.entreprises WHERE id=$1 RETURNING *",
+      `DELETE FROM ${DB_SCHEMA}.entreprises WHERE id=$1 RETURNING *`,
       [req.params.id]
     );
     if (!result.rows.length)

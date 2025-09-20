@@ -1,12 +1,12 @@
 // backend/routes/listes.js
 import express from "express";
-import pool from "../db.js";
+import pool, { DB_SCHEMA } from "../db.js";
 const router = express.Router();
 
 // Récupérer toutes les valeurs
 router.get("/", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM demo_first.listes ORDER BY type, ordre, valeur")
+    const result = await pool.query(`SELECT * FROM ${DB_SCHEMA}.listes ORDER BY type, ordre, valeur`)
     res.json(result.rows)
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
 router.put("/rename", async (req, res) => {
   const { oldType, newType } = req.body
   try {
-    await pool.query("UPDATE demo_first.listes SET type=$1 WHERE type=$2", [newType, oldType])
+    await pool.query(`UPDATE ${DB_SCHEMA}.listes SET type=$1 WHERE type=$2`, [newType, oldType])
     res.json({ message: "Type renommé" })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -40,9 +40,9 @@ router.get('/count', async (req, res) => {
 
     let sql
     if (!type && (distinct === 'type')) {
-      sql = `SELECT COUNT(DISTINCT type)::int AS count FROM demo_first.listes${whereSql}`
+      sql = `SELECT COUNT(DISTINCT type)::int AS count FROM ${DB_SCHEMA}.listes${whereSql}`
     } else {
-      sql = `SELECT COUNT(*)::int AS count FROM demo_first.listes${whereSql}`
+      sql = `SELECT COUNT(*)::int AS count FROM ${DB_SCHEMA}.listes${whereSql}`
     }
 
     const result = await pool.query(sql, params)
@@ -55,7 +55,7 @@ router.get('/count', async (req, res) => {
 // Supprimer tout un type
 router.delete("/delete-type/:type", async (req, res) => {
   try {
-    await pool.query("DELETE FROM demo_first.listes WHERE type=$1", [req.params.type])
+    await pool.query(`DELETE FROM ${DB_SCHEMA}.listes WHERE type=$1`, [req.params.type])
     res.json({ message: "Type supprimé" })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -65,7 +65,7 @@ router.delete("/delete-type/:type", async (req, res) => {
 router.get("/types", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT DISTINCT type FROM demo_first.listes ORDER BY type"
+      `SELECT DISTINCT type FROM ${DB_SCHEMA}.listes ORDER BY type`
     );
     res.json(result.rows.map(r => r.type));
   } catch (err) {
@@ -80,7 +80,7 @@ router.get("/:type", async (req, res) => {
         const { limit, skip, ignoreFormio } = req.query  
 
     const result = await pool.query(
-      "SELECT * FROM demo_first.listes WHERE type=$1 ORDER BY ordre, valeur",
+      `SELECT * FROM ${DB_SCHEMA}.listes WHERE type=$1 ORDER BY ordre, valeur`,
       [type]
     );
     res.json(result.rows);
@@ -92,7 +92,7 @@ router.get("/:type/:parentId", async (req, res) => {
   try {
     const { type, parentId } = req.params;
     const result = await pool.query(
-      "SELECT * FROM demo_first.listes WHERE type=$1 AND parent_id=$2 ORDER BY ordre, valeur",
+      `SELECT * FROM ${DB_SCHEMA}.listes WHERE type=$1 AND parent_id=$2 ORDER BY ordre, valeur`,
       [type, parentId]
     );
     res.json(result.rows);
@@ -104,7 +104,7 @@ router.post("/", async (req, res) => {
   try {
     const { type, valeur, parent_id, ordre } = req.body;
     const result = await pool.query(
-      `INSERT INTO demo_first.listes (type, valeur, parent_id, ordre)
+      `INSERT INTO ${DB_SCHEMA}.listes (type, valeur, parent_id, ordre)
        VALUES ($1,$2,$3,$4) RETURNING *`,
       [type, valeur, parent_id || null, ordre || 0]
     );
@@ -117,7 +117,7 @@ router.put("/:id", async (req, res) => {
   try {
     const { valeur, ordre, actif } = req.body;
     const result = await pool.query(
-      `UPDATE demo_first.listes
+      `UPDATE ${DB_SCHEMA}.listes
        SET valeur=$1, ordre=$2, actif=$3
        WHERE id=$4 RETURNING *`,
       [valeur, ordre, actif, req.params.id]
@@ -130,7 +130,7 @@ router.put("/:id", async (req, res) => {
 // Supprimer une valeur (et ses sous-enfants grâce à ON DELETE CASCADE)
 router.delete("/:id", async (req, res) => {
   try {
-    const result = await pool.query("DELETE FROM demo_first.listes WHERE id=$1 RETURNING *", [req.params.id]);
+    const result = await pool.query(`DELETE FROM ${DB_SCHEMA}.listes WHERE id=$1 RETURNING *`, [req.params.id]);
     if (!result.rows.length) return res.status(404).json({ error: "Valeur non trouvée" });
     res.json({ message: "Valeur supprimée" });
   } catch (err) { res.status(500).json({ error: err.message }); }
