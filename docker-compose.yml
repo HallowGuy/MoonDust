@@ -22,8 +22,6 @@ services:
       - ./backend/config/themes.json:/usr/src/app/config/themes.json
       - ./backend/config/config-actions.json:/usr/src/app/config/config-actions.json
       - ./backend/forms:/usr/src/app/forms
-
-
     depends_on:
       - db
     healthcheck:
@@ -40,20 +38,16 @@ services:
     build:
       context: ./frontend
       args:
-        # Optionally set at build-time; code defaults to '/api' if unset
         VITE_API_URL: ${VITE_API_URL:-}
-        # Ensure Keycloak config is baked for production builds
         VITE_KEYCLOAK_URL: ${KEYCLOAK_PORT_HOST:+http://localhost:${KEYCLOAK_PORT_HOST}}
         VITE_REALM: ${REALM:-REALM_REUNION}
-        VITE_FRONT_ID: ${VITE_FRONT_ID:-react-app}
+        VITE_FRONT_ID: ${FRONT_CLIENT_ID:-react-app}
     container_name: ${FRONTEND_CONTAINER_NAME}
     ports:
-      - "3002:3002"
+      - "${FRONTEND_PORT_HOST}:${FRONTEND_PORT_CONTAINER}"
     volumes:
-     - ./frontend:/app   # <-- monte ton code local dans le container
-     - /app/node_modules # <-- évite d’écraser node_modules du container
-    
-
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
     healthcheck:
@@ -72,7 +66,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB} # <-- base principale (ex: demo_first)
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "${DB_PORT_HOST}:${DB_PORT_CONTAINER}"
     volumes:
@@ -100,7 +94,6 @@ services:
       - db
     restart: unless-stopped
 
-
   # ------------------------
   # Keycloak (Identity & Access)
   # ------------------------
@@ -114,18 +107,14 @@ services:
       KC_DB: postgres
       KC_DB_URL_HOST: db
       KC_DB_URL_PORT: 5432
-      
       KC_DB_URL_DATABASE: ${KEYCLOAK_DB_NAME}
       KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
-      # Important : forcer Keycloak à rester en HTTP même si un proxy est devant
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_HTTP_ENABLED: "true"
       KC_HTTP_PORT: "8080"
       KC_HTTPS_PORT: "0"
-      
-      
     volumes:
       - ./authentification:/opt/keycloak/data/import:ro
       - ./themes:/opt/keycloak/themes
@@ -137,11 +126,24 @@ services:
       - db
     restart: unless-stopped
 
-
-
-
-
+  # ------------------------
+  # Flowable (Workflow Engine)
+  # ------------------------
+  flowable:
+    image: flowable/all-in-one:latest
+    container_name: flowable
+    env_file:
+      - ./.env
+    environment:
+      - FLOWABLE_IDM_APP_URL=${FLOWABLE_IDM_APP_URL}
+      - FLOWABLE_MODELER_APP_URL=${FLOWABLE_MODELER_APP_URL}
+      - FLOWABLE_TASK_APP_URL=${FLOWABLE_TASK_APP_URL}
+      - FLOWABLE_ADMIN_APP_URL=${FLOWABLE_ADMIN_APP_URL}
+    ports:
+      - "8082:8080"
+    depends_on:
+      - db
+    restart: unless-stopped
 
 volumes:
   postgres_data:
-  uploads_data:

@@ -10,6 +10,7 @@ MoonDust est une stack Docker prête à l’emploi pour une appli web front/back
 - PgAdmin: console d’administration PostgreSQL.
 - Redis: file d’attente et cache pour Activepieces.
 - Activepieces: automatisation no‑code auto‑hébergée (UI/API sur port `80` dans le conteneur).
+- Flowable: moteur BPM Flowable (module `workflow/`, apps Modeler/Task/Admin exposees en local).
 
 ## Ports par défaut (hôte)
 
@@ -18,12 +19,14 @@ MoonDust est une stack Docker prête à l’emploi pour une appli web front/back
 - PostgreSQL: `DB_PORT_HOST=5432`
 - PgAdmin: `PGADMIN_PORT_HOST=5050`
 - Activepieces: `AP_PORT_HOST=8080`
+- Flowable: `8082`
 
 ## Configuration
 
 - Variables d’environnement: `.env` (identique à `.env.example`).
   - Frontend: par défaut, l’API est appelée via `/api` (proxy Nginx vers le backend). Pour figer une URL, renseigner `VITE_API_URL` au build.
   - Activepieces: nécessite `AP_ENCRYPTION_KEY` (32 hex). Une valeur de dev valide est fournie; changez‑la en production.
+  - Flowable: configuration isolee dans `workflow/.env`; adaptez les identifiants DB et admin avant production.
   - Mots de passe: valeurs de dev prêtes à l’emploi; à changer en prod.
 
 ## Démarrage rapide
@@ -40,6 +43,7 @@ docker compose up -d --build
 - Backend (API): http://localhost:5001 (ou via le front sur `/api`)
 - PgAdmin: http://localhost:5050 (identifiants dans `.env`)
 - Activepieces: http://localhost:8080
+- Flowable: http://localhost:8082
 
 ## Développement
 
